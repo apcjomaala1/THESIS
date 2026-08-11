@@ -1,0 +1,55 @@
+{
+  "protocol": {
+    "split": "deterministic conversation-level 80/10/10 split, random_state=42",
+    "threshold_selection": "validation conversation F0.5; test labels not used for threshold selection",
+    "checkpoint": "C:\\Projects\\THESIS\\grooming-detector\\grooming-detector-trajectory-pipeline\\trajectory_model_weighted.pt",
+    "lstm_checkpoint_metadata": {
+      "positive_weight": 377.7494646680942,
+      "validation_auc": 0.9729676872816297,
+      "validation_turn_f0_5": 0.06432246998284734,
+      "threshold": 0.011652022576091282
+    }
+  },
+  "validation_lstm": {
+    "threshold": 0.0005860545509024476,
+    "recall": 0.7391304347826086,
+    "precision": 0.03935185185185185,
+    "f1": 0.07472527472527472,
+    "f0.5": 0.04854368932038835,
+    "auc_roc": 0.595773413679687,
+    "avg_time_to_detection": 18.794117647058822,
+    "median_time_to_detection": 4.5,
+    "n_true_positives": 34,
+    "n_false_negatives": 12,
+    "n_false_positives": 830,
+    "n_true_negatives": 981
+  },
+  "held_out_test": {
+    "lstm": {
+      "recall": 0.7777777777777778,
+      "precision": 0.040229885057471264,
+      "f1": 0.07650273224043716,
+      "f0.5": 0.04964539007092199,
+      "auc_roc": 0.6599399067942113,
+      "avg_time_to_detection": 22.742857142857144,
+      "median_time_to_detection": 0.0,
+      "n_true_positives": 35,
+      "n_false_negatives": 10,
+      "n_false_positives": 835,
+      "n_true_negatives": 977
+    },
+    "weighted_scorer": {
+      "recall": 0.2222222222222222,
+      "precision": 0.12987012987012986,
+      "f1": 0.16393442622950818,
+      "f0.5": 0.141643059490085,
+      "auc_roc": 0.8522197694383126,
+      "avg_time_to_detection": 78.2,
+      "median_time_to_detection": 72.5,
+      "n_true_positives": 10,
+      "n_false_negatives": 35,
+      "n_false_positives": 67,
+      "n_true_negatives": 1745
+    }
+  }
+}

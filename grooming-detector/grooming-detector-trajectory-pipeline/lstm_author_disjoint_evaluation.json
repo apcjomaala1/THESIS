@@ -1,0 +1,74 @@
+{
+  "protocol": {
+    "split": "author-disjoint connected-component 80/10/10 split",
+    "random_state": 42,
+    "split_audit": {
+      "path": "C:\\Projects\\THESIS\\grooming-detector\\grooming-detector-trajectory-pipeline\\author_disjoint_split_audit.json",
+      "sha256": "958b96d1ee62afb71784e75b35aaff3e012abf0ee2705c28c72562ac5ad5f609"
+    },
+    "threshold_selection": "validation conversation F0.5; test labels not used for threshold selection",
+    "checkpoint": "C:\\Projects\\THESIS\\grooming-detector\\grooming-detector-trajectory-pipeline\\trajectory_model_author_disjoint.pt",
+    "lstm_checkpoint_metadata": {
+      "positive_weight": 375.2618025751073,
+      "validation_conversation_auc": 0.9868419543196705,
+      "validation_conversation_f0_5": 0.7868020304568528,
+      "threshold": 0.8893970629843785,
+      "random_state": 42
+    }
+  },
+  "validation_lstm": {
+    "threshold": 0.8893473773110984,
+    "recall": 0.6326530612244898,
+    "precision": 0.8378378378378378,
+    "f1": 0.7209302325581395,
+    "f0.5": 0.7868020304568528,
+    "auc_roc": 0.9868419543196705,
+    "avg_time_to_detection": 12.35483870967742,
+    "median_time_to_detection": 8.0,
+    "n_true_positives": 31,
+    "n_false_negatives": 18,
+    "n_false_positives": 6,
+    "n_true_negatives": 1773
+  },
+  "held_out_test": {
+    "lstm": {
+      "recall": 0.8333333333333334,
+      "precision": 0.875,
+      "f1": 0.8536585365853658,
+      "f0.5": 0.8663366336633663,
+      "auc_roc": 0.9903574726289408,
+      "avg_time_to_detection": 10.771428571428572,
+      "median_time_to_detection": 7.0,
+      "n_true_positives": 35,
+      "n_false_negatives": 7,
+      "n_false_positives": 5,
+      "n_true_negatives": 1800
+    },
+    "weighted_scorer": {
+      "recall": 0.3333333333333333,
+      "precision": 0.18421052631578946,
+      "f1": 0.23728813559322035,
+      "f0.5": 0.2023121387283237,
+      "auc_roc": 0.8841313810842896,
+      "avg_time_to_detection": 62.857142857142854,
+      "median_time_to_detection": 61.0,
+      "n_true_positives": 14,
+      "n_false_negatives": 28,
+      "n_false_positives": 62,
+      "n_true_negatives": 1743
+    },
+    "distilbert_current_score_only": {
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "f0.5": 0.0,
+      "auc_roc": 0.8559029151826936,
+      "avg_time_to_detection": null,
+      "median_time_to_detection": null,
+      "n_true_positives": 0,
+      "n_false_negatives": 42,
+      "n_false_positives": 0,
+      "n_true_negatives": 1805
+    }
+  }
+}

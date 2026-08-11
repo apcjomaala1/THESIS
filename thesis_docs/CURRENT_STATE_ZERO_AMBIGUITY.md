@@ -1,0 +1,328 @@
+# Current Thesis Model State — Authoritative Report
+
+**As of:** 2026-08-12  
+**Authority:** This file supersedes earlier progress summaries and handoffs when
+their wording conflicts with this report.
+
+## Executive Summary
+
+There are two trained model layers, not one model trained on one combined label.
+
+1. **Layer 1 is DistilBERT.** The active weights were produced by the newer
+   context-window/F1-selected trainer supplied by the user, not by the stale
+   trainer currently stored beside the copied model. The best-supported label
+   mode is `suspicious`, but the custom CLI flag and exact dataset manifest were
+   not serialized with the checkpoint.
+2. **Layer 2 is the LSTM.** The newest checkpoint is the August 12
+   author-disjoint LSTM under `grooming-detector`. It uses a separate turn-level
+   loss and conversation-level loss; it does not merge the two labels into one.
+3. The LSTM beats the weighted scorer and current-score-only ablation on the
+   frozen Layer 2 author-disjoint test split.
+4. The result is not yet a fully clean end-to-end experiment because Layer 1
+   was trained under an independently created conversation split rather than
+   the same connected-author split.
+5. PAN12's diff file is correction metadata. The project incorrectly turned it
+   into a column called `is_suspicious`. It is not genuine message-level
+   grooming or grooming-onset ground truth. This label-semantics problem remains
+   even though the correct newer trainer was used.
+
+## Confidence Key
+
+- **Confirmed:** directly established by source code, model hashes, serialized
+  checkpoint metadata, saved logs, or machine-readable results.
+- **Strongly supported:** multiple independent records agree, but the decisive
+  custom setting was not serialized into the model artifact.
+- **Unknown:** the required provenance record was never saved and cannot be
+  reconstructed conclusively from the current files.
+
+## Directory Authority
+
+| Directory | Role | Authority |
+|---|---|---|
+| `grooming-detector` | Active integrated pipeline and latest LSTM | **Canonical; continue work here** |
+| `Groomer Thesis` | Original/newer Layer 1 trainer source and corpus workspace | Evidence/source only |
+| `grooming-detector-main` | Deleted older Don pipeline/model copy | Deleted after validation; relevant history is recorded in the cleanup manifest |
+| `grooming-detector-main-2` | Deleted bundle that contained the latest trained Layer 1 model and its supplied trainer | Deleted after the final weights, exact trainer, training data candidates, and trainer-state evidence were preserved |
+
+Continue implementation only in `grooming-detector`. `Groomer Thesis` remains a
+small provenance source; the two `*-main*` duplicate trees no longer exist.
+
+## Layer 1 DistilBERT — What Is Actually Known
+
+### Active weights
+
+- Canonical runtime path:
+  `grooming-detector/trained_model_distillbert/final_moderation_model/model.safetensors`
+- SHA-256:
+  `F90DB66B877587D36C4A38BDA9C4A4553D13D07902F4839170EE78BEC06E392B`
+- Before cleanup, the same hash occurred at the final model and
+  `checkpoint-750` under `grooming-detector-main-2`. Those were copies of the
+  same latest trained Layer 1 model, not separate trained models. The retained
+  canonical weights are therefore byte-identical to the model that was in that
+  bundle. **Confirmed by pre-deletion hashing and the user's explicit
+  provenance confirmation.**
+
+### Trainer identity
+
+The user-provided trainer is an exact line-for-line match for:
+
+`Groomer Thesis/pan12-sexual-predator-identification-training-corpus-2012-05-01/train_distillbert.py`
+
+The attachment displayed `_file_` and `_name_` because double underscores were
+mangled during pasting; the saved Python source correctly uses `__file__` and
+`__name__`.
+
+The model's serialized `TrainingArguments` and `trainer_state.json` match this
+newer trainer:
+
+- three epochs;
+- batch size 16, evaluation batch size 32;
+- learning rate 2e-5;
+- FP16 enabled;
+- evaluation and saving each epoch;
+- best-model selection by F1;
+- best checkpoint 750;
+- best validation F1 0.782752, recall 0.833801, precision 0.737593.
+
+Those controls do not match the stale simplified trainer currently beside the
+active copied weights. Therefore, the newer user-supplied trainer family
+produced the active Layer 1 model. **Confirmed.**
+
+The user has additionally confirmed that `grooming-detector-main-2` was the
+bundle containing the latest trained Layer 1 model together with the trainer
+script supplied earlier. Before that bundle was deleted, its exact trainer was
+preserved at
+`grooming-detector/data_sources/layer1_training_archive/train_distillbert.py`,
+and its final model was verified byte-for-byte against the surviving canonical
+weights. This resolves the bundle/model/trainer identity; it does not by itself
+recover an executed command or serialize the custom `--label-mode` value.
+
+### Layer 1 target
+
+The newer trainer supports three mutually exclusive modes:
+
+- `predator`: author-level `is_predator` repeated on message rows;
+- `suspicious`: message-row `is_suspicious` only;
+- `either`: logical OR of those two columns.
+
+Its default is `suspicious`. The recovered history says Justin was instructed
+to run `--label-mode suspicious` and subsequently reports the retrained model as
+the suspicious-label version. However, `label_mode` is a custom script argument
+and was not stored in Hugging Face `training_args.bin`. Therefore:
+
+> The active checkpoint was most likely trained in `suspicious` mode; this is
+> strongly supported, but the checkpoint artifact alone cannot prove the flag.
+
+It should not be described as trained on both labels unless evidence appears
+that `--label-mode either` was used.
+
+### Layer 1 input and split
+
+- Each classification input contains the current message plus up to two
+  preceding messages separated by `[SEP]`. Despite the help text saying
+  “before and after,” the implementation uses only current/past context.
+- Duplicate context/label rows are removed.
+- All positives are retained and negatives are downsampled according to the
+  negative ratio, default 1:1.
+- `GroupShuffleSplit` creates an 80/20 split by conversation ID.
+- It is conversation-disjoint, not connected-author-disjoint. The same author
+  can occur in Layer 1 training and evaluation through different conversations.
+
+These behaviors are **confirmed from the trainer code**.
+
+### Exact Layer 1 dataset
+
+The archived data directory contains:
+
+- `pan12_final_dataset.csv`;
+- `synthetic_grooming_data.csv`;
+- `synthetic_safe_data.csv`.
+
+The recovered history says the model used PAN12 plus synthetic data, and the
+checkpoint step counts are consistent with a larger pool than one minimal PAN
+subset. But no dataset manifest, row hashes, or executed command was serialized.
+
+> PAN12 plus both synthetic files is strongly supported; the exact rows and
+> exact dataset hashes used are unknown.
+
+## PAN12 Label Semantics — Confirmed Correction
+
+PAN12 provides a predator-author list, which supports author/conversation-level
+predator identification.
+
+PAN12's bundled `readme.txt` describes
+`pan12-sexual-predator-identification-diff.txt` as conversation and line
+locations of **modified text**. It does not describe those locations as
+grooming, suspicious behavior, or grooming onset.
+
+The project's `Python.py` nevertheless sets `is_suspicious = 1` when a message
+appears in that diff file. Therefore:
+
+- PAN `is_predator` is a valid author-level label from the provided predator
+  list.
+- PAN `is_suspicious` is a misleading project column name for correction/diff
+  membership.
+- PAN `is_suspicious` must not be presented as genuine message-level grooming
+  annotation or grooming-onset ground truth.
+
+This conclusion is **confirmed from the corpus documentation and preprocessing
+code**. It is independent of which trainer was used.
+
+The synthetic files may contain intentionally created message labels, but their
+generation and annotation provenance has not yet been audited in this phase.
+
+## Layer 2 LSTM — Latest Model
+
+### Checkpoint
+
+- Path:
+  `grooming-detector/grooming-detector-trajectory-pipeline/trajectory_model_author_disjoint.pt`
+- Saved: 2026-08-12 02:46:59.
+- This is the newest trained model overall. **Confirmed.**
+
+### Data and inputs
+
+- Dataset: PAN12 canonical CSV only, restricted to two-author conversations.
+- Per turn input: 768-dimensional base `distilbert-base-uncased` CLS embedding
+  plus seven trajectory features, for 775 dimensions total.
+- The seven features include the fine-tuned Layer 1 current risk score, peak
+  score, spike count, spike-then-drop indicator, topic drift, turn-taking
+  imbalance, and conversation velocity.
+- The 768-dimensional embedding comes from the base DistilBERT encoder; the
+  fine-tuned Layer 1 classifier supplies risk scores used in trajectory
+  features. These are related but distinct inputs.
+
+### Training targets
+
+The LSTM uses two separate losses:
+
+1. A turn-level cumulative loss derived from the project `is_suspicious`
+   column.
+2. A conversation-level max-over-turn loss derived from whether the
+   conversation contains a listed predator author.
+
+It does not combine both fields into a single label. Multi-objective training is
+legitimate in principle. In this experiment, however, the PAN turn-level target
+is correction metadata and cannot be interpreted as grooming-message truth.
+The conversation-level target is the defensible PAN target.
+
+### Layer 2 split
+
+Conversations sharing any dataset-namespaced author were joined into connected
+components. Components were assigned wholesale to train, validation, or test.
+
+| Partition | Conversations | Positive conversations |
+|---|---:|---:|
+| Train | 14,893 | 363 |
+| Validation | 1,828 | 49 |
+| Test | 1,847 | 42 |
+
+The audit verifies zero shared conversations, zero shared authors, and zero
+shared predator authors across every Layer 2 partition pair. **Confirmed.**
+
+This split does not retroactively alter the earlier Layer 1 training split.
+Thus Layer 2 is author-disjoint internally, while the full two-layer pipeline is
+not yet proven author-disjoint end to end.
+
+## Frozen Layer 2 Test Result
+
+The checkpoint was selected using validation conversation F0.5 with
+conversation AUC as tie-breaker. The threshold was selected from validation
+only, then the author-disjoint test partition was evaluated once.
+
+| Metric | LSTM | Weighted scorer | Current-score-only ablation |
+|---|---:|---:|---:|
+| Recall | 0.8333 | 0.3333 | 0.0000 |
+| Precision | 0.8750 | 0.1842 | 0.0000 |
+| F1 | 0.8537 | 0.2373 | 0.0000 |
+| F0.5 | 0.8663 | 0.2023 | 0.0000 |
+| AUC-ROC | 0.9904 | 0.8841 | 0.8559 |
+| True positives | 35 | 14 | 0 |
+| False negatives | 7 | 28 | 42 |
+| False positives | 5 | 62 | 0 |
+| Mean first-flag turn | 10.77 | 62.86 | N/A |
+
+“Current-score-only” is precise: the ablation zeros the other trajectory
+features and retains only the current Layer 1 score through the weighted-scoring
+mechanism. It is not a separately retrained or separately threshold-tuned
+DistilBERT experiment.
+
+The LSTM beats both comparators under the fixed Layer 1 / author-disjoint Layer
+2 protocol. This is a valid conditional comparison because all three methods
+share the same upstream Layer 1 outputs and test conversations.
+
+It must not yet be called a fully leakage-free, end-to-end unseen-author result.
+
+## Meaning of “Time to Detection” in the Current Report
+
+The evaluator records the turn index where a positive conversation is first
+flagged. Because PAN lacks valid grooming-onset annotations, this is not elapsed
+time from a known grooming onset.
+
+Use the term **mean first-flag turn** or **early-flagging turn** for the current
+result. Do not claim “10.77 turns after grooming began.”
+
+## Overfitting Status
+
+- Training and validation used separate Layer 2 author components.
+- The frozen Layer 2 test result is not worse than validation, so there is no
+  obvious classic train-versus-validation collapse in the saved metrics.
+- A single held-out split cannot rule out model-selection variance.
+- The larger concern is upstream Layer 1 split/provenance and invalid PAN turn
+  labels, not demonstrated classic LSTM overfitting.
+
+## What Can Be Claimed Now
+
+Defensible wording:
+
+> With a fixed previously trained Layer 1 feature extractor, the
+> conversation-supervised LSTM outperformed the weighted trajectory scorer and
+> current-score-only ablation on an internally author-disjoint PAN12 Layer 2
+> test split.
+
+Not yet defensible:
+
+- fully end-to-end unseen-author generalization;
+- genuine message-level grooming detection from PAN diff annotations;
+- grooming-onset detection delay;
+- a claim that the exact Layer 1 training rows are fully known;
+- a claim that the Layer 1 model was trained on both labels.
+
+## Required Clean End-to-End Experiment
+
+1. Preserve the current checkpoint, evaluation JSON, and split audit unchanged
+   as the conditional baseline.
+2. Reuse the frozen connected-author assignments for every PAN-dependent model
+   stage, including Layer 1.
+3. Do not use PAN diff membership as a grooming-message target.
+4. For a genuinely message-level Layer 1, train on a separately verified
+   message-annotated corpus. If only author labels are available, explicitly
+   describe the resulting classifier as weakly supervised rather than
+   message-ground-truth supervised.
+5. Audit the synthetic data generation and annotation provenance before using
+   its message labels as final evidence.
+6. Generate a new Layer 1 checkpoint and score cache with the executed command,
+   source-file hashes, row assignments, package versions, seed, and metrics.
+7. Retrain Layer 2 using conversation supervision for PAN. Apply turn-level
+   supervision only to sources with genuine message annotations, using an
+   explicit supervision mask.
+8. Select checkpoint and threshold on validation only, then perform one final
+   held-out evaluation against the same comparators.
+9. Update the paper only from that final report, while retaining the current
+   conditional experiment as an ablation/development result if useful.
+
+## Authoritative Evidence Files
+
+- `CURRENT_STATE_ZERO_AMBIGUITY.md` — this report.
+- `THESIS_RECOVERY_NEXT_STEPS.md` — chronological activity log; earlier rows
+  may be superseded by later corrections.
+- `AUTHOR_DISJOINT_EXPERIMENT.md` — frozen Layer 2 protocol, commands, and
+  result.
+- `WORKSPACE_CLEANUP_MANIFEST.md` — pre-deletion hashes and preserved Layer 1
+  provenance artifacts.
+- `grooming-detector/data_sources/layer1_training_archive/train_distillbert.py`
+- `thesis_docs/evidence/layer1_checkpoint_750_trainer_state.json`
+- `thesis_docs/evidence/layer1_full_run_trainer_state.json`
+- `grooming-detector/grooming-detector-trajectory-pipeline/author_disjoint_split_audit.json`
+- `grooming-detector/grooming-detector-trajectory-pipeline/lstm_author_disjoint_evaluation.json`
+- `grooming-detector/grooming-detector-trajectory-pipeline/trajectory_model_author_disjoint.pt`

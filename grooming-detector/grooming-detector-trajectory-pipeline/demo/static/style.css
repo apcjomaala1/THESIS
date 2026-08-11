@@ -1,0 +1,60 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+       color: #1a1a1a; background: #f5f6f8; }
+
+.layout { display: grid; grid-template-columns: 1fr 360px; height: 100vh; }
+
+.chat-pane { display: flex; flex-direction: column; background: #fff; border-right: 1px solid #e3e5e8; }
+.chat-pane header { padding: 16px 20px; border-bottom: 1px solid #e3e5e8; display: flex; justify-content: space-between; align-items: center; }
+.chat-pane h1 { font-size: 18px; margin: 0; font-weight: 600; }
+.controls { display: flex; gap: 12px; align-items: center; font-size: 13px; color: #555; }
+.controls select, .controls button { font-size: 13px; padding: 4px 8px; }
+
+.messages { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 16px 20px; }
+.messages li { padding: 8px 12px; margin: 4px 0; border-radius: 10px; background: #eef0f3; max-width: 70%; }
+.messages li.user_A { align-self: flex-start; background: #e8efff; }
+.messages li.user_B { align-self: flex-end; background: #f0e8ff; margin-left: auto; }
+.messages li .text { font-size: 14px; }
+.messages li .meta { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: #666; margin-top: 4px; }
+.messages li .meta .meta-right { font-variant-numeric: tabular-nums; }
+.messages li .meta .num { font-weight: 600; color: #333; }
+.messages li { cursor: pointer; transition: box-shadow 0.1s ease; }
+.messages li:hover { box-shadow: inset 0 0 0 1px #aab; }
+.messages li.selected { box-shadow: inset 0 0 0 2px #2b6cb0; }
+.messages li.flagged-turn { box-shadow: inset 0 0 0 2px #d62b2b; }
+.messages li.flagged-turn.selected { box-shadow: inset 0 0 0 2px #d62b2b, inset 0 0 0 4px #2b6cb0; }
+.messages li.flagged-turn::after {
+  content: "first flagged turn";
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #d62b2b;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.flag-banner { display: none; padding: 10px 20px; background: #fdecec; color: #8a1a1a; border-bottom: 1px solid #f3c2c2; font-size: 13px; font-weight: 500; }
+.flag-banner.active { display: block; }
+
+.composer { display: flex; padding: 12px 20px; border-top: 1px solid #e3e5e8; gap: 8px; }
+.composer input { flex: 1; padding: 10px 12px; font-size: 14px; border: 1px solid #d0d2d6; border-radius: 8px; }
+.composer button { padding: 10px 16px; font-size: 14px; border: none; background: #2b6cb0; color: white; border-radius: 8px; cursor: pointer; }
+
+.metrics-pane { padding: 20px; overflow-y: auto; }
+.metrics-pane h2, .metrics-pane h3 { margin-top: 0; }
+.metrics-pane h2 { font-size: 16px; }
+.metrics-pane h3 { font-size: 14px; margin-top: 24px; color: #444; }
+.inspecting { font-size: 12px; color: #666; margin: 6px 0 12px; font-style: italic; }
+
+.aggregate { background: #fff; border: 1px solid #e3e5e8; border-radius: 10px; padding: 12px 14px; }
+.agg-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+.agg-row .label { color: #666; }
+.agg-row .value { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.features { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 8px; }
+.features td { padding: 6px 4px; border-bottom: 1px solid #eef0f3; font-variant-numeric: tabular-nums; }
+.features td:first-child { color: #555; }
+.features td:last-child { text-align: right; font-weight: 600; }
+
+.value.alarm { color: #d62b2b; }

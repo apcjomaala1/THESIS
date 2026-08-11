@@ -1,0 +1,33 @@
+# Python/test caches
+**/__pycache__/
+**/.pytest_cache/
+**/.pytest_tmp*/
+*.py[cod]
+
+# Generated model/cache artifacts (preserved locally, not suitable for normal Git)
+*.safetensors
+*.pt
+*.pth
+*.pkl
+*.npy
+*.npz
+*.bin
+**/checkpoint-*/
+
+# Experiment logs and generated temporary outputs
+*.log
+
+# Large/raw PAN corpus artifacts
+**/pan12*.xml
+**/pan12*.csv
+**/pan12-sexual-predator-identification-diff.txt
+**/pan12*predators*.txt
+**/pan12*groundtruth-problem*.txt
+
+# Recovered chat transcripts can contain large/sensitive history
+transcript*.jsonl
+thesis_docs/archive/recovery/Latest Convo*.md
+
+# OS/editor noise
+Thumbs.db
+.DS_Store

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Grooming Detection — Live Demo</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <section class="chat-pane">
+      <header>
+        <h1>Live Chat</h1>
+        <div class="controls">
+          <label>Author
+            <select id="author">
+              <option value="user_A">user_A</option>
+              <option value="user_B">user_B</option>
+            </select>
+          </label>
+          <button id="reset">Reset</button>
+        </div>
+      </header>
+      <div id="flag-banner" class="flag-banner">
+        <span id="flag-banner-text"></span>
+      </div>
+      <ul id="messages" class="messages"></ul>
+      <form id="form" class="composer">
+        <input id="input" autocomplete="off" placeholder="type a message..." />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <aside class="metrics-pane">
+      <h2>Per-turn risk</h2>
+      <div id="inspecting" class="inspecting">Click any message to inspect its turn</div>
+      <div id="aggregate" class="aggregate">
+        <div class="agg-row">
+          <span class="label">Layer 1 risk</span>
+          <span id="risk" class="value">—</span>
+        </div>
+        <div class="agg-row">
+          <span class="label">Weighted score</span>
+          <span id="weighted" class="value">—</span>
+        </div>
+        <div class="agg-row">
+          <span class="label">First flagged turn</span>
+          <span id="flag" class="value">—</span>
+        </div>
+      </div>
+      <h3>Trajectory features</h3>
+      <table id="features" class="features">
+        <tbody></tbody>
+      </table>
+    </aside>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

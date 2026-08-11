@@ -1,0 +1,68 @@
+{
+  "protocol": {
+    "split": "deterministic conversation-level 80/10/10 split, random_state=42",
+    "threshold_selection": "validation conversation F0.5; test labels not used for threshold selection",
+    "checkpoint": "C:\\Projects\\THESIS\\grooming-detector\\grooming-detector-trajectory-pipeline\\trajectory_model_conversation.pt",
+    "lstm_checkpoint_metadata": {
+      "positive_weight": 377.7494646680942,
+      "validation_conversation_auc": 0.983926727966773,
+      "validation_conversation_f0_5": 0.8860759493670886,
+      "threshold": 0.8644630297747451
+    }
+  },
+  "validation_lstm": {
+    "threshold": 0.8643359391135325,
+    "recall": 0.6086956521739131,
+    "precision": 1.0,
+    "f1": 0.7567567567567568,
+    "f0.5": 0.8860759493670886,
+    "auc_roc": 0.9839267279667732,
+    "avg_time_to_detection": 23.0,
+    "median_time_to_detection": 10.5,
+    "n_true_positives": 28,
+    "n_false_negatives": 18,
+    "n_false_positives": 0,
+    "n_true_negatives": 1811
+  },
+  "held_out_test": {
+    "lstm": {
+      "recall": 0.5333333333333333,
+      "precision": 0.96,
+      "f1": 0.6857142857142857,
+      "f0.5": 0.8275862068965517,
+      "auc_roc": 0.9931812607309296,
+      "avg_time_to_detection": 18.208333333333332,
+      "median_time_to_detection": 11.5,
+      "n_true_positives": 24,
+      "n_false_negatives": 21,
+      "n_false_positives": 1,
+      "n_true_negatives": 1811
+    },
+    "weighted_scorer": {
+      "recall": 0.2222222222222222,
+      "precision": 0.12987012987012986,
+      "f1": 0.16393442622950818,
+      "f0.5": 0.141643059490085,
+      "auc_roc": 0.8522197694383126,
+      "avg_time_to_detection": 78.2,
+      "median_time_to_detection": 72.5,
+      "n_true_positives": 10,
+      "n_false_negatives": 35,
+      "n_false_positives": 67,
+      "n_true_negatives": 1745
+    },
+    "distilbert_current_score_only": {
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "f0.5": 0.0,
+      "auc_roc": 0.8298933038999263,
+      "avg_time_to_detection": null,
+      "median_time_to_detection": null,
+      "n_true_positives": 0,
+      "n_false_negatives": 45,
+      "n_false_positives": 0,
+      "n_true_negatives": 1812
+    }
+  }
+}
