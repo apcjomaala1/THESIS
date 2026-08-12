@@ -546,29 +546,41 @@ the full PAN corpus. An LLM-only training experiment may still be useful as an
 explicit weak-supervision ablation, provided its final evaluation uses separate
 human-reviewed labels.
 
-## Comment Matrix 2 implementation status (2026-08-13)
+## Comment Matrix 2 implementation status (corrected 2026-08-13)
 
-The main paper and presentation now apply every matrix item that current
-evidence supports. This does not make the corrected experiment complete.
+The earlier Comment Matrix revision went beyond the user's requested boundary.
+That wider paper/deck rewrite has been corrected. Only changes that can be made
+without deciding the central methodology are applied now.
 
-- Applied in the paper and deck: short module title; standardized dataset and
-  label-provenance tables; exact seven-feature definitions; current environment
-  versions; explicit offline/deployment limits; Philippine relevance with no
-  Filipino/Taglish validation claim; and the distinction between the base
-  DistilBERT embedding encoder and the invalid historical Layer 1 proxy.
-- Implemented in code without changing model targets or reported performance:
-  local-demo direct-identifier masking before scoring and in-memory retention,
-  server-generated opaque conversation IDs, rejection of unknown IDs, no-store
-  response headers, an environment snapshot/checker, and explicit SciPy
+- Applied now in the paper and deck: item 1 privacy safeguards and residual-risk
+  wording; item 2 Philippine relevance with no Filipino/Taglish validation
+  claim; item 5 the short `Conversation Trajectory Lab` module title; item 7
+  formulas and ranges for the seven implemented trajectory features; item 8
+  the current rerun/demo software versions; and item 9 explicit offline replay
+  and deployment limitations.
+- Retained in code because the work is independent of model labels and
+  evaluation: local-demo direct-identifier masking before scoring and in-memory
+  retention, server-generated opaque conversation IDs, rejection of unknown
+  IDs, no-store response headers, the environment snapshot/checker, and SciPy
   dependency coverage.
-- Still pending because it belongs to the central methodology repair: adviser
-  approval of the conversation endpoint, context-matched Layer 1 retraining,
-  training-only cache/centroid reconstruction, conversation-only LSTM loss,
-  independently validation-selected matched comparators, and one locked final
-  evaluation. Philippine/Taglish empirical localization is also pending.
-- Verification at this state: all 68 pipeline tests passed; the environment
-  snapshot matched; JavaScript syntax passed; the 34-slide deck passed visual,
-  overflow, and template-fidelity checks.
+- Intentionally deferred until adviser approval: item 3 dataset-table changes,
+  item 4 final label definitions, item 6 the corrected evaluation design, and
+  item 10 DistilBERT training/label-alignment remediation. The paper and deck do
+  not pre-emptively change research questions, objectives, endpoints, training,
+  baselines, or final evaluation around those items.
+- Slides 20-23 explain the completed items in ordinary language and identify
+  the deferred items as pending. They do not expose the detailed methodology
+  audit as if it were already an approved study redesign.
+- The verified presentation is currently `WASD - Thesis 2 - corrected.pptx`.
+  The original file was open in PowerPoint, so Windows blocked safe in-place
+  replacement; use the corrected copy until the original is closed.
+- Verification after the correction: 68/68 pipeline tests passed; the current
+  environment matched its snapshot; JavaScript syntax passed; and the deck
+  passed visual review of edited slides, template fidelity, and element-bounds
+  inspection.
+
+The detailed chronological record, including the superseded wider batch and
+this correction, is in `THESIS_RECOVERY_NEXT_STEPS.md`.
 
 The detailed chronological record is in `THESIS_RECOVERY_NEXT_STEPS.md`.
 

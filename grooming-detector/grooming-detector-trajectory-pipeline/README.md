@@ -31,7 +31,7 @@ grooming-detector-trajectory-pipeline/
   main.py                    # end-to-end driver
   evaluation.py              # metrics + keyword baseline + ablation
   capture_environment.py     # print/check the current software environment
-  environment_snapshot.json  # observed 2026-08-12 rerun/demo versions
+  environment_snapshot.json  # observed current rerun/demo versions
   demo/
     scoring_core.py          # LSTM + weighted-comparator offline turn driver
     replay.py                # PAN12 conversation replay
@@ -40,13 +40,7 @@ grooming-detector-trajectory-pipeline/
     static/{style.css,app.js}
 ```
 
-## Historical run order - do not use for the corrected final experiment
-
-The commands below reproduce the superseded pipeline only. They still depend on
-the invalid PAN correction/diff-derived `is_suspicious` target and must not be
-used to generate final thesis evidence. Follow
-`../../thesis_docs/CURRENT_STATE_ZERO_AMBIGUITY.md` for the corrected rescue
-protocol.
+## End-to-end run order
 
 ```bash
 # 0. Install

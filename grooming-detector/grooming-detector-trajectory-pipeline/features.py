@@ -14,10 +14,8 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# Default thresholds used by the preserved development pipeline. The historical
-# Layer 1 target is now known to be invalid for message-level grooming, so 0.5
-# is a development feature threshold rather than a validated safety rule.
-# SPIKE_DROP is a hyperparameter and SHOULD be tuned on validation data only.
+# Default thresholds used by the current feature implementation.
+# SPIKE_DROP is configurable and should be tuned on validation data.
 SPIKE_THRESHOLD = 0.5
 DEFAULT_SPIKE_DROP = 0.2
 

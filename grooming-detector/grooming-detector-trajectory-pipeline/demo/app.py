@@ -3,7 +3,7 @@ Demo mode B - locally typed chat processed as offline sequential replay.
 
 A minimal Flask app. Two roleplaying participants type messages alternately,
 and each message is processed as the next turn in a local offline simulation.
-The UI shows the historical Layer 1 proxy, the author-disjoint LSTM score, the weighted
+The UI shows the Layer 1 input, the author-disjoint LSTM score, the weighted
 comparator, trajectory features, and the first LSTM-flagged turn.
 
 This is the panelist-facing mechanics demo. It demonstrates that a typed
