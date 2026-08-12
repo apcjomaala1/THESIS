@@ -130,6 +130,29 @@ that `--label-mode either` was used.
 
 These behaviors are **confirmed from the trainer code**.
 
+### Confirmed Layer 1 live-inference mismatch
+
+The active `MessageClassifier.score(text)` and `score_batch(texts)` tokenize
+each supplied string exactly as received. The live demo currently calls
+`score(text)` with only the newly typed message. It does not construct the
+current-plus-two-preceding-message `[SEP]` input used by the recovered trainer.
+Therefore, the displayed live Layer-1 probability is not an input-protocol
+match to the checkpoint's training procedure.
+
+This also affects interpretation of the downstream live LSTM score: the LSTM
+does process the accumulated sequence, but one of its seven trajectory inputs
+is built from these isolated-message Layer-1 probabilities. The frozen LSTM
+evaluation remains an internally comparable fixed-pipeline result because all
+three Layer-2 methods used the same preserved Layer-1 cache, but neither the
+live scores nor that frozen comparison establish performance for a corrected
+context-window Layer 1.
+
+**Required correction before presenting the live values as model evidence:**
+construct Layer-1 inputs exactly as during training, regenerate all Layer-1
+scores/cache under that protocol, and then retrain and reevaluate Layer 2. The
+consultation UI may still demonstrate software mechanics if this limitation is
+stated explicitly.
+
 ### Exact Layer 1 dataset
 
 The archived data directory contains:
