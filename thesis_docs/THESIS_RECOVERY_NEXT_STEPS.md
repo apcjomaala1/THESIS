@@ -76,17 +76,57 @@ The page and message API returned HTTP 200 in the final check.
 
 ## Immediate Next Steps
 
-1. Preserve the existing author-disjoint LSTM checkpoint and evaluation as the
-   fixed-Layer-1 conditional baseline.
-2. Complete two independent message-level reviews of the 1,335 synthetic
-   candidates, adjudicate disagreements, and freeze approved rows. The audit
-   confirms that the generated labels themselves are not final ground truth.
-3. Apply the existing frozen connected-author partition across every PAN-dependent
-   stage, including Layer 1 and Layer 2.
-4. Save the exact Layer 1 command, dataset hashes/row manifest, package
-   versions, seed, checkpoint-selection rule, and validation metrics.
-5. Retrain and evaluate once against the weighted scorer and current-score-only
-   classifier, then write Results and Recommendations from that final report.
+### Recommended time-constrained rescue path
+
+The primary final experiment should be narrowed to **conversation-level
+identification of PAN12 conversations containing a listed predator**. This is
+the only large, locally available PAN12 target whose provenance is currently
+defensible. The LSTM remains the proposed sequence model. The existing result
+remains a provisional fixed-pipeline development result, not the final result.
+
+Execute the rescue in this order:
+
+1. Preserve the existing checkpoint, split audit, and evaluation without
+   overwriting them.
+2. Freeze and reuse the connected-author train/validation/test assignment.
+   Do not inspect or use test outcomes during development.
+3. Rebuild Layer 1 using no PAN `is_suspicious` values. Under the fast rescue,
+   train it only as an explicitly **weakly supervised predator-author message
+   classifier**, using PAN's valid predator-author list, current plus two
+   preceding messages, and training-partition conversations only. Its output
+   must not be called a message-level grooming probability.
+4. Select the Layer-1 checkpoint and any operating choices using validation
+   data only, then generate a fresh context-matched score cache for every
+   frozen partition. Save row IDs, hashes, command, seed, versions, and model
+   digest.
+5. Retrain the LSTM using the valid conversation target only. Disable the
+   current turn-level loss derived from `is_suspicious`; do not substitute
+   repeated predator-author labels as grooming-onset truth.
+6. Compare the LSTM, weighted scorer, and Layer-1-only classifier on identical
+   frozen partitions and the same conversation endpoint. Iterate only from
+   training/validation evidence. Select thresholds on validation, then run the
+   held-out test exactly once after the protocol is frozen.
+7. Report conversation-level recall, precision, F1, F0.5, AUC, confusion
+   counts, split sizes, and uncertainty where feasible. Describe the Layer-1
+   supervision honestly as weak supervision.
+8. Rename demo labels and thesis claims accordingly: the live value is a
+   provisional conversation-risk trajectory, not a validated per-message
+   grooming determination or grooming-onset detector.
+
+This route preserves the required LSTM-versus-weighted-versus-classifier
+comparison while removing the known false PAN message target and end-to-end
+author leakage. It does **not** guarantee in advance that the LSTM will win;
+model development may optimize validation performance, but an unfavorable
+held-out result must not be hidden or tuned away.
+
+### If message-level grooming remains mandatory
+
+There is no responsible instant substitute. Complete independent human review
+and adjudication of the 1,335-row worksheet (LLM output may only assist), or
+recover and qualify an appropriate genuinely annotated corpus. Validation and
+test must remain human-reviewed. This is a separate, slower extension and
+must not delay the conversation-level rescue unless the adviser explicitly
+rejects the narrowed endpoint.
 
 ## Milestone Log
 
@@ -108,3 +148,4 @@ The page and message API returned HTTP 200 in the final check.
 | 2026-08-12 | Prepared the 2026-08-13 consultation demonstration. Updated the browser demo to run the saved author-disjoint LSTM instead of presenting the weighted scorer as the active model; added the validation-selected LSTM threshold, weighted comparator, frozen three-method results table, and an explicit provisional fixed-Layer-1 warning. Made the base DistilBERT encoder load from the local cache to avoid network retries. Added a focused LSTM-demo test; all 56 tests passed with a workspace-local pytest base directory. Real model loading and one-message scoring passed offline, and Flask page/API checks returned HTTP 200. Added a simple PowerShell launcher and updated the package README to identify the LSTM as active and quarantine its superseded weighted-only methodology notes. Browser visual inspection could not be performed because no controllable browser was connected. | `run_consultation_demo.ps1`; `demo/scoring_core.py`; `demo/app.py`; `demo/templates/chat.html`; `demo/static/app.js`; `demo/static/style.css`; `demo/replay.py`; `tests/test_demo_scoring_core.py`; `features.py`; pipeline `README.md`; consultation section above |
 | 2026-08-12 | Diagnosed the first live consultation example. The screen correctly reported no alert for that run, but code inspection exposed an additional input-protocol limitation: the recovered Layer-1 checkpoint was trained on current plus two preceding messages, while `MessageClassifier.score(text)` and the live demo pass only the isolated current message. The LSTM receives the full sequence but its trajectory features inherit those isolated-message probabilities. Recorded that the live UI is presently a mechanism demonstration only; context-matched Layer-1 scoring, cache regeneration, Layer-2 retraining, and reevaluation are required before using its values as model evidence. | `CURRENT_STATE_ZERO_AMBIGUITY.md`; `message_classifier.py`; recovered `train_distillbert.py`; live screenshot |
 | 2026-08-12 | Evaluated the proposal to have an LLM annotate messages using OGDM. Approved it only as pre-annotation or explicitly disclosed weak supervision, not as sole ground truth. Fixed the defensible protocol: OGDM-derived observable behavior tags on the current message under inference-matched preceding context; no predator/diff/source leakage; a human-adjudicated pilot used to validate the LLM; versioned prompts and raw outputs; human-reviewed validation and test labels; privacy/licence/ethics approval before hosted processing; and deterministic computation of the seven trajectory features rather than LLM assignment. Recommended piloting a stratified subset or the existing 1,335-row worksheet before scaling, followed by context-matched Layer-1 retraining, cache regeneration, and full Layer-2 reevaluation. | `CURRENT_STATE_ZERO_AMBIGUITY.md`; Lorenzo-Dus et al. (2016); Gilardi et al. (2023); Horych et al. (2025); Kasner et al. (2026) |
+| 2026-08-12 | Fixed the recommended time-constrained rescue path. Narrow the primary final endpoint to PAN12 conversation-level predator-conversation identification; rebuild context-matched Layer 1 only as a disclosed predator-author weak-supervision component under the frozen training partition; remove PAN `is_suspicious` from every training, selection, and evaluation decision; train the LSTM with conversation loss only; compare all three methods on the same frozen endpoint; tune only on validation and evaluate test once. Message-level grooming remains a separate human-annotation-dependent extension. | Time-constrained rescue section above; `CURRENT_STATE_ZERO_AMBIGUITY.md`; PAN training readme and preprocessing audit |
