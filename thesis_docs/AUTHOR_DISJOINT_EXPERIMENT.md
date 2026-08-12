@@ -1,13 +1,14 @@
 # Author-Disjoint LSTM Experiment Record
 
 **Date:** 2026-08-12  
-**Status:** Training and single held-out evaluation complete
+**Status:** Historical development run; training and evaluation complete, but
+the comparator audit below invalidates a baseline-superiority conclusion
 
 ## Purpose
 
-Test whether the conversation-supervised LSTM still outperforms the weighted
-trajectory scorer and DistilBERT current-score-only baseline when no author,
-including no predator author, appears in more than one partition.
+Record a development test of the conversation-supervised LSTM, weighted
+trajectory scorer, and current-score-only weighted ablation when no Layer 2
+author, including no predator author, appears in more than one partition.
 
 ## Frozen Protocol
 
@@ -74,7 +75,7 @@ discarded after inspecting the held-out test outcome.
 The evaluator independently regenerated the same split, selected threshold
 0.889347 from validation only, and then evaluated the test partition once.
 
-| Metric | LSTM | Weighted scorer | DistilBERT current score only |
+| Metric | LSTM | Weighted scorer* | Current-score-only weighted ablation* |
 |---|---:|---:|---:|
 | Recall | 0.833333 | 0.333333 | 0.000000 |
 | Precision | 0.875000 | 0.184211 | 0.000000 |
@@ -86,8 +87,22 @@ The evaluator independently regenerated the same split, selected threshold
 | False negatives | 7 | 28 | 42 |
 | Mean detection turn | 10.77 | 62.86 | N/A |
 
-Conclusion at the Layer 2 evaluation boundary: the conversation-supervised LSTM
-outperforms both required comparators on every substantive discrimination and
-detection metric under the author-disjoint split. This does not yet prove fully
-end-to-end unseen-author generalization until Layer 1 training provenance is
-confirmed disjoint from these validation/test messages and authors.
+The table is retained as historical software output, not a fair confirmed
+victory. Only the LSTM threshold was selected on the new author-disjoint
+validation partition. The weighted scorer reused older weights and threshold.
+The current-score-only row was not raw DistilBERT: it applied the weighted
+scorer to only `0.1 * current_score`, producing scores of approximately
+0.500–0.525, then used a 0.7 threshold. It therefore could not flag any
+conversation. In addition, the LSTM received 768 base-DistilBERT embedding
+dimensions plus seven trajectory features while the weighted scorer received
+only seven features. The run also inherited invalid PAN diff-based turn loss,
+an isolated-message Layer 1 cache despite context-window Layer 1 training, and
+a benign centroid whose exclusion of test data is unproven.
+
+The LSTM numbers remain a useful development diagnostic. They do not establish
+fair superiority, final grooming performance, or end-to-end unseen-author
+generalization. A corrected comparison must independently validation-tune raw
+Layer 1 and the weighted scorer, match the primary LSTM/weighted input set,
+remove invalid turn supervision, rebuild context-matched features and a
+training-only centroid, and evaluate a newly frozen holdout only after the
+protocol is locked.

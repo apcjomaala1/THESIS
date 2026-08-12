@@ -16,8 +16,12 @@ There are two trained model layers, not one model trained on one combined label.
 2. **Layer 2 is the LSTM.** The newest checkpoint is the August 12
    author-disjoint LSTM under `grooming-detector`. It uses a separate turn-level
    loss and conversation-level loss; it does not merge the two labels into one.
-3. The LSTM beats the weighted scorer and current-score-only ablation on the
-   frozen Layer 2 author-disjoint test split.
+3. The saved LSTM produced stronger recorded numbers than the two displayed
+   comparators on the frozen Layer 2 author-disjoint test split. A later audit
+   found that this was **not a fair confirmed baseline victory**: only the LSTM
+   received a threshold selected on that validation split, and the displayed
+   current-score-only row was mathematically unable to cross the inherited
+   threshold.
 4. The result is not yet a fully clean end-to-end experiment because Layer 1
    was trained under an independently created conversation split rather than
    the same connected-author split.
@@ -320,6 +324,14 @@ the review and adjudication gate is complete.
 - The 768-dimensional embedding comes from the base DistilBERT encoder; the
   fine-tuned Layer 1 classifier supplies risk scores used in trajectory
   features. These are related but distinct inputs.
+- The LSTM therefore receives 775 values per turn, while the weighted scorer
+  receives only the seven trajectory features. The current comparison cannot
+  isolate the effect of sequence modeling from the effect of giving the LSTM
+  768 additional text features.
+- The saved benign centroid predates the author-disjoint run. Its source-row
+  manifest was not serialized, and the available driver constructs it from a
+  pooled corpus before splitting. Exclusion of test conversations from that
+  artifact is therefore unproven.
 
 ### Training targets
 
@@ -353,13 +365,14 @@ This split does not retroactively alter the earlier Layer 1 training split.
 Thus Layer 2 is author-disjoint internally, while the full two-layer pipeline is
 not yet proven author-disjoint end to end.
 
-## Frozen Layer 2 Test Result
+## Frozen Layer 2 Test Result — Historical Development Result
 
-The checkpoint was selected using validation conversation F0.5 with
-conversation AUC as tie-breaker. The threshold was selected from validation
-only, then the author-disjoint test partition was evaluated once.
+The LSTM checkpoint was selected using validation conversation F0.5 with
+conversation AUC as tie-breaker. Its threshold was selected from the new
+author-disjoint validation partition before the test partition was evaluated.
+The comparator protocol was not equivalent, as detailed below.
 
-| Metric | LSTM | Weighted scorer | Current-score-only ablation |
+| Metric | LSTM | Weighted scorer* | Current-score-only weighted ablation* |
 |---|---:|---:|---:|
 | Recall | 0.8333 | 0.3333 | 0.0000 |
 | Precision | 0.8750 | 0.1842 | 0.0000 |
@@ -371,14 +384,27 @@ only, then the author-disjoint test partition was evaluated once.
 | False positives | 5 | 62 | 0 |
 | Mean first-flag turn | 10.77 | 62.86 | N/A |
 
-“Current-score-only” is precise: the ablation zeros the other trajectory
-features and retains only the current Layer 1 score through the weighted-scoring
-mechanism. It is not a separately retrained or separately threshold-tuned
-DistilBERT experiment.
+The asterisks are material:
 
-The LSTM beats both comparators under the fixed Layer 1 / author-disjoint Layer
-2 protocol. This is a valid conditional comparison because all three methods
-share the same upstream Layer 1 outputs and test conversations.
+- The weighted scorer retained weights and a `0.7` threshold selected under an
+  older validation setup, rather than being independently tuned on the same
+  author-disjoint validation partition as the LSTM.
+- The so-called current-score-only row was not raw DistilBERT. It retained only
+  Layer 1's probability, multiplied it by the weighted scorer's `0.1` current-
+  score weight, and applied another sigmoid. For a Layer 1 probability in
+  `[0,1]`, its possible output is only approximately `[0.500,0.525]`; applying
+  the inherited `0.7` threshold made every positive prediction impossible.
+  Its zero recall and F0.5 are therefore an evaluation artifact, not evidence
+  that the classifier failed.
+- The LSTM used 768 additional base-encoder dimensions that neither displayed
+  comparator received.
+
+Consequently, the table preserves what the software emitted, but it does
+**not** establish that the LSTM fairly outperformed the weighted scorer or a
+raw Layer 1 classifier. Even the otherwise threshold-independent AUC comparison
+does not isolate architecture benefit because the methods receive different
+information. The test partition has now been inspected and must not be tuned
+against during the corrected experiment.
 
 It must not yet be called a fully leakage-free, end-to-end unseen-author result.
 
@@ -404,10 +430,11 @@ result. Do not claim “10.77 turns after grooming began.”
 
 Defensible wording:
 
-> With a fixed previously trained Layer 1 feature extractor, the
-> conversation-supervised LSTM outperformed the weighted trajectory scorer and
-> current-score-only ablation on an internally author-disjoint PAN12 Layer 2
-> test split.
+> A functioning LSTM produced a strong provisional development result on an
+> internally author-disjoint PAN12 Layer 2 partition. Subsequent audit found
+> invalid turn supervision, upstream provenance issues, unmatched comparator
+> tuning, and an invalid classifier-ablation threshold; therefore no fair
+> baseline-superiority or final grooming-detection claim is made from that run.
 
 Not yet defensible:
 
@@ -415,31 +442,54 @@ Not yet defensible:
 - genuine message-level grooming detection from PAN diff annotations;
 - grooming-onset detection delay;
 - a claim that the exact Layer 1 training rows are fully known;
-- a claim that the Layer 1 model was trained on both labels.
+- a claim that the Layer 1 model was trained on both labels;
+- a claim that the current LSTM has fairly beaten either baseline.
 
-## Required Clean End-to-End Experiment
+## Required Time-Constrained Primary Experiment
+
+**Scope gate:** ask the adviser to approve conversation-level identification of
+PAN12 conversations containing a listed predator as the final empirical
+endpoint. This is the only large, locally available target with defensible
+provenance. After approval:
 
 1. Preserve the current checkpoint, evaluation JSON, and split audit unchanged
-   as the conditional baseline.
-2. Reuse the frozen connected-author assignments for every PAN-dependent model
-   stage, including Layer 1.
-3. Do not use PAN diff membership as a grooming-message target.
-4. For a genuinely message-level Layer 1, train on a separately verified
-   message-annotated corpus. If only author labels are available, explicitly
-   describe the resulting classifier as weakly supervised rather than
-   message-ground-truth supervised.
-5. Complete two independent reviews and adjudication of the generated
-   1,335-row synthetic annotation worksheet. The source audit is complete, but
-   no generated label is approved as final ground truth yet.
-6. Generate a new Layer 1 checkpoint and score cache with the executed command,
-   source-file hashes, row assignments, package versions, seed, and metrics.
-7. Retrain Layer 2 using conversation supervision for PAN. Apply turn-level
-   supervision only to sources with genuine message annotations, using an
-   explicit supervision mask.
-8. Select checkpoint and threshold on validation only, then perform one final
-   held-out evaluation against the same comparators.
-9. Update the paper only from that final report, while retaining the current
-   conditional experiment as an ablation/development result if useful.
+   as historical development artifacts.
+2. Before building another model, freeze a new connected-author final holdout
+   from component groups whose outcome was not previously inspected. Serialize
+   IDs and hashes using metadata only. If time forces reuse of the old test
+   partition, disclose the evaluation as retrospective rather than pristine.
+3. Remove PAN `is_suspicious` from every row filter, label, loss, selection,
+   feature-construction decision, and evaluation target.
+4. Rebuild Layer 1 on the new training partition only, using the current
+   speaker's valid `is_predator` value as explicitly author-derived weak
+   supervision. Use exactly the current message plus two preceding messages at
+   both training and inference; downsample only training negatives. Call its
+   output a predator-author proxy score, not a grooming probability.
+5. Generate a context-matched score cache keyed by stable conversation/line
+   IDs, with source hashes, split assignment, command, seed, package versions,
+   model digest, and checkpoint-selection record.
+6. Recompute the benign centroid from training-partition data only and
+   serialize its exact source IDs and digest.
+7. Retrain Layer 2 with the valid conversation target only. The turn-level loss
+   must be truly disabled rather than merely outweighed.
+8. Independently tune every learned method on the same validation endpoint.
+   Compare raw Layer 1 with its own threshold, the weighted scorer with its own
+   weights and threshold, and the paper-promised keyword baseline.
+9. For the primary architecture comparison, give the LSTM and weighted scorer
+   the same seven trajectory inputs. Report the 775-dimensional full LSTM as a
+   separate enhanced model, or add matched embedding-only/full-input
+   ablations; do not attribute an unequal-input win solely to the LSTM.
+10. Lock all code, checkpoints, thresholds, and reporting rules before the one
+    final holdout run. Report the outcome even if the LSTM does not win.
+11. Update the paper only from that final report. The historical run may remain
+    as a clearly labelled development diagnostic, not an ablation victory.
+
+If the adviser requires genuine message-level grooming or onset detection as
+the primary endpoint, this fast route is unavailable. Complete two independent
+blinded reviews and adjudication of the generated 1,335-row worksheet or obtain
+a suitable genuinely annotated corpus. The current worksheet must first be
+converted into reviewer-specific blinded sheets because it exposes source,
+proxy label, and role-bearing names such as `Predator_Sim`.
 
 ### Decision: OGDM-guided LLM-assisted annotation
 

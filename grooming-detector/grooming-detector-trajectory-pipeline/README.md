@@ -79,10 +79,12 @@ python -m demo.replay \
 python -m demo.app   # then open http://127.0.0.1:5000
 ```
 
-The browser demo loads the saved author-disjoint LSTM, shows its
-validation-selected threshold and weighted comparator, and displays the frozen
-held-out three-method result. It is a consultation mechanism demonstration,
-not a deployment-ready safety determination.
+The browser demo loads the saved author-disjoint Layer 2 LSTM and shows its
+historical development outputs. Its three-method table is explicitly marked as
+an invalid final comparison because comparator tuning was unmatched and the
+current-score-only threshold made positive predictions impossible. It is a
+consultation mechanism demonstration, not model-performance evidence or a
+deployment-ready safety determination.
 
 ## Tests
 

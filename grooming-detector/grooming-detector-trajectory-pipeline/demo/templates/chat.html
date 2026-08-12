@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Grooming Detection — Live Demo</title>
+  <title>Provisional LSTM — Live Mechanics Demo</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
@@ -10,8 +10,8 @@
     <section class="chat-pane">
       <header>
         <div>
-          <h1>Live Chat - Author-Disjoint LSTM</h1>
-          <p class="status-note">Provisional fixed-Layer-1 demonstration; not a deployment-ready safety determination.</p>
+          <h1>Live Chat - Provisional LSTM Mechanics</h1>
+          <p class="status-note">Historical model under protocol correction; not a safety determination.</p>
         </div>
         <div class="controls">
           <label>Author
@@ -34,15 +34,15 @@
     </section>
 
     <aside class="metrics-pane">
-      <h2>Per-turn risk</h2>
+      <h2>Provisional per-turn outputs</h2>
       <div id="inspecting" class="inspecting">Click any message to inspect its turn</div>
       <div id="aggregate" class="aggregate">
         <div class="agg-row">
-          <span class="label">Layer 1 risk</span>
+          <span class="label">Layer 1 proxy score</span>
           <span id="risk" class="value">—</span>
         </div>
         <div class="agg-row">
-          <span class="label">LSTM score</span>
+          <span class="label">LSTM development score</span>
           <span id="lstm" class="value">-</span>
         </div>
         <div class="agg-row">
@@ -50,11 +50,11 @@
           <span id="lstm-threshold" class="value">-</span>
         </div>
         <div class="agg-row">
-          <span class="label">Weighted comparator</span>
+          <span class="label">Legacy weighted output</span>
           <span id="weighted" class="value">-</span>
         </div>
         <div class="agg-row">
-          <span class="label">First flagged turn</span>
+          <span class="label">First threshold crossing</span>
           <span id="flag" class="value">—</span>
         </div>
       </div>
@@ -62,8 +62,8 @@
       <table id="features" class="features">
         <tbody></tbody>
       </table>
-      <h3>Frozen held-out comparison</h3>
-      <p class="evaluation-note">Author-disjoint Layer 2; conditional on the existing fixed Layer 1.</p>
+      <h3>Historical development run</h3>
+      <p class="evaluation-note">Not a fair final comparison: comparator tuning was unmatched and the Layer 1 row used an invalid threshold.</p>
       <table class="results-table">
         <thead>
           <tr><th>Method</th><th>Recall</th><th>F0.5</th><th>AUC</th></tr>
@@ -82,7 +82,7 @@
             <td>{{ "%.3f"|format(evaluation.weighted_scorer.auc_roc) }}</td>
           </tr>
           <tr>
-            <td>Layer 1 only</td>
+            <td>Invalid L1 ablation*</td>
             <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.recall) }}</td>
             <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only['f0.5']) }}</td>
             <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.auc_roc) }}</td>

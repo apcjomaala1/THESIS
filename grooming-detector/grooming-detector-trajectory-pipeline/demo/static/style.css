@@ -62,6 +62,6 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe U
 .results-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 11px; }
 .results-table th, .results-table td { padding: 6px 5px; border: 1px solid #e3e5e8; text-align: right; }
 .results-table th:first-child, .results-table td:first-child { text-align: left; }
-.results-table tbody tr:first-child { font-weight: 700; background: #eaf5ee; }
+.results-table tbody tr:first-child { font-weight: 700; }
 
 .value.alarm { color: #d62b2b; }

@@ -115,7 +115,7 @@ function updateBanner(firstFlagged, lstmScore) {
   }
   bannerEl.classList.add("active");
   bannerTextEl.textContent =
-    `Conversation flagged - LSTM first crossed its validation-selected threshold at turn ${firstFlagged}. ` +
+    `Development threshold crossed - LSTM first crossed its validation-selected threshold at turn ${firstFlagged}. ` +
     `Current LSTM score: ${lstmScore.toFixed(3)}.`;
 }
 
