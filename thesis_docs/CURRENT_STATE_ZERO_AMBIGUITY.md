@@ -441,6 +441,61 @@ Not yet defensible:
 9. Update the paper only from that final report, while retaining the current
    conditional experiment as an ablation/development result if useful.
 
+### Decision: OGDM-guided LLM-assisted annotation
+
+Using an LLM to assist annotation is approved only as a **weak-supervision or
+pre-annotation stage**, not as a replacement for independent ground truth.
+This is a material improvement over using PAN diff membership, but an LLM-only
+label set would merely replace one unverified proxy with another.
+
+The annotation target must remain the **current message**, presented with the
+same preceding context that Layer 1 will receive at inference. OGDM should
+define the observable behavior rubric: for example, deceptive trust
+development, sexual solicitation or sexualization, compliance/boundary
+testing, secrecy or isolation, and requests to migrate contact, exchange
+images, or meet. A message may have multiple strategy tags; a derived binary
+target may be `1` when at least one approved grooming-behavior tag is present,
+`0` when none is present, and `U` when the available context is insufficient.
+Speaker identity, the PAN predator list, PAN diff membership, and the source
+scenario must be hidden from annotators.
+
+The seven numeric trajectory features are **not** annotation labels. They must
+continue to be computed deterministically from the corrected Layer-1 score
+sequence, message embeddings, and turn history. Asking an LLM to directly
+assign `peak_score`, `spike_count`, `rate_of_change`, `topic_drift`, or
+`turn_taking_imbalance` would make the engineered pipeline circular and less
+reproducible.
+
+Required protocol:
+
+1. Freeze author-disjoint raw-data partitions before prompt or rubric tuning.
+2. Obtain approval for a written OGDM-derived codebook and examples from the
+   thesis adviser or an appropriately qualified reviewer.
+3. Create a stratified pilot set and have at least two trained human reviewers
+   label it independently; adjudicate disagreements and report agreement.
+4. Run a fixed, versioned LLM prompt on the same pilot, saving model/version,
+   parameters, prompt, input/output, row IDs, hashes, and failures. Measure its
+   agreement and per-class errors against the adjudicated human labels before
+   scaling.
+5. If pilot quality is acceptable, use the LLM to pre-label or pseudo-label the
+   training partition. Humans must review disagreements/uncertain cases and a
+   random audit sample. LLM-reported confidence alone is not ground truth.
+6. Keep validation and test labels human-reviewed and adjudicated; never tune
+   the prompt, model, classifier, threshold, or LSTM against the final test set.
+7. Describe unreviewed LLM labels as `LLM-generated pseudo-labels` or
+   `LLM-assisted weak supervision`, not manual annotation or gold truth.
+8. Confirm corpus licence, research-ethics, privacy, and external-processing
+   permission before sending sexual-abuse chat text to a hosted LLM; use an
+   approved local model when external transmission is not permitted.
+9. Train the context-matched Layer 1, regenerate its score cache, and then
+   retrain and reevaluate the LSTM and both comparators from the frozen splits.
+
+For immediate work, pilot this procedure on a manageable stratified subset or
+the existing 1,335-row synthetic worksheet rather than automatically labeling
+the full PAN corpus. An LLM-only training experiment may still be useful as an
+explicit weak-supervision ablation, provided its final evaluation uses separate
+human-reviewed labels.
+
 ## Authoritative Evidence Files
 
 - `CURRENT_STATE_ZERO_AMBIGUITY.md` — this report.
