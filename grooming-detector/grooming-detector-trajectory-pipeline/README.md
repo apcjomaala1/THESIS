@@ -86,6 +86,15 @@ current-score-only threshold made positive predictions impossible. It is a
 consultation mechanism demonstration, not model-performance evidence or a
 deployment-ready safety determination.
 
+The consultation interface leads with the selected turn's LSTM sequence score,
+its development threshold, distance to threshold, and accumulated sequence
+length. It also includes a score-over-turn chart, human-readable trajectory
+features, two-speaker auto-alternation, keyboard-accessible turn inspection,
+loading/error states, and a prominent statement that a below-threshold output
+does not mean a conversation is safe. Known protocol corrections and the
+historical table are retained in collapsed audit panels rather than presented
+as final evidence.
+
 ## Tests
 
 The pipeline has a pytest suite covering trajectory features, scoring,

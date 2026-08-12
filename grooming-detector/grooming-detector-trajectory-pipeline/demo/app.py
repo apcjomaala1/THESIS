@@ -6,9 +6,10 @@ A minimal Flask app. Two roleplaying participants type messages alternately
 The UI shows Layer 1 risk, the author-disjoint LSTM score, the weighted
 comparator, trajectory features, and the first LSTM-flagged turn.
 
-This is the "panelist-facing" demo: it shows the system handling input that
-was never in the training set, which is the most direct way to refute a
-"the model just memorized PAN12" challenge.
+This is the panelist-facing mechanics demo. It demonstrates that a typed
+conversation can flow through the two-layer software stack and that the LSTM
+updates turn by turn. It is not performance evidence, a grooming probability,
+or a deployment-ready safety determination.
 
 Run:
     python -m demo.app

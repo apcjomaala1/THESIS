@@ -2,95 +2,242 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Provisional LSTM — Live Mechanics Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Conversation Trajectory Lab</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="layout">
-    <section class="chat-pane">
-      <header>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
         <div>
-          <h1>Live Chat - Provisional LSTM Mechanics</h1>
-          <p class="status-note">Historical model under protocol correction; not a safety determination.</p>
+          <p class="eyebrow">Thesis prototype / sequence analysis</p>
+          <h1>Conversation Trajectory Lab</h1>
         </div>
-        <div class="controls">
-          <label>Author
-            <select id="author">
-              <option value="user_A">user_A</option>
-              <option value="user_B">user_B</option>
-            </select>
-          </label>
-          <button id="reset">Reset</button>
-        </div>
-      </header>
-      <div id="flag-banner" class="flag-banner">
-        <span id="flag-banner-text"></span>
       </div>
-      <ul id="messages" class="messages"></ul>
-      <form id="form" class="composer">
-        <input id="input" autocomplete="off" placeholder="type a message..." />
-        <button type="submit">Send</button>
-      </form>
+      <div class="topbar-status" aria-label="Prototype status">
+        <span class="status-chip status-chip-model"><span class="status-dot"></span>LSTM active</span>
+        <span class="status-chip status-chip-warning">Development build</span>
+      </div>
+    </header>
+
+    <section class="scope-notice" aria-label="Important model limitation">
+      <div class="notice-icon" aria-hidden="true">i</div>
+      <div>
+        <strong>Development prototype - pipeline mechanics only</strong>
+        <span>Layer 1 supervision and the live context protocol are under correction. Scores are not validated grooming classifications or safety decisions.</span>
+      </div>
     </section>
 
-    <aside class="metrics-pane">
-      <h2>Provisional per-turn outputs</h2>
-      <div id="inspecting" class="inspecting">Click any message to inspect its turn</div>
-      <div id="aggregate" class="aggregate">
-        <div class="agg-row">
-          <span class="label">Layer 1 proxy score</span>
-          <span id="risk" class="value">—</span>
+    <div class="workspace">
+      <section class="conversation-panel" aria-labelledby="conversation-title">
+        <div class="panel-heading conversation-heading">
+          <div>
+            <p class="section-kicker">Live input</p>
+            <h2 id="conversation-title">Two-speaker conversation</h2>
+          </div>
+          <div class="conversation-actions">
+            <label class="speaker-picker" for="author">
+              <span>Next speaker</span>
+              <select id="author" aria-label="Select next speaker">
+                <option value="user_A">Speaker A</option>
+                <option value="user_B">Speaker B</option>
+              </select>
+            </label>
+            <button id="reset" class="button button-secondary" type="button">Clear</button>
+          </div>
         </div>
-        <div class="agg-row">
-          <span class="label">LSTM development score</span>
-          <span id="lstm" class="value">-</span>
+
+        <div class="pipeline-strip" aria-label="Model processing pipeline">
+          <span class="pipeline-step"><b>1</b> Message</span>
+          <span class="pipeline-arrow" aria-hidden="true">&rarr;</span>
+          <span class="pipeline-step"><b>2</b> Layer 1 proxy</span>
+          <span class="pipeline-arrow" aria-hidden="true">&rarr;</span>
+          <span class="pipeline-step"><b>3</b> Trajectory signals</span>
+          <span class="pipeline-arrow" aria-hidden="true">&rarr;</span>
+          <span class="pipeline-step pipeline-step-active"><b>4</b> LSTM sequence score</span>
         </div>
-        <div class="agg-row">
-          <span class="label">LSTM threshold</span>
-          <span id="lstm-threshold" class="value">-</span>
+
+        <div id="flag-banner" class="flag-banner" role="status" aria-live="polite">
+          <span class="flag-icon" aria-hidden="true">!</span>
+          <span id="flag-banner-text"></span>
         </div>
-        <div class="agg-row">
-          <span class="label">Legacy weighted output</span>
-          <span id="weighted" class="value">-</span>
+
+        <div class="conversation-body">
+          <div id="empty-state" class="empty-state">
+            <div class="empty-visual" aria-hidden="true">
+              <span class="empty-node empty-node-a">A</span>
+              <span class="empty-line"></span>
+              <span class="empty-node empty-node-b">B</span>
+            </div>
+            <h3>Start a conversation</h3>
+            <p>Enter a message below. Each turn will appear here while the model builds a sequential trajectory.</p>
+          </div>
+          <ul id="messages" class="messages" aria-live="polite"></ul>
         </div>
-        <div class="agg-row">
-          <span class="label">First threshold crossing</span>
-          <span id="flag" class="value">—</span>
+
+        <form id="form" class="composer">
+          <div class="composer-speaker" id="composer-speaker" aria-hidden="true">A</div>
+          <div class="composer-field">
+            <label for="input">Message from <span id="composer-author-label">Speaker A</span></label>
+            <input id="input" autocomplete="off" maxlength="1000" placeholder="Type the next message..." />
+          </div>
+          <button id="send" class="button button-primary" type="submit">
+            <span>Analyze turn</span>
+            <span class="button-arrow" aria-hidden="true">&rarr;</span>
+          </button>
+        </form>
+        <p id="composer-status" class="composer-status" aria-live="polite"></p>
+      </section>
+
+      <aside class="inspector-panel" aria-labelledby="inspector-title">
+        <div class="panel-heading inspector-heading">
+          <div>
+            <p class="section-kicker">Selected output</p>
+            <h2 id="inspector-title">Sequence analysis</h2>
+          </div>
+          <span id="turn-pill" class="turn-pill">No turns yet</span>
         </div>
-      </div>
-      <h3>Trajectory features</h3>
-      <table id="features" class="features">
-        <tbody></tbody>
-      </table>
-      <h3>Historical development run</h3>
-      <p class="evaluation-note">Not a fair final comparison: comparator tuning was unmatched and the Layer 1 row used an invalid threshold.</p>
-      <table class="results-table">
-        <thead>
-          <tr><th>Method</th><th>Recall</th><th>F0.5</th><th>AUC</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>LSTM</td>
-            <td>{{ "%.3f"|format(evaluation.lstm.recall) }}</td>
-            <td>{{ "%.3f"|format(evaluation.lstm['f0.5']) }}</td>
-            <td>{{ "%.3f"|format(evaluation.lstm.auc_roc) }}</td>
-          </tr>
-          <tr>
-            <td>Weighted</td>
-            <td>{{ "%.3f"|format(evaluation.weighted_scorer.recall) }}</td>
-            <td>{{ "%.3f"|format(evaluation.weighted_scorer['f0.5']) }}</td>
-            <td>{{ "%.3f"|format(evaluation.weighted_scorer.auc_roc) }}</td>
-          </tr>
-          <tr>
-            <td>Invalid L1 ablation*</td>
-            <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.recall) }}</td>
-            <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only['f0.5']) }}</td>
-            <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.auc_roc) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </aside>
-  </div>
+
+        <section class="score-card" aria-label="LSTM development score">
+          <div class="score-card-topline">
+            <div id="output-state" class="output-state state-idle">
+              <span class="output-state-dot"></span>
+              <span id="output-state-label">Waiting for input</span>
+            </div>
+            <span id="score-delta" class="score-delta">&mdash;</span>
+          </div>
+          <div class="score-hero">
+            <div>
+              <p>LSTM development score</p>
+              <strong id="lstm">&mdash;</strong>
+            </div>
+            <span id="score-percent" class="score-percent">&mdash;</span>
+          </div>
+          <div class="threshold-meter" aria-label="Score relative to development threshold">
+            <div id="score-fill" class="score-fill"></div>
+            <div id="threshold-marker" class="threshold-marker"><span>Threshold</span></div>
+          </div>
+          <div class="meter-labels">
+            <span>0.000</span>
+            <span>1.000</span>
+          </div>
+          <div class="score-context">
+            <div><span>Development threshold</span><strong id="lstm-threshold">&mdash;</strong></div>
+            <div><span>Distance to threshold</span><strong id="threshold-distance">&mdash;</strong></div>
+            <div><span>Sequence processed</span><strong id="sequence-length">0 turns</strong></div>
+          </div>
+          <p class="score-safety-note">A below-threshold result does not mean the conversation is safe.</p>
+        </section>
+
+        <section class="summary-grid" aria-label="Supporting outputs">
+          <article class="summary-card">
+            <span class="summary-label">Layer 1 proxy</span>
+            <strong id="risk">&mdash;</strong>
+            <small>Historical upstream score</small>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Legacy weighted</span>
+            <strong id="weighted">&mdash;</strong>
+            <small>Reference threshold <span id="weighted-threshold">&mdash;</span>; output only</small>
+          </article>
+          <article class="summary-card summary-card-wide">
+            <span class="summary-label">First threshold crossing</span>
+            <strong id="flag">None</strong>
+            <small id="crossing-note">No development threshold crossing recorded</small>
+          </article>
+        </section>
+
+        <section class="inspector-section timeline-section">
+          <div class="section-title-row">
+            <div>
+              <p class="section-kicker">Across turns</p>
+              <h3>Score trajectory</h3>
+            </div>
+            <span class="section-helper">Select a bar or message</span>
+          </div>
+          <div id="trajectory-chart" class="trajectory-chart empty-chart">
+            <div id="timeline-threshold" class="timeline-threshold"><span>Threshold</span></div>
+            <div id="trajectory-bars" class="trajectory-bars">
+              <p id="timeline-empty">Scores will build here turn by turn.</p>
+            </div>
+          </div>
+        </section>
+
+        <details class="detail-panel" open>
+          <summary>
+            <span>
+              <small>Selected turn</small>
+              Trajectory features
+            </span>
+            <span class="summary-chevron" aria-hidden="true"></span>
+          </summary>
+          <div id="features" class="features-list">
+            <p class="detail-empty">Select a scored turn to inspect its seven engineered signals.</p>
+          </div>
+        </details>
+
+        <details class="detail-panel protocol-panel">
+          <summary>
+            <span>
+              <small>Why this is provisional</small>
+              Known protocol corrections
+            </span>
+            <span class="summary-chevron" aria-hidden="true"></span>
+          </summary>
+          <ul class="protocol-list">
+            <li>PAN <code>is_suspicious</code> values are correction-diff metadata, not grooming-message labels.</li>
+            <li>The live Layer 1 call does not yet match the checkpoint's current-plus-two-prior-message training input.</li>
+            <li>The retained historical comparator settings were not matched for a fair final comparison.</li>
+          </ul>
+        </details>
+
+        <details class="detail-panel historical-panel">
+          <summary>
+            <span>
+              <small>Audit retained</small>
+              Historical development result
+            </span>
+            <span class="summary-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="historical-content">
+            <p class="evaluation-note"><strong>Not a fair final comparison.</strong> Comparator tuning was unmatched, and the displayed Layer 1 ablation could not cross its inherited threshold.</p>
+            <div class="table-wrap">
+              <table class="results-table">
+                <thead>
+                  <tr><th>Historical output</th><th>Recall</th><th>F0.5</th><th>AUC</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>LSTM (development)</td>
+                    <td>{{ "%.3f"|format(evaluation.lstm.recall) }}</td>
+                    <td>{{ "%.3f"|format(evaluation.lstm['f0.5']) }}</td>
+                    <td>{{ "%.3f"|format(evaluation.lstm.auc_roc) }}</td>
+                  </tr>
+                  <tr>
+                    <td>Weighted (unmatched)</td>
+                    <td>{{ "%.3f"|format(evaluation.weighted_scorer.recall) }}</td>
+                    <td>{{ "%.3f"|format(evaluation.weighted_scorer['f0.5']) }}</td>
+                    <td>{{ "%.3f"|format(evaluation.weighted_scorer.auc_roc) }}</td>
+                  </tr>
+                  <tr>
+                    <td>L1 ablation (invalid threshold)</td>
+                    <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.recall) }}</td>
+                    <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only['f0.5']) }}</td>
+                    <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.auc_roc) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </aside>
+    </div>
+  </main>
 
   <script src="/static/app.js"></script>
 </body>
