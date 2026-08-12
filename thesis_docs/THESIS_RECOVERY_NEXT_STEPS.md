@@ -13,9 +13,10 @@ repair sessions, including superseded findings.
 
 1. Preserve the existing author-disjoint LSTM checkpoint and evaluation as the
    fixed-Layer-1 conditional baseline.
-2. Replace invalid PAN diff-derived message labels with a genuinely annotated
-   message-level source, or explicitly use weak author-level supervision.
-3. Apply one frozen connected-author partition across every PAN-dependent
+2. Complete two independent message-level reviews of the 1,335 synthetic
+   candidates, adjudicate disagreements, and freeze approved rows. The audit
+   confirms that the generated labels themselves are not final ground truth.
+3. Apply the existing frozen connected-author partition across every PAN-dependent
    stage, including Layer 1 and Layer 2.
 4. Save the exact Layer 1 command, dataset hashes/row manifest, package
    versions, seed, checkpoint-selection rule, and validation metrics.
@@ -35,3 +36,4 @@ repair sessions, including superseded findings.
 | 2026-08-12 | Consolidated nested repositories into one root Git repository, removed validated duplicate project trees and caches, and retained the canonical models, data evidence, results, and paper. | `WORKSPACE_CLEANUP_MANIFEST.md` |
 | 2026-08-12 | Consolidated documentation: deleted four fully superseded model-state/handoff reports, archived nine older drafts/plans/recovery records, and reduced the active documentation root to six authoritative Markdown files. No code, model, dataset, evaluation result, or current paper changed. | `README.md`; `archive/`; `WORKSPACE_CLEANUP_MANIFEST.md` |
 | 2026-08-12 | Prepared the first consolidated root Git baseline. Extended ignore rules so raw PAN diff/predator/ground-truth files and the recovered raw conversation Markdown remain local alongside the already excluded checkpoints, caches, logs, PAN CSV/XML files, and JSONL transcripts. Reproducibility code, compact history, trainer-state evidence, synthetic datasets, evaluation JSON, split audit, and current paper remain eligible for version control. | `.gitignore`; root Git staging audit |
+| 2026-08-12 | Audited all preserved Layer 1 candidate sources and implemented a deterministic manifest generator. Confirmed that the 739-message grooming file copies speaker role directly into `is_suspicious`, while the 596-message safe file assigns scenario-derived zeros; neither has independent human message annotation. The generators also lack a model digest, seed, raw-response archive, and adjudication. PAN remains excluded from message-level supervision because its `is_suspicious` field is diff metadata; its frozen author-disjoint assignments are now recorded as a hard boundary for any optional weak supervision. Generated a 1,335-row two-reviewer worksheet and explicitly blocked retraining with zero approved rows until annotation/adjudication is complete. | `grooming-detector/data_sources/layer1_dataset_manifest.json`; `layer1_annotation_candidates.csv`; `data_sources/README.md`; `audit_layer1_dataset.py`; focused tests |

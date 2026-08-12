@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "purpose": "Audit candidate sources for a genuine binary message-level grooming Layer 1 target.",
+  "target_definition": {
+    "unit": "message with preceding context",
+    "positive": "The current message contains observable grooming-related behavior under a written annotation rubric.",
+    "negative": "The current message does not contain observable grooming-related behavior under that rubric.",
+    "forbidden_proxies": [
+      "PAN modified-text diff membership",
+      "speaker is a PAN-listed predator",
+      "speaker role emitted by a synthetic prompt",
+      "synthetic scenario membership without message review"
+    ]
+  },
+  "training_gate": {
+    "status": "BLOCKED_NO_INDEPENDENTLY_ANNOTATED_MESSAGE_ROWS",
+    "approved_training_rows": 0,
+    "approved_validation_rows": 0,
+    "approved_test_rows": 0,
+    "rule": "Do not retrain Layer 1 from these labels until the review worksheet is completed and adjudicated."
+  },
+  "sources": {
+    "synthetic_grooming": {
+      "path": "grooming-detector/data_sources/synthetic/synthetic_grooming_data.csv",
+      "sha256": "D5B9B47E1264C7C3FDFB21275E19F9D4C2B2E71A1D1557644290DB686E3D08CF",
+      "summary": {
+        "rows": 739,
+        "conversations": 60,
+        "authors": 2,
+        "blank_text_rows": 0,
+        "duplicate_exact_text_rows_after_first": 7,
+        "duplicate_conversation_line_rows_after_first": 0,
+        "messages_per_conversation": {
+          "minimum": 6,
+          "median": 12.0,
+          "maximum": 21
+        },
+        "is_predator": {
+          "0": 382,
+          "1": 357,
+          "invalid_or_missing": 0
+        },
+        "is_suspicious": {
+          "0": 382,
+          "1": 357,
+          "invalid_or_missing": 0
+        },
+        "predator_suspicious_disagreements": 0
+      },
+      "generator": {
+        "path": "Groomer Thesis/pan12-sexual-predator-identification-training-corpus-2012-05-01/generate_synthetic_data.py",
+        "sha256": "0DE81132CC6F489B83379822829E592C8D59127CF1F2DD210BC2AAEA6A64A3AF",
+        "declared_model_name": "dolphin-llama3",
+        "declared_temperature_values": [
+          0.8
+        ],
+        "requested_conversations_per_category": 20,
+        "categories": [
+          "Boundary Testing",
+          "Forced Secrecy",
+          "Isolation"
+        ],
+        "prompt_sha256": [
+          "BCB7D1A8352F44777A39D97201F6C792BB09771665FC6FB29B6A01CD92616CFC",
+          "1CDE5A18E1F843882F0CD424FDDD12B4F9D5A2BEB679891B9DC0295E7642E20C",
+          "D5AD11027AAB63BDBD094F56F159B6008A6B37A65E9C0A11D798E824688D4F2F"
+        ],
+        "model_version_or_digest_recorded": false,
+        "random_seed_recorded": false,
+        "raw_model_responses_retained": false,
+        "human_annotation_recorded": false
+      },
+      "label_provenance": "Generator code copies the parsed speaker-role flag directly into both is_predator and is_suspicious.",
+      "diagnostics": {
+        "suspicious_equals_predator_for_every_row": true,
+        "suspicious_labels_by_placeholder_author": {
+          "Minor_Sim": [
+            0
+          ],
+          "Predator_Sim": [
+            1
+          ]
+        },
+        "global_placeholder_authors": [
+          "Minor_Sim",
+          "Predator_Sim"
+        ],
+        "placeholder_authors_reused_across_conversations": true,
+        "requested_conversations": 60,
+        "observed_nonempty_conversations": 60,
+        "generation_shortfall": 0,
+        "adjacent_same_author_pairs": 43
+      },
+      "decision": "EXCLUDE_PENDING_INDEPENDENT_MESSAGE_ANNOTATION",
+      "issues": [
+        "Every generated predator-role utterance is positive, including ordinary setup talk.",
+        "The target is perfectly confounded with speaker role.",
+        "No independent message-level annotation or adjudication is recorded.",
+        "The local model name is recorded without a model digest/version.",
+        "No generation seed or raw response archive is recorded.",
+        "Placeholder author IDs are reused across unrelated generated conversations."
+      ],
+      "required_remediation": [
+        "Have reviewers label each message for observable grooming behavior using a written rubric.",
+        "Keep generated/proposed labels separate from reviewed labels.",
+        "Record annotator IDs, disagreements, adjudication, and inclusion decisions.",
+        "Treat placeholder identities as conversation-local after confirming conversations are independent generations."
+      ]
+    },
+    "synthetic_safe": {
+      "path": "grooming-detector/data_sources/synthetic/synthetic_safe_data.csv",
+      "sha256": "F354FEA481D07DE210D44F7175BC4F686F657E4097AB0F36139F306DE38FF6B4",
+      "summary": {
+        "rows": 596,
+        "conversations": 56,
+        "authors": 2,
+        "blank_text_rows": 0,
+        "duplicate_exact_text_rows_after_first": 2,
+        "duplicate_conversation_line_rows_after_first": 0,
+        "messages_per_conversation": {
+          "minimum": 6,
+          "median": 11.0,
+          "maximum": 15
+        },
+        "is_predator": {
+          "0": 596,
+          "1": 0,
+          "invalid_or_missing": 0
+        },
+        "is_suspicious": {
+          "0": 596,
+          "1": 0,
+          "invalid_or_missing": 0
+        },
+        "predator_suspicious_disagreements": 0
+      },
+      "generator": {
+        "path": "Groomer Thesis/pan12-sexual-predator-identification-training-corpus-2012-05-01/generate_safe_data.py",
+        "sha256": "65EC36D43BA5A549DFEBFE2D0025B94DBD6C469E69B25A1A659184B1765526F0",
+        "declared_model_name": "dolphin-llama3",
+        "declared_temperature_values": [
+          0.8
+        ],
+        "requested_conversations_per_category": 20,
+        "categories": [
+          "Casual Roblox Gaming",
+          "School and Homework",
+          "Discord Hanging Out"
+        ],
+        "prompt_sha256": [
+          "7718867F4DE02F6570A179A0C3F557BBDE2B34766B7C5F0E229C338CF8C2AFF8",
+          "351B70AFA43755D3F07D17689ACC0D59765C71C22608B6C34546E31BA466C4C7",
+          "3089A0566D700A681234D874E64747DF5BC5CEC9DB1C15F5F59FD974CC1D3629"
+        ],
+        "model_version_or_digest_recorded": false,
+        "random_seed_recorded": false,
+        "raw_model_responses_retained": false,
+        "human_annotation_recorded": false
+      },
+      "label_provenance": "Generator code assigns zero to every generated message.",
+      "diagnostics": {
+        "suspicious_equals_predator_for_every_row": true,
+        "suspicious_labels_by_placeholder_author": {
+          "User_A_Sim": [
+            0
+          ],
+          "User_B_Sim": [
+            0
+          ]
+        },
+        "global_placeholder_authors": [
+          "User_A_Sim",
+          "User_B_Sim"
+        ],
+        "placeholder_authors_reused_across_conversations": true,
+        "requested_conversations": 60,
+        "observed_nonempty_conversations": 56,
+        "generation_shortfall": 4,
+        "adjacent_same_author_pairs": 0
+      },
+      "decision": "EXCLUDE_PENDING_INDEPENDENT_MESSAGE_VALIDATION",
+      "issues": [
+        "Safety is inherited from the prompt scenario rather than independently annotated.",
+        "No human validation or hard-negative adjudication is recorded.",
+        "The local model name is recorded without a model digest/version.",
+        "No generation seed or raw response archive is recorded.",
+        "Placeholder author IDs are reused across unrelated generated conversations."
+      ],
+      "required_remediation": [
+        "Have reviewers label each message for observable grooming behavior using a written rubric.",
+        "Keep generated/proposed labels separate from reviewed labels.",
+        "Record annotator IDs, disagreements, adjudication, and inclusion decisions.",
+        "Treat placeholder identities as conversation-local after confirming conversations are independent generations."
+      ]
+    },
+    "pan12": {
+      "active": {
+        "path": "grooming-detector/trained_model_distillbert/pan12_final_dataset.csv",
+        "sha256": "4131DC7B78865BBE2A48D155F770DD3743236D161B8430893328FBED5A42D408",
+        "summary": {
+          "rows": 378023,
+          "conversations": 27353,
+          "authors": 41892,
+          "blank_text_rows": 4169,
+          "duplicate_exact_text_rows_after_first": 119084,
+          "duplicate_conversation_line_rows_after_first": 2814,
+          "messages_per_conversation": {
+            "minimum": 1,
+            "median": 4.0,
+            "maximum": 2698
+          },
+          "is_predator": {
+            "0": 357587,
+            "1": 17608,
+            "invalid_or_missing": 2828
+          },
+          "is_suspicious": {
+            "0": 368049,
+            "1": 7146,
+            "invalid_or_missing": 2828
+          },
+          "predator_suspicious_disagreements": 27576
+        }
+      },
+      "archived_latest_layer1_bundle_copy": {
+        "path": "grooming-detector/data_sources/layer1_training_archive/pan12_final_dataset.csv",
+        "sha256": "15F6CE23C72A446A6577B146A18B2C5AB27612F6D898BD464014A661142F7DCB",
+        "summary": {
+          "rows": 378023,
+          "conversations": 27353,
+          "authors": 41892,
+          "blank_text_rows": 4169,
+          "duplicate_exact_text_rows_after_first": 119084,
+          "duplicate_conversation_line_rows_after_first": 2814,
+          "messages_per_conversation": {
+            "minimum": 1,
+            "median": 4.0,
+            "maximum": 2698
+          },
+          "is_predator": {
+            "0": 357587,
+            "1": 17608,
+            "invalid_or_missing": 2828
+          },
+          "is_suspicious": {
+            "0": 368049,
+            "1": 7146,
+            "invalid_or_missing": 2828
+          },
+          "predator_suspicious_disagreements": 27576
+        }
+      },
+      "copy_comparison": {
+        "same_shape_and_columns": true,
+        "raw_different_rows_by_column": {
+          "conv_id": 0,
+          "line": 0,
+          "author": 0,
+          "text": 589,
+          "is_predator": 0,
+          "is_suspicious": 0
+        },
+        "equal_after_line_ending_normalization": true
+      },
+      "label_provenance": {
+        "is_predator": "PAN-provided predator-author membership repeated on that author's message rows.",
+        "is_suspicious": "Project-derived membership in PAN's modified-text diff file; not a grooming annotation.",
+        "preprocessor_path": "grooming-detector/trained_model_distillbert/Python.py",
+        "preprocessor_sha256": "536D1132E1FB12B7591678AC2BFB177EEBED155EFC2012221B71D4647CCCC75F",
+        "corpus_readme_path": "grooming-detector/trained_model_distillbert/readme.txt",
+        "corpus_readme_sha256": "867F784B0F667FC0ABD2D7AD0BE27D12D6A99FE0B765FC84E750B5C2F201C3C5"
+      },
+      "frozen_split": {
+        "path": "grooming-detector/grooming-detector-trajectory-pipeline/author_disjoint_split_audit.json",
+        "sha256": "563B3DF559F6F93CB0492FD74C52E4B958A38660C4DB44F509C3043BAC26E58F",
+        "protocol": {
+          "name": "author-disjoint connected-component 80/10/10 split",
+          "random_state": 42,
+          "method": "Conversations linked by any shared dataset-namespaced author are collapsed into connected components. StratifiedGroupKFold creates 10 component-disjoint folds; two held-out folds are selected using only split-size and source/class-count balance.",
+          "validation_fold": 1,
+          "test_fold": 5,
+          "model_outputs_used_for_split_selection": false,
+          "predator_author_metadata_available": true
+        },
+        "invariants": {
+          "conversation_overlap_is_zero": true,
+          "author_overlap_is_zero": true,
+          "predator_author_overlap_is_zero": true,
+          "predator_author_zero_basis": "explicit predator-author metadata"
+        },
+        "assigned_conversations": 18568,
+        "unassigned_conversations": 8785,
+        "source_rows_by_assignment": {
+          "train": 176098,
+          "validation": 21968,
+          "test": 20953,
+          "unassigned_non_dyadic_or_filtered": 159004
+        }
+      },
+      "decision_for_message_level_layer1": "EXCLUDE",
+      "decision_for_weak_author_supervision": "OPTIONAL_TRAIN_SPLIT_ONLY_WITH_EXPLICIT_WEAK_SUPERVISION_CLAIM",
+      "hard_rule": "No PAN validation/test conversation may enter Layer 1 fitting or checkpoint selection."
+    }
+  },
+  "cross_source_diagnostics": {
+    "normalized_exact_text_overlap_between_synthetic_files": 1,
+    "annotation_candidate_rows": 1335
+  },
+  "annotation_worksheet": {
+    "path": "grooming-detector/data_sources/layer1_annotation_candidates.csv",
+    "sha256": "AFBB67FBE2B56731253203C3D94878FA63DFF04C6A32DDFD2D885EFDF423C7D6",
+    "rows": 1335,
+    "review_fields_are_blank": true,
+    "review_protocol": "grooming-detector/data_sources/README.md"
+  },
+  "required_next_gate": [
+    "Approve a written message-level annotation rubric.",
+    "Complete at least two independent reviews of the candidate worksheet.",
+    "Adjudicate disagreements and freeze reviewed row labels.",
+    "Assign reviewed synthetic conversations to deterministic conversation-level partitions.",
+    "Use PAN only under its frozen author-disjoint assignments and never use its validation/test rows for fitting."
+  ]
+}

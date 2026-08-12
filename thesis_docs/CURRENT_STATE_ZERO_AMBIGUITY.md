@@ -168,8 +168,31 @@ appears in that diff file. Therefore:
 This conclusion is **confirmed from the corpus documentation and preprocessing
 code**. It is independent of which trainer was used.
 
-The synthetic files may contain intentionally created message labels, but their
-generation and annotation provenance has not yet been audited in this phase.
+### Synthetic label audit
+
+The two preserved synthetic files have now been audited from their CSVs and
+generator code:
+
+- `synthetic_grooming_data.csv` has 739 messages in 60 conversations. Its code
+  sets both `is_predator` and `is_suspicious` directly from the generated
+  speaker tag. Consequently, every `Predator_Sim` message is positive and every
+  `Minor_Sim` message is negative, including ordinary setup talk. This is
+  speaker-role-derived weak supervision, not independent message annotation.
+- `synthetic_safe_data.csv` has 596 messages in 56 nonempty conversations. Its
+  code assigns zero to every message because the prompt requested safe
+  scenarios. The messages were not independently validated as hard negatives.
+- Both generators record only the local model name `dolphin-llama3` and
+  temperature 0.8. They do not preserve a model digest/version, generation
+  seed, raw responses, human reviewers, or adjudication.
+- Placeholder author IDs are reused across unrelated generations. They must be
+  treated as conversation-local identities after review, not as real authors
+  connecting all synthetic conversations.
+
+Therefore, both synthetic sources are **excluded from final Layer 1 training
+pending independent message review**. A deterministic audit manifest and a
+1,335-row two-reviewer worksheet have been generated. The current approved
+training-row count is zero; Layer 1 retraining is deliberately blocked until
+the review and adjudication gate is complete.
 
 ## Layer 2 LSTM — Latest Model
 
@@ -299,8 +322,9 @@ Not yet defensible:
    message-annotated corpus. If only author labels are available, explicitly
    describe the resulting classifier as weakly supervised rather than
    message-ground-truth supervised.
-5. Audit the synthetic data generation and annotation provenance before using
-   its message labels as final evidence.
+5. Complete two independent reviews and adjudication of the generated
+   1,335-row synthetic annotation worksheet. The source audit is complete, but
+   no generated label is approved as final ground truth yet.
 6. Generate a new Layer 1 checkpoint and score cache with the executed command,
    source-file hashes, row assignments, package versions, seed, and metrics.
 7. Retrain Layer 2 using conversation supervision for PAN. Apply turn-level
@@ -321,6 +345,10 @@ Not yet defensible:
 - `WORKSPACE_CLEANUP_MANIFEST.md` — pre-deletion hashes and preserved Layer 1
   provenance artifacts.
 - `grooming-detector/data_sources/layer1_training_archive/train_distillbert.py`
+- `grooming-detector/data_sources/layer1_dataset_manifest.json`
+- `grooming-detector/data_sources/layer1_annotation_candidates.csv`
+- `grooming-detector/data_sources/README.md`
+- `grooming-detector/grooming-detector-trajectory-pipeline/audit_layer1_dataset.py`
 - `thesis_docs/evidence/layer1_checkpoint_750_trainer_state.json`
 - `thesis_docs/evidence/layer1_full_run_trainer_state.json`
 - `grooming-detector/grooming-detector-trajectory-pipeline/author_disjoint_split_audit.json`
