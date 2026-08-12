@@ -197,6 +197,19 @@ a qualified external evaluation resource if the exact matching test corpus is
 legitimately recovered, but they do not unblock Layer 1 training and should not
 be relabeled as ordinary complete training annotations.
 
+**Usage decision:** Problem 2 is acceptable only as a frozen, qualified
+external **message-level evaluation** set. It is not approved for training,
+validation, threshold selection, early stopping, hyperparameter selection, or
+manual annotation guidance. Even for evaluation, it must be described as
+pooled/single-expert PAN12 judgments rather than exhaustive gold truth: only
+lines submitted by at least one PAN participant were manually judged (covering
+91% of predator lines), so a genuinely relevant line outside the pool can be
+scored as a false positive. A defensible run therefore requires the exact
+matching test XML, prediction at the original conversation/line identifiers,
+and reporting the official precision, recall, and recall-weighted F3 metric.
+The local ground-truth ID file alone is not executable because the matching
+message texts are absent.
+
 The other PAN-related thesis sources do not supply a replacement training
 target. Villatoro-Tello et al. derive suspicious **conversations** from predator
 presence and approach the line task without line-level training labels. Street
