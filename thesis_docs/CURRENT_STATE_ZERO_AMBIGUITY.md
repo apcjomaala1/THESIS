@@ -216,6 +216,41 @@ presence and approach the line task without line-level training labels. Street
 et al. perform message-level **Adult-versus-Child speaker-role** classification,
 not message-level grooming-behavior annotation.
 
+### Alternative grooming datasets and acquisition decision
+
+There is no large, modern, openly downloadable dataset that is a clean drop-in
+replacement for independently reviewed message-level grooming labels. The most
+relevant documented alternatives found in the literature are:
+
+| Resource | What it actually contains | Decision for this thesis |
+|---|---|---|
+| Cook et al., AIES 2023, *Protecting Children from Online Exploitation* | 24 Perverted Justice chats (12,942 total messages); 6,771 offender messages coded for 11 non-exclusive predatory communication strategies plus a null class. Two forensic-psychology authors developed and applied the framework; full repeat coding was infeasible and agreement was sample-tested. | **Highest-priority data request for Layer 1.** No public dataset package was located. If the authors grant access, retain the multilabel codes, define any binary mapping explicitly, add safe/general-chat negatives separately, and create a new conversation/author-disjoint split rather than reuse the paper's message-level stratified split. |
+| Cano Basave et al., SocInfo 2014, *Detecting Child Grooming Behaviour Patterns on Social Media* | Predator messages from 50 Perverted Justice transcripts labelled by two trained analysts as Trust Development, Grooming, Physical Approach, or Other; only overlapping annotations were retained. Reported pre-balancing counts are 1,225, 3,304, 2,700, and 10,871 respectively. | **Strong secondary Layer-1 request.** No public dataset package was located. It supplies within-grooming-chat `Other` examples but not representative general-chat negatives. |
+| Gupta et al. 2012 | 75 of 502 Perverted Justice chats, comprising 47,416 lines, annotated by a professional psychologist for six grooming stages. | Potential stage/trajectory evidence, but it is positive-chat-only, apparently single-annotator, and no public annotation package was located. Request only if the two stronger sources are unavailable. |
+| ChatCoder2 and PANC (Vogt et al., ACL 2021) | ChatCoder2 has 497 complete Perverted Justice positive chats; the paper reports phase labels in 155. PANC combines those positives with PAN12 negative segments and provides an early-detection protocol and preprocessing code. | Useful as a **supplementary Layer-2/eSPD benchmark**, not fresh independent Layer-1 truth. ChatCoder2 has no negative chats, PANC adds no new message-level onset labels, and both can overlap with existing PJ/PAN material. Source access is by request. |
+| VTPAN / other PAN12 reorganizations | Filtered, segmented, or reformatted PAN12 data. | Not a new dataset or a repair for PAN label semantics. Do not count it as independent evidence. |
+| LiveMe restricted research corpus (Lykousas and Patsakis, 2020) | 39,382,838 public livestream-chat messages with interaction metadata, available to researchers/law enforcement on request. Grooming-related subsets were identified through keywords, embeddings, and topic analysis rather than exhaustive expert message annotation. | Potential modern-domain robustness research only; **not approved as supervised grooming ground truth**. |
+
+All Perverted Justice-derived acquisitions must be treated as potentially
+overlapping. Before merging any of them, recover stable transcript/offender
+identifiers, hash normalized text, audit exact and near duplicates against PAN12
+and every other source, and freeze connected-author assignments. Dataset access
+also requires confirmation of licensing, ethics, and storage conditions.
+
+**Current action:** contact the Cook et al. and Cano Basave et al. authors for
+the labelled data, coding guide, identifiers, access terms, and reviewer records.
+Until usable files are received and audited, the existing 1,335-row independent
+annotation task remains the only controllable way to unblock Layer-1 training.
+
+Primary source links:
+
+- Cook et al. (2023): https://doi.org/10.1145/3600211.3604696
+- Cano Basave et al. (2014): https://doi.org/10.1007/978-3-319-13734-6_30
+- Gupta et al. (2012): https://doi.org/10.48550/arXiv.1208.4324
+- Vogt et al. (2021): https://aclanthology.org/2021.acl-long.386/
+- PANC preprocessing resources: https://early-sexual-predator-detection.gitlab.io/
+- Lykousas and Patsakis (2020): https://doi.org/10.48550/arXiv.2004.08205
+
 ### Synthetic label audit
 
 The two preserved synthetic files have now been audited from their CSVs and
