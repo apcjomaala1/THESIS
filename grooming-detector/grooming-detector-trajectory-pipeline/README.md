@@ -21,6 +21,7 @@ trained_model_distillbert/
 grooming-detector-trajectory-pipeline/
   data_loader.py             # PAN12 loaders + 2-author filter
   features.py                # MessageEncoder + 7 trajectory features
+  privacy.py                 # direct-identifier masking for prototype inputs
   message_classifier.py      # thin wrapper that loads final_moderation_model
   compute_benign_centroid.py # precomputes the topic-drift baseline
   weighted_scorer.py         # Layer 2: weighted aggregation
@@ -29,15 +30,23 @@ grooming-detector-trajectory-pipeline/
   tune_weights.py            # grid search on val set
   main.py                    # end-to-end driver
   evaluation.py              # metrics + keyword baseline + ablation
+  capture_environment.py     # print/check the current software environment
+  environment_snapshot.json  # observed 2026-08-12 rerun/demo versions
   demo/
-    scoring_core.py          # LSTM + weighted-comparator live driver
+    scoring_core.py          # LSTM + weighted-comparator offline turn driver
     replay.py                # PAN12 conversation replay
-    app.py                   # Flask live-chat UI
+    app.py                   # local Flask offline-replay UI
     templates/chat.html
     static/{style.css,app.js}
 ```
 
-## End-to-end run order
+## Historical run order - do not use for the corrected final experiment
+
+The commands below reproduce the superseded pipeline only. They still depend on
+the invalid PAN correction/diff-derived `is_suspicious` target and must not be
+used to generate final thesis evidence. Follow
+`../../thesis_docs/CURRENT_STATE_ZERO_AMBIGUITY.md` for the corrected rescue
+protocol.
 
 ```bash
 # 0. Install
@@ -79,12 +88,17 @@ python -m demo.replay \
 python -m demo.app   # then open http://127.0.0.1:5000
 ```
 
-The browser demo loads the saved author-disjoint Layer 2 LSTM and shows its
+The local browser demo loads the saved author-disjoint Layer 2 LSTM and shows its
 historical development outputs. Its three-method table is explicitly marked as
 an invalid final comparison because comparator tuning was unmatched and the
 current-score-only threshold made positive predictions impossible. It is a
 consultation mechanism demonstration, not model-performance evidence or a
-deployment-ready safety determination.
+deployment-ready safety determination. It is an offline sequential simulation,
+not a live platform integration. Common direct identifiers are masked before
+model input and in-memory retention, responses use no-store headers, and reset
+deletes the in-process conversation object. Pattern masking cannot recognize
+every name, address, or indirect identifier, so real sensitive data must not be
+entered.
 
 The consultation interface leads with the selected turn's LSTM sequence score,
 its development threshold, distance to threshold, and accumulated sequence
@@ -94,6 +108,12 @@ loading/error states, and a prominent statement that a below-threshold output
 does not mean a conversation is safe. Known protocol corrections and the
 historical table are retained in collapsed audit panels rather than presented
 as final evidence.
+
+Verify the current runtime against the recorded reproducibility snapshot with:
+
+```bash
+python capture_environment.py --check environment_snapshot.json
+```
 
 ## Tests
 
@@ -106,7 +126,7 @@ pip install pytest
 python -m pytest tests/ -v --basetemp=.pytest_tmp_consultation
 ```
 
-56 tests currently cover:
+The suite currently covers:
 * every trajectory feature individually (peak, current, spike count,
   spike-then-drop with the parameter actually honored, rate of change,
   topic drift against the centroid in both close and far directions,
@@ -117,7 +137,9 @@ python -m pytest tests/ -v --basetemp=.pytest_tmp_consultation
   baseline aggregation,
 * the tuner's metric math and `search` returning a valid config dict,
 * connected-author-disjoint split integrity and the Layer-1 dataset audit,
-* LSTM live-demo flagging while preserving the weighted comparator.
+* LSTM offline-demo flagging while preserving the weighted comparator,
+* direct-identifier masking, no-cache response headers, and opaque local IDs,
+* reproducibility checks against `environment_snapshot.json`.
 
 If you change any feature-engineering or scoring logic, run the suite first
 — it will tell you exactly which behavior broke.
@@ -149,9 +171,9 @@ Decisions are documented in
   `compute_benign_centroid.py`. For already-dyadic external datasets
   (ChatCoder2, synthetic), the filter is a no-op.
 - **Turn-taking imbalance uses a *dominant-dyad* reduction** even though we
-  filter to dyadic convs — same formula either way (top-2 word contributors),
+  filter to dyadic convs — same formula either way (top-2 turn contributors),
   so the feature is forward-compatible with multi-party data in Thesis 2
-  without code changes.
+  without code changes. The implementation counts turns, not words.
 - **Topic drift** is measured from a precomputed centroid of benign
   conversations, not the conversation's own first message — this avoids
   silently nulling the feature when a predator opens with risky content.

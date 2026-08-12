@@ -1,7 +1,7 @@
 """
 Shared scoring core used by both demo modes.
 
-A `LiveConversation` accumulates messages turn by turn, scores each one with
+A `LiveConversation` masks common direct identifiers, accumulates messages turn by turn, scores each one with
 Layer 1, computes the trajectory features against the loaded benign centroid,
 applies both the saved author-disjoint LSTM and the weighted comparator, and
 tracks the LSTM's first-flagged turn (time to detection). The PAN12 replay
@@ -24,6 +24,7 @@ from features import (
     FEATURE_NAMES,
 )
 from message_classifier import MessageClassifier
+from privacy import redact_text
 from trajectory_model_lstm import load_trajectory_model
 from weighted_scorer import WeightedScorer
 
@@ -52,7 +53,7 @@ class LiveConversation:
         self.first_flagged_turn = None
 
     def add_message(self, text, author):
-        text = text.strip()
+        text = redact_text(text.strip())
         if not text:
             return None
         self.texts.append(text)

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "captured_on": "2026-08-12",
+  "scope": "Current rerun/demo environment only; not proof of the historical Layer 1 training environment.",
+  "python": "3.12.5",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.3",
+    "accelerate": "1.13.0",
+    "datasets": "4.8.5",
+    "scikit-learn": "1.6.1",
+    "numpy": "2.2.3",
+    "pandas": "2.2.3",
+    "tqdm": "4.67.1",
+    "flask": "3.1.2",
+    "pytest": "8.4.2",
+    "scipy": "1.15.2"
+  }
+}

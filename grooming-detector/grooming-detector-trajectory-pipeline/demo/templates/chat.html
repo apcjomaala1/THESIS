@@ -29,7 +29,7 @@
       <div class="notice-icon" aria-hidden="true">i</div>
       <div>
         <strong>Development prototype - pipeline mechanics only</strong>
-        <span>Layer 1 supervision and the live context protocol are under correction. Scores are not validated grooming classifications or safety decisions.</span>
+        <span>Layer 1 supervision and the context protocol are under correction. Scores are not validated grooming classifications or safety decisions. Common direct identifiers are masked, but manual privacy review is still required.</span>
       </div>
     </section>
 
@@ -37,7 +37,7 @@
       <section class="conversation-panel" aria-labelledby="conversation-title">
         <div class="panel-heading conversation-heading">
           <div>
-            <p class="section-kicker">Live input</p>
+            <p class="section-kicker">Local offline input</p>
             <h2 id="conversation-title">Two-speaker conversation</h2>
           </div>
           <div class="conversation-actions">
@@ -75,7 +75,7 @@
               <span class="empty-node empty-node-b">B</span>
             </div>
             <h3>Start a conversation</h3>
-            <p>Enter a message below. Each turn will appear here while the model builds a sequential trajectory.</p>
+            <p>Enter a message below. Each turn is processed locally as the model builds a sequential trajectory.</p>
           </div>
           <ul id="messages" class="messages" aria-live="polite"></ul>
         </div>
@@ -91,6 +91,7 @@
             <span class="button-arrow" aria-hidden="true">&rarr;</span>
           </button>
         </form>
+        <p class="privacy-note"><strong>Local offline simulation.</strong> Direct identifiers are masked before scoring and in-memory retention, but automatic rules cannot identify every name or address. Do not enter real sensitive data.</p>
         <p id="composer-status" class="composer-status" aria-live="polite"></p>
       </section>
 

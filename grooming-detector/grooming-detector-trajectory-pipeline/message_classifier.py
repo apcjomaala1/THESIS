@@ -1,11 +1,9 @@
-"""
-Layer 1 scorer — thin wrapper around the DistilBERT classifier trained in
-`trained_model_distillbert/train_distillbert.py`.
+"""Thin inference wrapper around the preserved DistilBERT classifier.
 
-Training is owned by that script (binary classification on the PAN12
-`is_suspicious` per-message labels, with class-weighted CrossEntropyLoss to
-handle the natural class imbalance). This module only LOADS the saved model
-and exposes a per-message scoring function for the trajectory pipeline.
+The recovered training code used a two-class sequence-classification objective
+and negative downsampling. Its historical target is now known to be an invalid
+message-level grooming label, so this module exposes a Layer 1 proxy score, not
+a calibrated probability of grooming or predatory content.
 """
 
 from pathlib import Path
@@ -37,12 +35,12 @@ class MessageClassifier:
 
     @torch.no_grad()
     def score(self, text):
-        """Return P(is_suspicious=1 | text) as a float in [0, 1]."""
+        """Return the historical class-1 proxy score as a float in [0, 1]."""
         return float(self.score_batch([text])[0])
 
     @torch.no_grad()
     def score_batch(self, texts, batch_size=32):
-        """Vectorized scoring; returns np.ndarray of probabilities."""
+        """Vectorized scoring; return an array of historical proxy scores."""
         out = []
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]

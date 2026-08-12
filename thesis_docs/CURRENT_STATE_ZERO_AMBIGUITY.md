@@ -546,6 +546,32 @@ the full PAN corpus. An LLM-only training experiment may still be useful as an
 explicit weak-supervision ablation, provided its final evaluation uses separate
 human-reviewed labels.
 
+## Comment Matrix 2 implementation status (2026-08-13)
+
+The main paper and presentation now apply every matrix item that current
+evidence supports. This does not make the corrected experiment complete.
+
+- Applied in the paper and deck: short module title; standardized dataset and
+  label-provenance tables; exact seven-feature definitions; current environment
+  versions; explicit offline/deployment limits; Philippine relevance with no
+  Filipino/Taglish validation claim; and the distinction between the base
+  DistilBERT embedding encoder and the invalid historical Layer 1 proxy.
+- Implemented in code without changing model targets or reported performance:
+  local-demo direct-identifier masking before scoring and in-memory retention,
+  server-generated opaque conversation IDs, rejection of unknown IDs, no-store
+  response headers, an environment snapshot/checker, and explicit SciPy
+  dependency coverage.
+- Still pending because it belongs to the central methodology repair: adviser
+  approval of the conversation endpoint, context-matched Layer 1 retraining,
+  training-only cache/centroid reconstruction, conversation-only LSTM loss,
+  independently validation-selected matched comparators, and one locked final
+  evaluation. Philippine/Taglish empirical localization is also pending.
+- Verification at this state: all 68 pipeline tests passed; the environment
+  snapshot matched; JavaScript syntax passed; the 34-slide deck passed visual,
+  overflow, and template-fidelity checks.
+
+The detailed chronological record is in `THESIS_RECOVERY_NEXT_STEPS.md`.
+
 ## Authoritative Evidence Files
 
 - `CURRENT_STATE_ZERO_AMBIGUITY.md` — this report.

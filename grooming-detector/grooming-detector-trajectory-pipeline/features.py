@@ -14,10 +14,10 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# Default thresholds. SPIKE_THRESHOLD = 0.5 is defended as the natural binary
-# decision boundary of the Layer 1 classifier, which is trained binary on
-# is_suspicious with class-weighted loss preserving the real prior. SPIKE_DROP
-# is a hyperparameter and SHOULD be tuned on the validation set via tune_weights.py.
+# Default thresholds used by the preserved development pipeline. The historical
+# Layer 1 target is now known to be invalid for message-level grooming, so 0.5
+# is a development feature threshold rather than a validated safety rule.
+# SPIKE_DROP is a hyperparameter and SHOULD be tuned on validation data only.
 SPIKE_THRESHOLD = 0.5
 DEFAULT_SPIKE_DROP = 0.2
 
@@ -85,9 +85,10 @@ def compute_trajectory_features(
     Args:
         risk_scores_so_far: list[float], one Layer 1 score per turn up to now.
         embeddings_so_far:  list[np.ndarray(768,)], one [CLS] embedding per turn.
-        texts_so_far:       list[str], raw message texts (used for word counts).
+        texts_so_far:       list[str], retained for call-site compatibility; the
+            current seven-feature implementation does not read message text.
         authors_so_far:     list[str], author IDs. For multi-party conversations
-            the dominant dyad (top-2 by total words so far) is used for the
+            the dominant dyad (top-2 by turn count so far) is used for the
             turn-taking-imbalance feature, consistent with OGDM's dyadic framing.
         benign_centroid:    np.ndarray(768,), precomputed benign-chat centroid.
         spike_drop:         float, minimum drop magnitude that counts as a retreat.
@@ -135,7 +136,7 @@ def compute_trajectory_features(
     centroid = benign_centroid.reshape(1, -1)
     topic_drift = float(1.0 - cosine_similarity(curr_emb, centroid)[0, 0])
 
-    # 7. Turn-taking imbalance — absolute word-count gap between the two
+    # 7. Turn-taking imbalance — absolute turn-count gap between the two
     #    most active participants ("dominant dyad"), normalized by their total
     #    words. Operationalizes OGDM "dominance and control" in the entrapment
     #    phase and is consistent with Villatoro-Tello et al. (2021)'s
@@ -143,7 +144,7 @@ def compute_trajectory_features(
     #
     #    OGDM is dyadic; PAN12 contains many group chats (3-23 authors), so for
     #    multi-party conversations we operationalize the dyad as the top-2
-    #    speakers by total words contributed so far. This reduces exactly to
+    #    speakers by total turns contributed so far. This reduces exactly to
     #    the two-author formula when the conversation only has two speakers,
     #    and concentrates the feature on the predator + primary target — the
     #    two speakers grooming attention is empirically focused on.

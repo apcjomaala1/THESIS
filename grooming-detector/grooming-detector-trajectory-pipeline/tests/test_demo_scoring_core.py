@@ -58,3 +58,22 @@ def test_live_demo_flags_with_lstm_and_keeps_weighted_comparator():
     assert second["lstm_score"] == pytest.approx(0.9)
     assert second["weighted_score"] == pytest.approx(0.6)
     assert second["lstm_threshold"] == pytest.approx(0.8)
+
+
+def test_live_demo_redacts_direct_identifiers_before_scoring_and_retention():
+    classifier = DummyClassifier()
+    encoder = DummyEncoder()
+    conv = LiveConversation(
+        classifier,
+        encoder,
+        np.zeros(768, dtype=np.float32),
+        DummyWeightedScorer(),
+        DummyLSTM(),
+        lstm_threshold=0.8,
+    )
+
+    result = conv.add_message("email me at person@example.com", "user_A")
+
+    assert result["text"] == "email me at [EMAIL]"
+    assert conv.texts == ["email me at [EMAIL]"]
+    assert "person@example.com" not in result["text"]
