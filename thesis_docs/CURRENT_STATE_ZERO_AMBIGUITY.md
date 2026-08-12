@@ -168,6 +168,41 @@ appears in that diff file. Therefore:
 This conclusion is **confirmed from the corpus documentation and preprocessing
 code**. It is independent of which trainer was used.
 
+### Separate official PAN12 line ground truth
+
+PAN12 did define a second competition problem: identify lines most distinctive
+of predator behavior. This does **not** validate the project's training
+`is_suspicious` column:
+
+- The official PAN overview states that no Problem-2 training labels were
+  released. The organizers instead judged submitted test lines after the
+  competition, using a TREC-style pooling process and a single trained expert
+  under time constraints.
+- The locally retained test ground-truth file contains 6,478 judged suspicious
+  conversation/line pairs across 834 test conversations:
+  `Groomer Thesis/pan12-sexual-predator-identification-test-corpus-2012-05-21/pan12-sexual-predator-identification-groundtruth-problem2.txt`
+- Those pairs have zero conversation-ID overlap with both the training-corpus
+  diff file and the current PAN training CSV. The corresponding PAN12 test XML
+  is not present in the cleaned workspace, so the judged line IDs cannot
+  presently be joined to message text.
+- The training `diff.txt` contains 16,948 modified-text locations across 1,064
+  different training conversations. It is a separate artifact with a separate
+  purpose.
+
+Therefore, all PAN-derived `is_suspicious` values in the current training CSV
+are reliable only as **diff-membership indicators**: `1` means listed as
+modified text and `0` means not listed. Neither value is reliable as a grooming
+message label. The official Problem-2 test judgments are potentially useful as
+a qualified external evaluation resource if the exact matching test corpus is
+legitimately recovered, but they do not unblock Layer 1 training and should not
+be relabeled as ordinary complete training annotations.
+
+The other PAN-related thesis sources do not supply a replacement training
+target. Villatoro-Tello et al. derive suspicious **conversations** from predator
+presence and approach the line task without line-level training labels. Street
+et al. perform message-level **Adult-versus-Child speaker-role** classification,
+not message-level grooming-behavior annotation.
+
 ### Synthetic label audit
 
 The two preserved synthetic files have now been audited from their CSVs and
@@ -345,6 +380,8 @@ Not yet defensible:
 - `WORKSPACE_CLEANUP_MANIFEST.md` — pre-deletion hashes and preserved Layer 1
   provenance artifacts.
 - `grooming-detector/data_sources/layer1_training_archive/train_distillbert.py`
+- `Groomer Thesis/pan12-sexual-predator-identification-test-corpus-2012-05-21/pan12-sexual-predator-identification-groundtruth-readme.txt`
+- `Groomer Thesis/pan12-sexual-predator-identification-test-corpus-2012-05-21/pan12-sexual-predator-identification-groundtruth-problem2.txt`
 - `grooming-detector/data_sources/layer1_dataset_manifest.json`
 - `grooming-detector/data_sources/layer1_annotation_candidates.csv`
 - `grooming-detector/data_sources/README.md`
