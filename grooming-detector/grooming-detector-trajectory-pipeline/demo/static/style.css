@@ -7,6 +7,7 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe U
 .chat-pane { display: flex; flex-direction: column; background: #fff; border-right: 1px solid #e3e5e8; }
 .chat-pane header { padding: 16px 20px; border-bottom: 1px solid #e3e5e8; display: flex; justify-content: space-between; align-items: center; }
 .chat-pane h1 { font-size: 18px; margin: 0; font-weight: 600; }
+.status-note { margin: 4px 0 0; color: #8a5a00; font-size: 11px; font-weight: 600; }
 .controls { display: flex; gap: 12px; align-items: center; font-size: 13px; color: #555; }
 .controls select, .controls button { font-size: 13px; padding: 4px 8px; }
 
@@ -56,5 +57,11 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe U
 .features td { padding: 6px 4px; border-bottom: 1px solid #eef0f3; font-variant-numeric: tabular-nums; }
 .features td:first-child { color: #555; }
 .features td:last-child { text-align: right; font-weight: 600; }
+
+.evaluation-note { margin: -16px 0 8px; color: #8a5a00; font-size: 11px; }
+.results-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 11px; }
+.results-table th, .results-table td { padding: 6px 5px; border: 1px solid #e3e5e8; text-align: right; }
+.results-table th:first-child, .results-table td:first-child { text-align: left; }
+.results-table tbody tr:first-child { font-weight: 700; background: #eaf5ee; }
 
 .value.alarm { color: #d62b2b; }

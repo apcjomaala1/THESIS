@@ -1,14 +1,14 @@
 # Grooming Detection — Trajectory Pipeline
 
-Two-stage pipeline:
+Current two-stage experimental pipeline:
 
 1. **Layer 1 — DistilBERT message classifier** (`../trained_model_distillbert/`)
-   trained on PAN12 per-message `is_suspicious` labels with class-weighted
-   `CrossEntropyLoss` to handle imbalance.
-2. **Layer 2 — Weighted trajectory scorer** that aggregates seven engineered
-   trajectory features per turn, each tied to an OGDM construct
-   (Lorenzo-Dus et al., 2016). LSTM aggregation lives in `experimental/` as
-   a Thesis 2 extension.
+   retained as a fixed checkpoint. Its PAN `is_suspicious` supervision has a
+   confirmed label-provenance limitation; see
+   `../../thesis_docs/CURRENT_STATE_ZERO_AMBIGUITY.md` before making claims.
+2. **Layer 2 — Author-disjoint trajectory LSTM**, using the message embedding
+   plus seven trajectory features per turn. The tuned weighted trajectory
+   scorer and Layer-1-only score are retained as comparators.
 
 ## File map
 
@@ -24,13 +24,13 @@ grooming-detector-trajectory-pipeline/
   message_classifier.py      # thin wrapper that loads final_moderation_model
   compute_benign_centroid.py # precomputes the topic-drift baseline
   weighted_scorer.py         # Layer 2: weighted aggregation
+  trajectory_model_lstm.py   # Layer 2: active LSTM architecture
+  trajectory_model_author_disjoint.pt  # latest provisional checkpoint
   tune_weights.py            # grid search on val set
   main.py                    # end-to-end driver
   evaluation.py              # metrics + keyword baseline + ablation
-  experimental/
-    trajectory_model_lstm.py # Thesis 2 future work
   demo/
-    scoring_core.py          # shared LiveConversation driver
+    scoring_core.py          # LSTM + weighted-comparator live driver
     replay.py                # PAN12 conversation replay
     app.py                   # Flask live-chat UI
     templates/chat.html
@@ -71,7 +71,7 @@ python main.py \
   --centroid benign_centroid.npy \
   --scorer-config weighted_scorer.json
 
-# 6. Demos
+# 6. Provisional fixed-Layer-1 LSTM demos
 python -m demo.replay \
   --csv ../trained_model_distillbert/pan12_final_dataset.csv \
   --conv-id <some_predator_conv_id>
@@ -79,18 +79,23 @@ python -m demo.replay \
 python -m demo.app   # then open http://127.0.0.1:5000
 ```
 
+The browser demo loads the saved author-disjoint LSTM, shows its
+validation-selected threshold and weighted comparator, and displays the frozen
+held-out three-method result. It is a consultation mechanism demonstration,
+not a deployment-ready safety determination.
+
 ## Tests
 
-The pure-math parts of the pipeline (trajectory features, weighted scorer,
-data-loader filters, evaluation metrics, tuner) have a pytest suite that
-runs in ~2 seconds without needing DistilBERT or torch:
+The pipeline has a pytest suite covering trajectory features, scoring,
+data-loader filters, split integrity, evaluation, data-provenance auditing,
+and the LSTM-backed demo core:
 
 ```bash
 pip install pytest
-python -m pytest tests/ -v
+python -m pytest tests/ -v --basetemp=.pytest_tmp_consultation
 ```
 
-39 tests cover:
+56 tests currently cover:
 * every trajectory feature individually (peak, current, spike count,
   spike-then-drop with the parameter actually honored, rate of change,
   topic drift against the centroid in both close and far directions,
@@ -99,12 +104,20 @@ python -m pytest tests/ -v
 * the weighted scorer's shape validation, monotonicity, save/load,
 * the evaluation metrics including time-to-detection and the keyword
   baseline aggregation,
-* the tuner's metric math and `search` returning a valid config dict.
+* the tuner's metric math and `search` returning a valid config dict,
+* connected-author-disjoint split integrity and the Layer-1 dataset audit,
+* LSTM live-demo flagging while preserving the weighted comparator.
 
 If you change any feature-engineering or scoring logic, run the suite first
 — it will tell you exactly which behavior broke.
 
-## Methodology notes (from the grilling session, 2026-05-20)
+## Superseded methodology notes (historical only; do not cite)
+
+The material below records the original weighted-scorer design and is retained
+only for code history. It is superseded by
+`../../thesis_docs/CURRENT_STATE_ZERO_AMBIGUITY.md` and the saved
+author-disjoint LSTM experiment. In particular, its Layer-1 label claims and
+statement that Layer 2 is not an LSTM are no longer authoritative.
 
 Decisions are documented in
 `C:\Users\vyD\.claude\plans\silly-drifting-cat.md`. Key points:

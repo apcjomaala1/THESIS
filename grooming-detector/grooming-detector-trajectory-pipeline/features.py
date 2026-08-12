@@ -39,8 +39,15 @@ class MessageEncoder:
         self._torch = torch
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Loading DistilBERT encoder on {self.device}")
-        self.tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-        self.model = DistilBertModel.from_pretrained("distilbert-base-uncased")
+        # The model is already cached as part of the project environment. Keep
+        # demonstrations deterministic and prevent startup delays when the
+        # consultation venue has no network access.
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            "distilbert-base-uncased", local_files_only=True
+        )
+        self.model = DistilBertModel.from_pretrained(
+            "distilbert-base-uncased", local_files_only=True
+        )
         self.model.eval().to(self.device)
 
     def encode(self, texts, batch_size=32):

@@ -3,8 +3,8 @@ Demo mode B — live-typed chat scored in real time.
 
 A minimal Flask app. Two roleplaying participants type messages alternately
 (or whoever is at the keyboard), and each message is scored as it arrives.
-The UI shows the running risk trajectory, the current trajectory feature
-values, and the first-flagged turn when the threshold is crossed.
+The UI shows Layer 1 risk, the author-disjoint LSTM score, the weighted
+comparator, trajectory features, and the first LSTM-flagged turn.
 
 This is the "panelist-facing" demo: it shows the system handling input that
 was never in the training set, which is the most direct way to refute a
@@ -15,6 +15,7 @@ Run:
 Then open http://127.0.0.1:5000 in a browser.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -26,6 +27,7 @@ from demo.scoring_core import build_scoring_stack, new_conversation
 
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+EVALUATION_REPORT = Path(__file__).resolve().parent.parent / "lstm_author_disjoint_evaluation.json"
 
 # Loaded once at startup; the scoring stack is heavy.
 _stack = None
@@ -41,7 +43,8 @@ def get_stack():
 
 @app.route("/")
 def index():
-    return render_template("chat.html")
+    report = json.loads(EVALUATION_REPORT.read_text(encoding="utf-8"))
+    return render_template("chat.html", evaluation=report["held_out_test"])
 
 
 @app.route("/api/new", methods=["POST"])
@@ -78,7 +81,7 @@ def api_reset():
 
 if __name__ == "__main__":
     # Warm the stack up-front so the first request isn't slow.
-    print("Warming up scoring stack...")
+    print("Warming up provisional fixed-Layer-1 LSTM scoring stack...")
     get_stack()
     print("Ready.")
     app.run(debug=False, host="127.0.0.1", port=5000)

@@ -4,6 +4,8 @@ const input = document.getElementById("input");
 const authorEl = document.getElementById("author");
 const resetBtn = document.getElementById("reset");
 const riskEl = document.getElementById("risk");
+const lstmEl = document.getElementById("lstm");
+const lstmThresholdEl = document.getElementById("lstm-threshold");
 const weightedEl = document.getElementById("weighted");
 const flagEl = document.getElementById("flag");
 const featuresBody = document.querySelector("#features tbody");
@@ -49,11 +51,13 @@ function renderPanelForTurn(turnIdx) {
   const delta = prev !== null ? t.turn_score - prev.turn_score : null;
 
   riskEl.textContent = t.risk_score.toFixed(3);
-  weightedEl.textContent =
+  lstmEl.textContent =
     delta === null
-      ? t.turn_score.toFixed(3)
-      : `${t.turn_score.toFixed(3)} (Δ ${delta >= 0 ? "+" : ""}${delta.toFixed(3)})`;
-  weightedEl.classList.toggle("alarm", t.first_flagged_turn !== null);
+      ? t.lstm_score.toFixed(3)
+      : `${t.lstm_score.toFixed(3)} (delta ${delta >= 0 ? "+" : ""}${delta.toFixed(3)})`;
+  lstmThresholdEl.textContent = t.lstm_threshold.toFixed(3);
+  weightedEl.textContent = t.weighted_score.toFixed(3);
+  lstmEl.classList.toggle("alarm", t.first_flagged_turn !== null);
   flagEl.textContent = t.first_flagged_turn === null ? "—" : `turn ${t.first_flagged_turn}`;
   flagEl.classList.toggle("alarm", t.first_flagged_turn !== null);
   renderFeatures(t.trajectory_features);
@@ -89,7 +93,7 @@ function appendMessage(data, timestamp) {
   right.className = "meta-right";
   right.innerHTML =
     `L1 <span class="num">${data.risk_score.toFixed(3)}</span> · ` +
-    `score <span class="num">${data.turn_score.toFixed(3)}</span>`;
+    `LSTM <span class="num">${data.lstm_score.toFixed(3)}</span>`;
   meta.appendChild(left);
   meta.appendChild(right);
   li.appendChild(meta);
@@ -103,7 +107,7 @@ function appendMessage(data, timestamp) {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-function updateBanner(firstFlagged, weighted) {
+function updateBanner(firstFlagged, lstmScore) {
   if (firstFlagged === null) {
     bannerEl.classList.remove("active");
     bannerTextEl.textContent = "";
@@ -111,8 +115,8 @@ function updateBanner(firstFlagged, weighted) {
   }
   bannerEl.classList.add("active");
   bannerTextEl.textContent =
-    `⚠ Conversation flagged — first crossed threshold at turn ${firstFlagged}. ` +
-    `Current weighted score: ${weighted.toFixed(3)}.`;
+    `Conversation flagged - LSTM first crossed its validation-selected threshold at turn ${firstFlagged}. ` +
+    `Current LSTM score: ${lstmScore.toFixed(3)}.`;
 }
 
 form.addEventListener("submit", async (e) => {
@@ -154,9 +158,11 @@ resetBtn.addEventListener("click", async () => {
   messagesEl.innerHTML = "";
   featuresBody.innerHTML = "";
   riskEl.textContent = "—";
+  lstmEl.textContent = "-";
+  lstmThresholdEl.textContent = "-";
   weightedEl.textContent = "—";
   flagEl.textContent = "—";
-  weightedEl.classList.remove("alarm");
+  lstmEl.classList.remove("alarm");
   flagEl.classList.remove("alarm");
   bannerEl.classList.remove("active");
   bannerTextEl.textContent = "";

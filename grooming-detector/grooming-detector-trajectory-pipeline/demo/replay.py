@@ -7,8 +7,8 @@ the same scoring core as the live-chat mode. Prints, per turn:
   * The message + its author
   * Layer 1 risk score
   * Each trajectory feature
-  * Weighted aggregate score
-  * Whether the conversation has been flagged yet, and on which turn
+  * Author-disjoint LSTM score and weighted comparator score
+  * Whether the LSTM has flagged the conversation, and on which turn
 
 This is the empirical-defense demo: it ties the running pipeline directly to
 the time-to-detection metric reported in evaluation.
@@ -41,6 +41,8 @@ def main():
     parser.add_argument("--centroid", default="benign_centroid.npy")
     parser.add_argument("--classifier", default="../trained_model_distillbert/final_moderation_model")
     parser.add_argument("--scorer-config", default="weighted_scorer.json")
+    parser.add_argument("--model", default="trajectory_model_author_disjoint.pt")
+    parser.add_argument("--evaluation", default="lstm_author_disjoint_evaluation.json")
     parser.add_argument("--delay", type=float, default=0.0, help="Seconds between turns.")
     args = parser.parse_args()
 
@@ -57,6 +59,8 @@ def main():
         classifier_path=args.classifier,
         centroid_path=args.centroid,
         scorer_path=args.scorer_config,
+        lstm_path=args.model,
+        evaluation_path=args.evaluation,
     )
     conv = new_conversation(stack)
 
@@ -66,7 +70,8 @@ def main():
             continue
         print(
             f"[turn {result['turn']:>3}] author={result['author']:<12} "
-            f"risk={result['risk_score']:.3f}  agg={result['turn_score']:.3f}"
+            f"risk={result['risk_score']:.3f}  lstm={result['lstm_score']:.3f} "
+            f"weighted={result['weighted_score']:.3f}"
             f"{'  *FLAGGED*' if result['flagged_now'] else ''}"
         )
         print(f"   text: {result['text']}")
@@ -76,7 +81,9 @@ def main():
 
     print("\n--- summary ---")
     print(f"First flagged turn: {conv.first_flagged_turn}")
-    print(f"Final aggregate score: {conv.turn_scores[-1]:.3f}")
+    print(f"Final LSTM score: {conv.turn_scores[-1]:.3f}")
+    print(f"LSTM threshold: {conv.lstm_threshold:.3f}")
+    print(f"Final weighted comparator: {conv.weighted_scores[-1]:.3f}")
     print(f"Peak Layer-1 risk: {max(conv.risk_scores):.3f}")
 
 

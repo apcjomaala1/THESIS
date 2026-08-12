@@ -9,6 +9,68 @@ paper, provenance, or workspace change must receive a dated row here. The
 archived full log preserves every granular update from the recovery and LSTM
 repair sessions, including superseded findings.
 
+## Consultation Demonstration for 2026-08-13
+
+### What is ready to show
+
+The defensible update is a **working provisional two-layer pipeline** and a
+frozen Layer-2 comparison, not a final end-to-end thesis result. The latest
+author-disjoint LSTM achieved recall 0.8333, precision 0.8750, F0.5 0.8663,
+and AUC 0.9904 on its held-out test partition. Under the same fixed Layer 1,
+the weighted scorer achieved F0.5 0.2023 and the Layer-1-only comparator
+achieved F0.5 0.0000. The browser demo now runs the saved author-disjoint LSTM
+turn by turn, displays the validation-selected threshold, retains the weighted
+score as a comparator, and shows the frozen comparison table on the same page.
+
+### Exact launch procedure
+
+Open PowerShell and run:
+
+```powershell
+Set-Location 'C:\Projects\THESIS\grooming-detector\grooming-detector-trajectory-pipeline'
+.\run_consultation_demo.ps1
+```
+
+If PowerShell execution policy blocks that launcher, run `python -m demo.app`
+from the same folder instead.
+
+Wait for `Ready.`, then open `http://127.0.0.1:5000`. Initial model loading was
+smoke-tested offline on the project machine and took approximately 11 seconds.
+The page and message API returned HTTP 200 in the final check.
+
+### Sixty-second explanation
+
+> The major implementation update is that the LSTM is now functioning as the
+> sequence-level second layer. I also replaced the leaky conversation split
+> with a connected-author-disjoint split, selected the alert threshold using
+> validation data only, and compared all methods on the same held-out Layer-2
+> partition. Under that fixed boundary, the LSTM substantially outperformed
+> both the weighted scoring method and the message-classifier-only ablation.
+> During the audit, however, I discovered that the existing PAN training
+> `is_suspicious` field came from corpus correction metadata, not real
+> message-level grooming annotation. Therefore these are explicitly provisional
+> fixed-Layer-1 results. The next experiment will independently annotate the
+> message data, retrain Layer 1 under the same author-disjoint boundary, and then
+> repeat the frozen comparison end to end.
+
+### Ask the adviser to decide
+
+1. Is two independent reviewers for all 1,335 candidate messages acceptable,
+   or is a documented overlapping subset plus adjudication sufficient?
+2. May the thesis retain the current fixed-Layer-1 LSTM result as a preliminary
+   or ablation result while reserving the clean retrained run as the final result?
+3. Does the adviser approve requesting the Cook et al. and Cano Basave et al.
+   labelled datasets as supplementary Layer-1 sources?
+
+### Do not claim
+
+- Do not call the current run the final end-to-end model.
+- Do not describe PAN training `is_suspicious` as genuine message annotation.
+- Do not call a live typed message a validated safety decision; the page is a
+  mechanism demonstration.
+- Do not retrain or tune anything immediately before the consultation. Use the
+  frozen JSON and checkpoint already verified.
+
 ## Immediate Next Steps
 
 1. Preserve the existing author-disjoint LSTM checkpoint and evaluation as the
@@ -40,3 +102,4 @@ repair sessions, including superseded findings.
 | 2026-08-12 | Rechecked PAN12 line semantics against all three PAN-relevant sources cited in the thesis and the retained official ground truth. PAN12 genuinely defined a line-identification test task, but the organizers explicitly released no line-level training data; they later pooled and manually judged submitted test lines, mostly through one expert. The retained Problem-2 file contains 6,478 judged lines across 834 test conversations and has zero conversation overlap with the 16,948-entry training diff or current training CSV. Its matching test XML is absent locally. Villatoro-Tello uses derived conversation labels and no line training labels; Street et al. classify Adult-versus-Child speaker role rather than grooming behavior. Corrected the authority report: every current PAN `is_suspicious` value remains invalid as grooming-message truth, while the separate official test judgments may be a qualified future evaluation resource if their exact corpus is recovered. | Official PAN overview cited as [13]; Villatoro-Tello et al. [14]; Street et al. [2]; retained PAN ground-truth readme/problem2 file; local ID-overlap audit |
 | 2026-08-12 | Fixed the permitted use of PAN12 Problem 2: frozen external message-level evaluation only, never training, validation, tuning, early stopping, or annotation guidance. Any future result must disclose pooled/single-expert, non-exhaustive judgments and use the exact matching test XML plus original conversation/line IDs; the local ID file alone cannot be evaluated. Use the official precision, recall, and recall-weighted F3 measure for comparability. | `CURRENT_STATE_ZERO_AMBIGUITY.md`; official PAN12 overview, Sections 2.2, 3.2, and 4.2 |
 | 2026-08-12 | Audited established alternatives to PAN12. The best Layer-1 acquisition targets are Cook et al. (2023: 6,771 offender messages from 24 PJ chats, 11 strategies plus null, two forensic-psychology coders) and Cano Basave et al. (2014: predator lines from 50 PJ transcripts, three grooming stages plus Other, two trained analysts with agreement-only labels). No public data package was located for either, so access must be requested. Gupta's 75 annotated positive chats are a weaker fallback. ChatCoder2/PANC are useful for supplementary early-detection work but reuse PJ/PAN sources and do not provide fresh message-onset truth; LiveMe is modern and large but its grooming signal is analysis-derived rather than expert message annotation. Any acquired PJ-derived data must undergo transcript/author overlap and licensing/ethics audits before use. | `CURRENT_STATE_ZERO_AMBIGUITY.md`; Cook et al. AIES 2023; Cano Basave et al. SocInfo 2014; Gupta et al. 2012; Vogt et al. ACL 2021; Lykousas and Patsakis 2020 |
+| 2026-08-12 | Prepared the 2026-08-13 consultation demonstration. Updated the browser demo to run the saved author-disjoint LSTM instead of presenting the weighted scorer as the active model; added the validation-selected LSTM threshold, weighted comparator, frozen three-method results table, and an explicit provisional fixed-Layer-1 warning. Made the base DistilBERT encoder load from the local cache to avoid network retries. Added a focused LSTM-demo test; all 56 tests passed with a workspace-local pytest base directory. Real model loading and one-message scoring passed offline, and Flask page/API checks returned HTTP 200. Added a simple PowerShell launcher and updated the package README to identify the LSTM as active and quarantine its superseded weighted-only methodology notes. Browser visual inspection could not be performed because no controllable browser was connected. | `run_consultation_demo.ps1`; `demo/scoring_core.py`; `demo/app.py`; `demo/templates/chat.html`; `demo/static/app.js`; `demo/static/style.css`; `demo/replay.py`; `tests/test_demo_scoring_core.py`; `features.py`; pipeline `README.md`; consultation section above |

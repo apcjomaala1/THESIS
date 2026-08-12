@@ -9,7 +9,10 @@
   <div class="layout">
     <section class="chat-pane">
       <header>
-        <h1>Live Chat</h1>
+        <div>
+          <h1>Live Chat - Author-Disjoint LSTM</h1>
+          <p class="status-note">Provisional fixed-Layer-1 demonstration; not a deployment-ready safety determination.</p>
+        </div>
         <div class="controls">
           <label>Author
             <select id="author">
@@ -39,8 +42,16 @@
           <span id="risk" class="value">—</span>
         </div>
         <div class="agg-row">
-          <span class="label">Weighted score</span>
-          <span id="weighted" class="value">—</span>
+          <span class="label">LSTM score</span>
+          <span id="lstm" class="value">-</span>
+        </div>
+        <div class="agg-row">
+          <span class="label">LSTM threshold</span>
+          <span id="lstm-threshold" class="value">-</span>
+        </div>
+        <div class="agg-row">
+          <span class="label">Weighted comparator</span>
+          <span id="weighted" class="value">-</span>
         </div>
         <div class="agg-row">
           <span class="label">First flagged turn</span>
@@ -50,6 +61,33 @@
       <h3>Trajectory features</h3>
       <table id="features" class="features">
         <tbody></tbody>
+      </table>
+      <h3>Frozen held-out comparison</h3>
+      <p class="evaluation-note">Author-disjoint Layer 2; conditional on the existing fixed Layer 1.</p>
+      <table class="results-table">
+        <thead>
+          <tr><th>Method</th><th>Recall</th><th>F0.5</th><th>AUC</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LSTM</td>
+            <td>{{ "%.3f"|format(evaluation.lstm.recall) }}</td>
+            <td>{{ "%.3f"|format(evaluation.lstm['f0.5']) }}</td>
+            <td>{{ "%.3f"|format(evaluation.lstm.auc_roc) }}</td>
+          </tr>
+          <tr>
+            <td>Weighted</td>
+            <td>{{ "%.3f"|format(evaluation.weighted_scorer.recall) }}</td>
+            <td>{{ "%.3f"|format(evaluation.weighted_scorer['f0.5']) }}</td>
+            <td>{{ "%.3f"|format(evaluation.weighted_scorer.auc_roc) }}</td>
+          </tr>
+          <tr>
+            <td>Layer 1 only</td>
+            <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.recall) }}</td>
+            <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only['f0.5']) }}</td>
+            <td>{{ "%.3f"|format(evaluation.distilbert_current_score_only.auc_roc) }}</td>
+          </tr>
+        </tbody>
       </table>
     </aside>
   </div>
