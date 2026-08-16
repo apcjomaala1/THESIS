@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "status": "LOCKED_BEFORE_REVISED_LAYER1_RETURN",
+  "endpoint": "PAN12 conversation contains at least one listed predator author",
+  "selection_partition": "validation",
+  "checkpoint_objective": "maximum validation average precision",
+  "selection_tie_breakers": [
+    "maximum validation F0.5 at the independently selected threshold",
+    "earliest candidate in this file"
+  ],
+  "seed_policy": "one predeclared seed per candidate",
+  "common_config": {
+    "epochs": 20,
+    "batch_size": 32,
+    "weight_decay": 0.0001,
+    "gradient_clip": 1.0,
+    "early_stopping_patience": 4,
+    "seed": 42
+  },
+  "modes": {
+    "trajectory7": [
+      {
+        "candidate_id": "t7_h128_l1_d020_lr001",
+        "hidden_dim": 128,
+        "num_layers": 1,
+        "dropout": 0.2,
+        "learning_rate": 0.001
+      },
+      {
+        "candidate_id": "t7_h256_l1_d030_lr0005",
+        "hidden_dim": 256,
+        "num_layers": 1,
+        "dropout": 0.3,
+        "learning_rate": 0.0005
+      },
+      {
+        "candidate_id": "t7_h128_l2_d030_lr0005",
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "dropout": 0.3,
+        "learning_rate": 0.0005
+      },
+      {
+        "candidate_id": "t7_h256_l2_d030_lr001",
+        "hidden_dim": 256,
+        "num_layers": 2,
+        "dropout": 0.3,
+        "learning_rate": 0.001
+      }
+    ],
+    "enhanced775": [
+      {
+        "candidate_id": "e775_h128_l1_d020_lr0005",
+        "hidden_dim": 128,
+        "num_layers": 1,
+        "dropout": 0.2,
+        "learning_rate": 0.0005
+      },
+      {
+        "candidate_id": "e775_h256_l1_d030_lr0005",
+        "hidden_dim": 256,
+        "num_layers": 1,
+        "dropout": 0.3,
+        "learning_rate": 0.0005
+      }
+    ]
+  },
+  "final_test_used_for_selection": false,
+  "excluded_historical_test_used_for_selection": false
+}

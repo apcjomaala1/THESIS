@@ -1,6 +1,22 @@
 # Grooming Detection — Trajectory Pipeline
 
-Current two-stage experimental pipeline:
+## Read this first: revised path versus historical path
+
+The adviser approved only the author-derived, conversation-level PAN12
+endpoint. Preparation code for that endpoint is isolated under
+`revised_pipeline/`, with its exact safe workflow in
+`revised_pipeline/README.md`. As of 2026-08-17, no returned revised Layer 1 run
+has been accepted, no revised development cache or LSTM has been produced, and
+the locked final test has not been scored. The new code is preparation, not a
+completed experiment or a result.
+
+Everything described below this banner is the preserved **historical
+pipeline**. Its `is_suspicious` supervision, checkpoints, commands, demo, and
+reported numbers remain useful development evidence, but they must not be used
+as the final revised methodology or as proof that the LSTM fairly beat its
+comparators.
+
+Historical two-stage experimental pipeline:
 
 1. **Layer 1 — DistilBERT message classifier** (`../trained_model_distillbert/`)
    retained as a fixed checkpoint. Its PAN `is_suspicious` supervision has a

@@ -612,6 +612,60 @@ this correction, is in `THESIS_RECOVERY_NEXT_STEPS.md`.
 
 The detailed chronological record is in `THESIS_RECOVERY_NEXT_STEPS.md`.
 
+## Revised downstream preparation — code only (2026-08-17)
+
+Only the author-derived, conversation-level PAN12 endpoint received adviser
+approval. The new `revised_pipeline/` implementation prepares that endpoint; it
+does not establish that every downstream feature, hyperparameter, comparator,
+or statistical choice was separately approved.
+
+The preparation now includes contracts for a returned Layer 1 run, stable-ID
+train/validation score and embedding caches, a benign centroid built only from
+negative training conversations, shared feature-threshold locking that does not
+use weighted-scorer or LSTM outcomes, independently validation-fitted raw Layer
+1 and weighted comparators, a training-derived keyword rule, conversation-only
+seven-input and 775-input LSTMs, grouped uncertainty helpers, artifact
+cross-validation, and a persistent one-time final-test gate. The exact safe
+order and stop condition are recorded in `revised_pipeline/README.md`.
+
+Before any revised Layer 1 result was returned, the downstream LSTM search was
+also locked in `revised_pipeline/experiment_plan.json`: four candidates for
+the primary seven-feature model, two for the separately reported 775-input
+model, seed 42, validation average precision as the selection objective,
+validation F0.5 as the first tie-break, and file order as the final tie-break.
+Every candidate and its validation output must be retained. The freeze gate
+rejects an arbitrary direct LSTM run, regenerates the shared feature thresholds
+and weighted-scorer optimum, validates checkpoint/configuration/source-code
+bindings, and accepts only the deterministically selected search outputs.
+Layer 1 acceptance also reconciles the package's documented hardware-dependent
+batch choices and reads the actual effective training batch from the returned
+Transformers checkpoint state, including any automatic OOM reduction.
+Paired method differences use connected-author-component bootstrap resampling;
+the final methodology text must be updated before execution if it still names
+per-conversation McNemar testing.
+
+The locked threshold objective remains F0.5, which gives more weight to
+precision than recall. Because Chapter I also emphasizes false-negative
+reduction, the pre-execution consistency pass must explicitly justify that
+choice and require recall, false negatives, and the full confusion counts to be
+reported rather than treating F0.5 alone as the safety-relevant outcome.
+
+This is code preparation only. No returned revised Layer 1 run has been
+accepted, no development cache or revised LSTM has been produced, and neither
+locked test partition has been scored by the revised path. The strict loader may
+parse the combined source CSV to validate its hash, eligible population, and
+locked split routing; during development it selects only training and
+validation before building contexts, scoring, embedding, or retaining cache
+rows. Therefore final-test rows are not retained or scored in development, but
+the procedure should not be described as cryptographic text blinding. The
+previously inspected historical test remains permanently prohibited.
+
+The preserved historical checkpoint, demo, and evaluation remain development
+history. No revised superiority claim or result exists yet. The main paper,
+Word document, and presentation were not changed in this preparation. A later
+consistency pass still must align Chapter I, the research questions, objectives,
+and scope with the adviser-approved endpoint before final submission.
+
 ## Authoritative Evidence Files
 
 - `CURRENT_STATE_ZERO_AMBIGUITY.md` — this report.

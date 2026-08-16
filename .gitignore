@@ -22,6 +22,9 @@ grooming-detector/training_packages/layer1_author_proxy/.venv/
 grooming-detector/training_packages/layer1_author_proxy/.verification/
 grooming-detector/training_packages/layer1_author_proxy/runs/
 grooming-detector/training_packages/releases/*.zip
+grooming-detector/training_packages/layer1_author_proxy/.final_test_ledger/
+grooming-detector/grooming-detector-trajectory-pipeline/revised_runs/
+grooming-detector/grooming-detector-trajectory-pipeline/.runtime_search_e2e/
 
 # Large/raw PAN corpus artifacts
 **/pan12*.xml
