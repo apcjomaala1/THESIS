@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "package": "layer1_author_proxy",
+  "version": "1.0.0",
+  "created_on": "2026-08-17",
+  "raw_dataset_in_transfer_zip": "data/pan12_final_dataset.csv",
+  "raw_dataset_sha256": "4131dc7b78865bbe2a48d155f770dd3743236d161b8430893328fbed5a42d408",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4452,
+      "sha256": "d583dea4074fa24dbcc2fd72b5696cb7d8a304676fea7794acd1053e97481de8"
+    },
+    {
+      "path": "build_locked_split.py",
+      "bytes": 14503,
+      "sha256": "9cf02d1224ed73f103105c88697bf6c536c4857ea0f856baec76cbcc2d1f2b9c"
+    },
+    {
+      "path": "locked_split_manifest.json",
+      "bytes": 952786,
+      "sha256": "4f0da3ec1db130cfbef5d41d7085a590ca22e53d0f98137016e1d355ca30a0c0"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 225,
+      "sha256": "eb534a7ed4816fed228aea79c704afd69db4144b36b645951e433476b61edb1b"
+    },
+    {
+      "path": "run_training.ps1",
+      "bytes": 1733,
+      "sha256": "a416c614b61d543900543c50e6b334f998a54fe01084c7b3c9e0dc1e0bca42b7"
+    },
+    {
+      "path": "setup_cuda.ps1",
+      "bytes": 1332,
+      "sha256": "ab2b75010b3067431bd487367b786ed73c56507ed21005cfb8a55583c6de332a"
+    },
+    {
+      "path": "train_layer1_author_proxy.py",
+      "bytes": 23241,
+      "sha256": "1521d6538e791d1f49157793215d18c27742a98f94242cd390417144befaf183"
+    },
+    {
+      "path": "verify_package.ps1",
+      "bytes": 1853,
+      "sha256": "a80319e8775d681d36a89b7c55573312f64c2030bb349dbcbfef195a296cc94d"
+    },
+    {
+      "path": "tests/test_training_package.py",
+      "bytes": 4396,
+      "sha256": "d9e2dff0a9119001d3ea1171db0cce9ce74daf9bbe6f1a4fd772e05ec51369e5"
+    }
+  ]
+}

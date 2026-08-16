@@ -18,6 +18,10 @@
 # Experiment logs and generated temporary outputs
 *.log
 *.pptx.inspect.ndjson
+grooming-detector/training_packages/layer1_author_proxy/.venv/
+grooming-detector/training_packages/layer1_author_proxy/.verification/
+grooming-detector/training_packages/layer1_author_proxy/runs/
+grooming-detector/training_packages/releases/*.zip
 
 # Large/raw PAN corpus artifacts
 **/pan12*.xml

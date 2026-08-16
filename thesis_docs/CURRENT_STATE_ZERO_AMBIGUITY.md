@@ -484,6 +484,34 @@ defensible provenance. The revised implementation must:
 11. Update the paper only from that final report. The historical run may remain
     as a clearly labelled development diagnostic, not an ablation victory.
 
+### Revised Layer 1 training package — ready, not yet trained
+
+The adviser-approved Layer 1 package was completed on 2026-08-17 on branch
+`methodology/author-level-layer1`:
+
+- The accepted active PAN CSV has SHA-256
+  `4131dc7b78865bbe2a48d155f770dd3743236d161b8430893328fbed5a42d408`.
+  Seven malformed rows with missing author labels and one resulting negative
+  validation conversation are excluded rather than silently converted to zero.
+- `locked_split_manifest.json` freezes 13,031 training conversations, 1,827
+  validation conversations, 1,862 newly held-out final-test conversations, and
+  1,847 previously inspected historical-test conversations that are excluded
+  from the revised run. It proves zero conversation, author, and component
+  overlap. The manifest file SHA-256 is
+  `4f0da3ec1db130cfbef5d41d7085a590ca22e53d0f98137016e1d355ca30a0c0`.
+- `train_layer1_author_proxy.py` reads only the official author label, constructs
+  current-plus-two-preceding prefix contexts, downsamples negatives only in
+  training, selects the checkpoint by validation PR-AUC and threshold by
+  validation F0.5, records CUDA/GPU/package/data/model hashes, and does not
+  score either final-test group.
+- The sendable transfer ZIP includes the exact locked CSV and has SHA-256
+  `ed11c4c774704262f1a4ebf97d3ba7a7765b69966e78093402b1cb8626802b24`.
+- Verification passed: deterministic split regeneration, six focused package
+  tests, all 68 existing pipeline tests, a full-corpus dry run, PowerShell and
+  Python syntax checks, extracted-ZIP tests/dry run, and a one-step CUDA/BF16
+  DistilBERT smoke train. No full revised Layer 1 training or final-test scoring
+  was performed locally.
+
 If the adviser requires genuine message-level grooming or onset detection as
 the primary endpoint, this fast route is unavailable. Complete two independent
 blinded reviews and adjudication of the generated 1,335-row worksheet or obtain
