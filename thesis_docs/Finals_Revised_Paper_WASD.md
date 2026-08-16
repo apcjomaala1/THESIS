@@ -242,13 +242,13 @@ This study adopts these theoretical principles, operationalizing the OGDM commun
 
 ## 3.1 Research Design
 
-This study will employ a developmental and experimental research design. The primary objective is to design and evaluate an AI-powered moderation module for detecting grooming-related interactions in chat conversations. The study focuses on combining message-level contextual analysis using DistilBERT with conversation-level behavioral trajectory scoring to improve moderation performance beyond traditional keyword-based approaches.
+This study uses a developmental and experimental research design [15] to build and evaluate an offline conversation-analysis prototype. The approved primary endpoint is **conversation-level identification of PAN12 conversations that contain at least one author listed by PAN12 as a sexual predator**. The endpoint is author-derived and conversation-level; it is not a claim that PAN12 provides complete message-level grooming or grooming-onset annotations.
 
-The prototype consists of three primary stages: (1) data collection and preprocessing, (2) message-level model development using DistilBERT, and (3) comparative evaluation against a rule-based keyword moderation baseline. In addition, the study proposes a conversation-level trajectory scoring model based on a Long Short-Term Memory (LSTM) network, which processes these engineered behavioral indicators sequentially across conversation turns to capture the chronological, progressive risk profile of online grooming.
+The proposed system has two learned layers. Layer 1 fine-tunes DistilBERT using the official predator-author list as weak supervision. For each current turn, it processes that turn together with the two preceding turns and produces a **predator-author proxy score**. Layer 2 uses the chronological sequence of proxy-derived trajectory features to estimate whether the conversation contains a listed predator. The LSTM remains the proposed sequence model, while a weighted scorer, an aggregated raw Layer 1 score, and a keyword rule serve as comparison methods.
 
-Rather than replacing existing moderation systems, the proposed approach is intended to augment current moderation methods by incorporating contextual NLP analysis together with behavioral pattern tracking. The study combines machine learning-based risk scoring with rule-based moderation indicators to evaluate whether contextual and behavioral analysis can improve detection performance.
+All model development and evaluation are conducted through chronological offline replay of dataset conversations. The study does not evaluate deployment latency, platform integration, live users, or autonomous moderation. The output is intended as decision support for human review. A below-threshold result is not a determination that a conversation or participant is safe.
 
-The proposed models will be validated offline using PAN12-derived data as the primary benchmark, with real conversation datasets and synthetically generated annotated chat data used where applicable to supplement underrepresented interaction patterns. Performance will be evaluated quantitatively using classification metrics such as recall, precision, F1-score, and comparative analysis against traditional moderation approaches.
+The experiment tests whether an LSTM using the same seven trajectory inputs as the weighted scorer improves the approved conversation-level endpoint. A larger LSTM that additionally receives a 768-dimensional base DistilBERT embedding is evaluated separately as an enhanced-input model so that an input-capacity difference is not misreported as an architectural advantage. No superiority result is assumed in advance.
 
 ## 3.2 Relevant Technology
 
@@ -262,11 +262,11 @@ The study utilizes the Hugging Face Transformers library together with the PyTor
 
 ### 3.2.3 DistilBERT
 
-DistilBERT serves as the primary message-level language model used in the study. It is a lightweight transformer-based model derived from BERT that retains strong contextual language understanding while reducing computational requirements. The model is suitable for detecting grooming-related interactions because it can analyze contextual meaning rather than relying solely on keyword matching.
+DistilBERT serves as the text encoder and Layer 1 sequence classifier. It is a lightweight transformer-based model derived from BERT that retains contextual language representations while reducing computational requirements. In the revised experiment, the fine-tuned classifier estimates the weakly supervised predator-author target for the current turn under preceding conversational context. Its output is not interpreted as a probability that the current message itself is grooming. A separate, unchanged `distilbert-base-uncased` encoder supplies the 768-dimensional embedding used by topic-distance computation and the enhanced-input LSTM.
 
 ### 3.2.4 Development Environment
 
-The prototype system is developed and tested using Jupyter Notebook and Visual Studio Code within a Python-based experimental environment. GPU acceleration may be utilized during model training to improve computational efficiency. Table 3.1 records the software environment used for the current prototype rerun and demonstration. These versions describe the present reproducibility environment and do not, by themselves, establish the environment used for earlier training runs.
+The prototype system is developed and tested using Jupyter Notebook and Visual Studio Code within a Python-based experimental environment. Layer 1 training is designed to use an NVIDIA CUDA-capable GPU with mixed-precision computation when supported, while retaining a CPU-compatible path. Table 3.1 records the local development environment available when the protocol was revised. The final training run will additionally serialize the teammate workstation's GPU model, CUDA version, package versions, command-line arguments, random seed, source-data hashes, split-manifest hash, and output-checkpoint hash.
 
 | Component | Version |
 |---|---:|
@@ -282,201 +282,133 @@ The prototype system is developed and tested using Jupyter Notebook and Visual S
 
 ## 3.3 Data Collection and Processing
 
-### 3.3.1 Data Collection
+### 3.3.1 Corpus and Label Provenance
 
-The study utilizes a combination of publicly available datasets, real conversation datasets, and synthetically generated annotated chat data for model training and evaluation. 
+The primary experiment uses the PAN12 Sexual Predator Identification training corpus and its official predator-author list [13]. The current audited dyadic candidate pool contains 18,568 conversations, 454 positive conversations, and 34,688 distinct author identifiers before the new final split is locked. Final post-filter message, conversation, author, class, and split counts will be taken from the machine-generated manifest rather than entered manually.
 
-The primary public benchmark used is the PAN12 Sexual Predator Identification corpus, a widely adopted reference dataset in grooming detection research. This corpus contains real chat logs with conversation-level labels identifying predatory interactions and is used to establish baseline performance and enable comparison with prior work in the literature. 
+For conversation \(c\), let \(A_c\) be its set of authors and \(P\) the official PAN12 predator-author set. The primary ground-truth label is
 
-In addition to PAN12-derived data, the study incorporates real conversation datasets collected and annotated for research purposes. These datasets contain per-message labels and conversation identifiers, enabling both message-level analysis and reconstruction of ordered conversation sequences for behavioral and trajectory-based analysis. 
+\[
+Y_c = \mathbf{1}[A_c \cap P \neq \varnothing].
+\]
 
-The study also utilizes synthetically generated annotated chat data to supplement underrepresented interaction patterns not sufficiently represented in publicly available datasets. These synthetic conversations are manually structured and annotated to simulate grooming-related behaviors, conversational progression, obfuscation techniques, and spike-then-drop interaction patterns associated with deliberate moderation evasion. Crucially, to align with current digital environments, the synthetic datasets are explicitly constructed using modern online lingo, contemporary gaming slang, and current communication phrasing to ensure the models are trained on the linguistic realities of today's chat platforms. 
+Thus, a positive case is a conversation containing at least one officially listed predator author. For Layer 1 only, the weak target for turn \(t\), authored by \(a_t\), is
 
-All datasets are organized into a unified structure containing conversation IDs, message order, participant identifiers, and annotation labels to support preprocessing, feature engineering, model training, and evaluation.
+\[
+Z_t = \mathbf{1}[a_t \in P].
+\]
 
-Table 3.1 summarizes the datasets used in this study.
+Because \(Z_t\) repeats an author-level identity label on that author's turns, it does not establish that a particular turn contains grooming behavior. The Layer 1 output is therefore called a predator-author proxy score rather than a grooming-message probability.
 
-__Dataset__
+Table 3.2 separates the valid supervision from project artifacts that are not eligible for the revised experiment.
 
-__Source__
+| Data artifact | Available supervision | Role in the revised experiment |
+|---|---|---|
+| PAN12 training conversations and official predator list | Author identity and derived conversation label | Sole source for primary training, validation, and final evaluation |
+| PAN12 training `diff.txt` / project `is_suspicious` | Locations where released text was modified | Excluded from every filter, target, loss, feature decision, and metric |
+| Project synthetic chat files | Generator-, scenario-, or speaker-role-derived proxy labels without completed independent review | Excluded from the primary experiment |
+| PAN12 Problem 2 judged test lines | Pooled post-competition line judgments; matching test text is not available locally | Not used; eligible only for a separately qualified future external evaluation if the exact test corpus is recovered |
 
-__Size__
+*Table 3.2. Label provenance and eligibility for the revised experiment.*
 
-__Label Type__
+### 3.3.2 Inclusion and Preprocessing
 
-PAN12 Sexual Predator Dataset
+The primary corpus is restricted to conversations with exactly two distinct authors to match the dyadic interaction scope and the implemented turn-taking feature. Empty messages and rows without a valid conversation identifier, chronological line identifier, author identifier, or binary official predator-author status are excluded. Original conversation and line identifiers are retained. Each usable row receives a stable key based on dataset source, conversation identifier, and line identifier so that duplicate text cannot overwrite another turn's cached score.
 
-PAN12 Competition Corpus
+Conversations are ordered by their original line identifier. Layer 1 receives a prefix-only context consisting of the current turn and up to two immediately preceding turns from the same conversation. Neutral turn separators are inserted, but raw author identifiers, predator-list membership, the project `is_suspicious` field, source-revealing role names, future turns, and conversation labels are never included in model text. Training and inference use the identical context-construction function. The DistilBERT tokenizer truncates each context to 128 tokens and applies dynamic padding within each batch.
 
-Conversation count determined from the PAN12-derived split used in this study
+Text normalization is deliberately conservative: character encoding and whitespace are standardized, while altered spellings and obfuscations are retained so that evaluation does not benefit from a hand-written correction rule unavailable to the learned model. The primary experiment does not add synthetic conversations or separately collected chat logs.
 
-Per-conversation \+ suspicious-line annotations
+### 3.3.3 Connected-Author Data Partitioning
 
-Study Dataset (provided)
+The dataset is partitioned before negative sampling, context caching, centroid construction, model fitting, or threshold selection. Conversations are represented as vertices in a graph; any conversations sharing an author are connected. Every resulting connected component is assigned wholly to one partition, creating zero conversation overlap and zero author overlap across training, validation, and final test data.
 
-Institutional/platform logs (proposed future data source)
+Because an earlier pipeline already exposed results on its historical test partition, that partition is retained only as development history. Before training the revised model, a new final holdout is selected from previously unscored connected-author components using metadata only: component membership, partition size, and class balance. No model score or text-derived feature is used to choose the holdout. The remaining eligible components are assigned to training and validation. The exact assignments, counts, random seed, source-data hash, and manifest hash are serialized and locked before the first revised training run.
 
-Variable
-
-Per-message \+ Conversation ID
-
-Simulated Chat Data
-
-Manually generated synthetic datasets
-
-Supplementary
-
-Per-message
-
-*Table 3.1. Summary of Datasets Used*
-
-### 3.3.2 Data Preprocessing
-
-The preprocessing procedures are applied to PAN12-derived datasets, real conversation datasets, and synthetically generated annotated chat data used for model training and evaluation.
-
-At the message level, text is cleaned to remove formatting inconsistencies, normalize punctuation, and standardize character encoding. Obfuscated terms, such as altered spellings or special-character substitutions commonly used to bypass moderation systems, are normalized where applicable. Messages are then tokenized using the DistilBERT tokenizer with a maximum token length of 512 tokens, consistent with the model’s architectural constraints.
-
-At the conversation level, messages are grouped according to conversation ID and arranged chronologically to preserve the sequential flow of interactions. This organization enables the study to analyze conversational progression and behavioral patterns across multiple message exchanges rather than evaluating messages in isolation.
-
-For trajectory-based analysis, conversation data is represented as sequential conversation instances corresponding to message turns. These instances support the analysis of how behavioral risk indicators evolve throughout a conversation. The processed data is then used for message-level classification and conversation-level behavioral scoring.
-
-### 3.3.3 Data Processing
-
-The collected datasets undergo data processing to organize raw chat records into a structured format suitable for analysis and model training. Chat logs from different sources are standardized into a unified dataset structure containing conversation identifiers, message order, participant labels, timestamps where available, and annotation labels.
-
-Annotation labels indicating predatory, suspicious, or non-predatory behavior are associated with corresponding messages or conversations. Synthetic annotated data generated for the study is also integrated into the same dataset structure to maintain consistency across all data sources.
-
-The resulting processed datasets are stored in structured formats such as CSV files to support preprocessing, feature engineering, model training, and evaluation.
+The training partition is used for parameter estimation and may downsample negative Layer 1 rows using a recorded ratio. Downsampling occurs only after the split and only in training. Validation and final test distributions remain untouched. The validation partition is used for checkpoint selection, hyperparameter selection, comparator fitting, and threshold selection. The locked final test is evaluated once after code, checkpoints, thresholds, feature definitions, and reporting rules are frozen.
 
 ### 3.3.4 Feature Engineering
 
-Two categories of features are extracted for each conversation snapshot: message-level features derived from the DistilBERT encoder, and trajectory-level features derived from the evolving sequence of risk scores across turns.
+Let \(R_i\) denote the Layer 1 predator-author proxy score at turn \(i\), \(E_t\) the 768-dimensional embedding from the unchanged base `distilbert-base-uncased` encoder for the current turn, \(C_b\) a benign-chat centroid computed only from negative conversations in the training partition, \(T_a\) the number of turns contributed by participant \(a\), \(\tau\) the spike threshold, and \(\delta\) the drop threshold. The seven trajectory features at turn \(t\) are:
 
-Message-level features consist of the 768-dimensional embedding produced by the fine-tuned DistilBERT model for each individual message. While pre-trained transformers map general semantic similarity, the fine-tuning process warps this continuous vector space so that proximity is determined by pragmatic intent and behavioral alignment relative to the predatory register. Consequently, messages sharing subtle grooming markers (such as boundary-probing or isolation attempts) are projected into proximate vector regions, even when their surface-level lexical content appears completely benign.
-
-Trajectory-level features are computed over conversation history up to the current turn and serve as chronological sequence inputs to the LSTM trajectory scoring model. Let \(R_i\) denote the message-level score at turn \(i\), \(E_t\) the embedding for the current turn, \(C_b\) the precomputed benign-chat centroid, \(T_a\) the number of turns contributed by participant \(a\), \(\tau=0.5\) the current spike threshold, and \(\delta=0.2\) the current drop threshold. The seven implemented trajectory features at turn \(t\) are:
-
-1. **Peak score:** \(\max_{1 \leq i \leq t} R_i\), with range \([0,1]\).
-2. **Current score:** \(R_t\), with range \([0,1]\).
+1. **Peak proxy score:** \(\max_{1 \leq i \leq t} R_i\), with range \([0,1]\).
+2. **Current proxy score:** \(R_t\), with range \([0,1]\).
 3. **Spike count:** \(\sum_{i=1}^{t}\mathbf{1}[R_i>\tau]\), with range \([0,t]\).
-4. **Spike-then-drop:** a binary value equal to 1 when an earlier score exceeded \(\tau\) and a later score dropped by more than \(\delta\); otherwise 0.
+4. **Spike-then-drop:** 1 when an earlier score exceeded \(\tau\) and a later score dropped by more than \(\delta\); otherwise 0.
 5. **Rate of change:** \(R_t-R_{t-1}\), or 0 for the first turn, with range \([-1,1]\).
-6. **Topic drift:** \(1-\cos(E_t,C_b)\), with theoretical range \([0,2]\).
-7. **Turn-taking imbalance:** for the two participants with the most turns, \(\lvert T_A-T_B\rvert/(T_A+T_B)\), with range \([0,1]\). The implementation counts turns, not words.
+6. **Topic distance:** \(1-\cos(E_t,C_b)\), with theoretical range \([0,2]\).
+7. **Turn-taking imbalance:** \(\lvert T_A-T_B\rvert/(T_A+T_B)\), with range \([0,1]\). The implementation counts turns, not words.
 
-Topic drift is computed as the cosine distance between the current turn's message embedding and a precomputed benign-chat centroid. While traditional drift metrics measure changes relative to the conversation's initial turn, this approach is vulnerable if a predator bypasses small-talk and initiates predatory language immediately. By measuring cosine distance against a static, precomputed centroid of safe/benign chat language, the topic drift feature remains highly sensitive to immediate risk escalation on turn one.
+The centroid source conversation IDs and embedding-model digest are recorded, and validation or test text is never used to construct it. The spike and drop thresholds are selected on validation data and then frozen. Each turn-level cache is keyed by the stable dataset/conversation/line identifier and records the context-construction version, Layer 1 checkpoint digest, base-encoder digest, and split assignment.
 
-Table 3.2 summarizes the features used in the trajectory model.
+| Input | Definition | Models receiving it |
+|---|---|---|
+| Layer 1 proxy score | Context-conditioned estimate of the author-derived target \(Z_t\) | Raw Layer 1 baseline and trajectory-feature construction |
+| Seven trajectory features | Peak, current, spike count, spike-then-drop, rate of change, topic distance, and turn imbalance | Weighted scorer and primary matched-input LSTM |
+| Base DistilBERT embedding | 768-dimensional contextual text representation, separate from the Layer 1 proxy | Secondary enhanced-input LSTM only |
 
-__Feature__
-
-__Description__
-
-__Level__
-
-DistilBERT message embedding
-
-768-dimensional semantic vector per message
-
-Message
-
-Per-message risk score
-
-Output of the message-level DistilBERT classifier (0-1)
-
-Message
-
-Peak score so far
-
-Highest score observed up to and including the current turn
-
-Trajectory
-
-Spike-then-drop pattern
-
-Detection of deliberate score suppression behavior
-
-Trajectory
-
-Rate of score change
-
-Delta between consecutive message risk scores
-
-Trajectory
-
-Topic drift
-
-Cosine distance between the current message embedding and a precomputed centroid of benign-chat conversations
-
-Trajectory
-
-Turn-taking imbalance
-
-Normalized difference in turn counts between the two most active participants
-
-Structural
-
-Spike count
-
-Number of times score exceeded risk threshold
-
-Trajectory
-
-*Table 3.2. Trajectory Features Extracted Per Conversation Snapshot*
-
-### 3.3.5 Data Splitting
-
-The processed dataset is divided into training, validation, and test sets to support model development and evaluation. Splitting is performed at the conversation level to prevent data leakage between datasets and preserve the integrity of conversational context.
-
-The training set is used for model learning, while the validation set is used for threshold tuning and parameter adjustment. The test set is reserved for final evaluation of the proposed moderation approach and comparison against the rule-based baseline model.
-
-This separation ensures that conversations used during evaluation are not previously seen during training, allowing a more reliable assessment of model performance.
+*Table 3.3. Inputs used by the revised comparison methods.*
 
 ## 3.4 Model Development
 
-### 3.4.1 Message-Level Classifier
+### 3.4.1 Author-Derived Layer 1 Classifier
 
-The message-level classifier is based on DistilBERT, a transformer model pre-trained on large-scale English text corpora and fine-tuned for binary sequence classification on the study's labeled message dataset. Fine-tuning adapts the pre-trained model's general language representations to the specific linguistic patterns of grooming-related communication, including subtle forms of trust-building, isolation attempts, and PII solicitation.
+Layer 1 uses `distilbert-base-uncased` with a two-class sequence-classification head. Its input is the current turn plus the two preceding turns defined in Section 3.3.2, and its target is the current author's official predator-list membership \(Z_t\). The training loss is two-class cross-entropy. Negative-row downsampling is confined to the training partition; validation and final test rows retain their natural class distribution.
 
-Training uses a binary cross-entropy loss function. Given the expected class imbalance between predatory and non-predatory messages, the training procedure applies class-weight balancing to prevent the model from biasing toward the majority class. The classifier outputs a scalar risk score between 0 and 1 for each message, representing the estimated probability of predatory content.
+Optimization uses AdamW, a recorded random seed, gradient clipping, validation-based early stopping, and mixed precision on a compatible NVIDIA GPU. All numeric choices, including learning rate, batch size, gradient accumulation, epoch limit, warm-up ratio, weight decay, and negative-sampling ratio, are specified in the training configuration rather than altered after test inspection. The checkpoint is selected using validation area under the precision-recall curve (PR-AUC), and its operating threshold is selected separately on validation data using F0.5. The selected checkpoint, tokenizer, configuration, metrics history, row manifest, and cryptographic hashes are saved together.
+
+The positive-class softmax output is denoted \(R_t\). It estimates the weak author-derived classification target under the available text context. It must not be described as a validated probability of grooming content, grooming phase, or grooming onset.
 
 ### 3.4.2 LSTM-Based Trajectory Scoring Model
 
-The trajectory model utilizes a Long Short-Term Memory (LSTM) network that takes as input a sequence of turn-level feature vectors containing the message-level DistilBERT risk score and per-turn trajectory feature. Before feature extraction, a precomputation step is run over a corpus of benign chats to calculate the benign-chat centroid used for topic-drift measurement. The LSTM processes this sequence of feature vectors chronologically, automatically learning to map the sequential progression of these behavioral indicators to a real-time trajectory risk score between 0 and 1 at each turn.
+The primary Layer 2 model is an LSTM that receives the chronological sequence of the same seven features supplied to the weighted scorer. Padding masks ensure that padded turns do not affect hidden-state computation. A secondary enhanced-input LSTM concatenates the 768-dimensional base DistilBERT embedding with the seven trajectory features, producing a 775-dimensional turn vector; its result is reported separately and is not used to claim a matched-input architectural advantage.
 
-The LSTM model is trained using binary cross-entropy loss against cumulative conversation-level labels, optimizing its internal gating weights to detect threat escalation. The system emphasizes early detection operationally by recording the first turn where the LSTM's trajectory score exceeds the tuned flagging threshold (time-to-detection).
+Layer 2 is trained only against the valid conversation label \(Y_c\). Binary cross-entropy with logits is applied to the output at the final valid turn, with any positive-class weighting computed from training conversations only. No turn-level loss, cumulative `is_suspicious` target, or repeated predator-author label is used as grooming-onset supervision. Validation selects the LSTM checkpoint and its conversation flagging threshold. Intermediate prefix scores may be displayed to demonstrate sequence processing, but the first threshold crossing is reported only as an exploratory prefix statistic, not as validated grooming onset or time-to-harm.
 
-The trajectory risk score is the primary output consumed by the moderation module. A configurable threshold determines when a conversation is flagged for human review. The threshold is tuned during validation to optimize recall — the study's primary metric — while maintaining a false positive rate that is operationally sustainable for the moderation team.
+### 3.4.3 Comparison Models
 
-### 3.4.3 Baseline Comparison Model
+Four comparisons are evaluated on the same conversation endpoint and locked partitions:
 
-To evaluate the improvement introduced by the proposed approach, a keyword-based moderation baseline will be implemented using the same dataset. The baseline will utilize a keyword lexicon extracted via term-frequency analysis from the predatory class of the PAN12 training split to flag messages. Conversations in which any message is flagged by the baseline will be marked as harmful. This mirrors the behavior of conventional rule-based moderation systems and serves as the comparison point for all evaluation metrics.
+1. **Aggregated raw Layer 1:** the maximum \(R_t\) in a conversation, using its independently selected validation threshold.
+2. **Weighted trajectory scorer:** a validation-fitted combination of the seven trajectory features, with its own validation-selected weights and threshold.
+3. **Keyword rule:** a fixed lexicon derived only from the revised training partition; a conversation is positive when any turn matches the rule. Lexicon construction and matching rules are frozen before final testing.
+4. **Enhanced-input LSTM:** the 775-input LSTM reported separately from the primary matched seven-feature LSTM.
+
+The principal architecture comparison is the seven-feature LSTM versus the seven-feature weighted scorer. Every learned comparator is tuned independently on validation data. The raw Layer 1 baseline uses its actual positive-class score directly and is not passed through the weighted scorer or another sigmoid.
 
 ## 3.5 Evaluation/Validation
 
-### 3.5.1 Evaluation Metrics
+### 3.5.1 Validation and Final-Test Protocol
 
-The dataset is divided into training, validation, and test sets at the conversation level to prevent data leakage across splits. The validation set is used to tune model parameters, evaluating early-detection thresholds and LSTM sequence length bounds, while the test set is reserved for final comparative evaluation against the baseline.
+All development decisions are made from the training and validation partitions. Layer 1 checkpoint selection, negative-sampling configuration, LSTM configuration, weighted-scorer weights, keyword lexicon, feature thresholds, and every classification threshold are frozen before the new final holdout is scored. The final evaluation script verifies the data and configuration hashes, evaluates every method on identical conversation IDs, and writes predictions and metrics without modifying the saved configuration.
 
-Model robustness is also evaluated using cases that represent common moderation challenges, including obfuscated text and conversations where risk indicators appear across multiple turns. These cases help assess whether the proposed approach can detect grooming-related interactions beyond isolated keyword matches.
+The historical LSTM result obtained before this correction is retained only as a development diagnostic because its Layer 1 supervision, comparator tuning, and test-use history do not satisfy the revised protocol. It is not combined with or substituted for the new final evaluation. The revised result is reported even if the LSTM does not outperform a baseline.
 
-The proposed approach is compared against a keyword-based or rule-based baseline using the same test set and evaluation metrics. This comparison determines whether the combination of DistilBERT-based message analysis and conversation-level behavioral scoring improves detection performance, particularly in terms of recall and false-negative reduction.
+### 3.5.2 Metrics and Comparative Analysis
 
-### 3.5.2 Testing and Validation
+The unit of primary evaluation is the conversation, with \(Y_c\) as ground truth. For each method, the report includes the numbers of true positives, false positives, true negatives, and false negatives, together with precision, recall, specificity, F1, F0.5, PR-AUC, and ROC-AUC. Precision, recall, F1, and F0.5 are computed as
 
-Model robustness is evaluated using adversarial or evasive conversation patterns identified as limitations of traditional moderation systems. These include conversations containing obfuscated text, altered spellings, coded language, or gradual behavioral progression intended to reduce apparent message risk over time.
+\[
+\text{Precision}=\frac{TP}{TP+FP}, \qquad
+\text{Recall}=\frac{TP}{TP+FN},
+\]
 
-The proposed approach is compared directly against a keyword-based or rule-based baseline using the same evaluation dataset and metrics. Comparative evaluation focuses primarily on recall, false-negative reduction, and overall moderation performance.
+\[
+F_1=\frac{2PR}{P+R}, \qquad
+F_{0.5}=\frac{1.25PR}{0.25P+R}.
+\]
 
-Where applicable, additional statistical analysis methods, such as McNemar’s test, may be explored in future work to further validate differences between moderation approaches.
+PR-AUC is emphasized alongside thresholded metrics because positive conversations are rare. Validation PR-AUC selects checkpoints, while validation F0.5 selects operating thresholds; no threshold is retuned on the final test. Ninety-five-percent confidence intervals are estimated by bootstrap resampling connected-author components so that conversations linked by an author remain grouped. Pairwise thresholded predictions may additionally be compared with McNemar's test when the number of discordant final-test cases is sufficient.
+
+Prefix-level scores and first-threshold-crossing turns are summarized only as exploratory sequence behavior. PAN12 does not supply exhaustive training annotations for the first grooming turn, so these summaries are not evaluated or described as message-level detection accuracy, grooming-stage accuracy, or true time to detection.
 
 ## 3.6 Ethical Considerations
 
 All datasets used in this study are handled in accordance with applicable data-protection and research-ethics principles. The PAN12 corpus is a publicly available research dataset with established usage guidelines. In the local demonstration interface, common direct identifiers—including email addresses, phone numbers, URLs, IPv4 addresses, and common account handles—are masked before model scoring and in-memory retention. Responses are marked as non-cacheable, and resetting the demonstration deletes the active in-process conversation object. These safeguards reduce exposure but do not guarantee complete anonymization: automatic pattern matching may miss names, indirect identifiers, unusual formats, or identifying combinations of details. Real sensitive information must therefore not be entered into the prototype, and any research data still requires access control and manual privacy review.
 
-The study does not involve direct interaction with real users. The prototype is evaluated offline using dataset records, including PAN12-derived data, anonymized real conversation data, and synthetically generated annotated chat data. Synthetic data is used only for controlled research purposes, particularly to represent underrepresented grooming-related patterns and evasion behaviors. 
+The study does not involve direct interaction with real users. The revised primary experiment is evaluated offline using PAN12-derived records only. The locally retained synthetic candidate data and any separately collected conversation files are excluded from primary training, validation, and testing unless a later study completes appropriate provenance, licensing, privacy, and independent annotation review.
 
-The moderation module is designed as a support tool for human moderators rather than an autonomous decision-making mechanism. Flagged conversations are intended for human review before any moderation action is taken, preserving human oversight and reducing the risk of algorithmic harm to falsely flagged users.
+The moderation module is designed as a support tool for human moderators rather than an autonomous decision-making mechanism. A model flag indicates similarity to the approved PAN12 author/conversation endpoint and requires human review before any moderation action. It must not be used to identify a person as an offender, infer intent from an isolated message, or declare an unflagged conversation safe.
 
 # References
 

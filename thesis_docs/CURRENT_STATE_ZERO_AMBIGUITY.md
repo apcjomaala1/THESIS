@@ -447,10 +447,10 @@ Not yet defensible:
 
 ## Required Time-Constrained Primary Experiment
 
-**Scope gate:** ask the adviser to approve conversation-level identification of
-PAN12 conversations containing a listed predator as the final empirical
-endpoint. This is the only large, locally available target with defensible
-provenance. After approval:
+**Scope decision (approved by the adviser on 2026-08-17):** the final empirical
+endpoint is conversation-level identification of PAN12 conversations containing
+a listed predator. This is the only large, locally available target with
+defensible provenance. The revised implementation must:
 
 1. Preserve the current checkpoint, evaluation JSON, and split audit unchanged
    as historical development artifacts.
