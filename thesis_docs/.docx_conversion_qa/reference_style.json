@@ -1,0 +1,126 @@
+{
+  "input": "C:\\Projects\\THESIS\\Finals_Revised_Paper_WASD.docx",
+  "fonts_by_char_count": {
+    "Arial": 1247,
+    "Times New Roman": 1033
+  },
+  "direct_run_formatting_runs": 119,
+  "direct_paragraph_formatting_paragraphs": 76,
+  "heading_like_paragraphs_not_heading_style": [
+    {
+      "para_index": 7,
+      "text": "THESIS2",
+      "style": "Normal"
+    },
+    {
+      "para_index": 43,
+      "text": "1.4.2 Limitations of the Study",
+      "style": "Normal"
+    },
+    {
+      "para_index": 200,
+      "text": "Component",
+      "style": "Normal"
+    },
+    {
+      "para_index": 201,
+      "text": "Version",
+      "style": "Normal"
+    },
+    {
+      "para_index": 216,
+      "text": "Dataset",
+      "style": "Normal"
+    },
+    {
+      "para_index": 217,
+      "text": "Source",
+      "style": "Normal"
+    },
+    {
+      "para_index": 218,
+      "text": "Size",
+      "style": "Normal"
+    },
+    {
+      "para_index": 219,
+      "text": "Label Type",
+      "style": "Normal"
+    },
+    {
+      "para_index": 232,
+      "text": "Feature",
+      "style": "Normal"
+    },
+    {
+      "para_index": 233,
+      "text": "Description",
+      "style": "Normal"
+    },
+    {
+      "para_index": 234,
+      "text": "Level",
+      "style": "Normal"
+    }
+  ],
+  "examples": {
+    "direct_paragraph_formatting": [
+      {
+        "para_index": 1,
+        "text": "",
+        "style": "Normal"
+      },
+      {
+        "para_index": 2,
+        "text": "AI-Based Detection of Grooming-Related Interactions in Chat Conversations Using Contextual and Behavioral Analysis",
+        "style": "Normal"
+      },
+      {
+        "para_index": 3,
+        "text": "A Thesis Proposal Submitted to the Faculty",
+        "style": "Normal"
+      },
+      {
+        "para_index": 4,
+        "text": "of the School of Computing and Information Technologies",
+        "style": "Normal"
+      },
+      {
+        "para_index": 5,
+        "text": "Asia Pacific College, Makati City",
+        "style": "Normal"
+      }
+    ],
+    "direct_run_formatting": [
+      {
+        "para_index": 2,
+        "run_text": "AI-Based Detection of Grooming-Related Interactions in Chat Conversations Using ",
+        "style": "Normal"
+      },
+      {
+        "para_index": 7,
+        "run_text": "THESIS",
+        "style": "Normal"
+      },
+      {
+        "para_index": 7,
+        "run_text": "2",
+        "style": "Normal"
+      },
+      {
+        "para_index": 13,
+        "run_text": "I. Introduction",
+        "style": "Heading 1"
+      },
+      {
+        "para_index": 14,
+        "run_text": "1.1 Background of the Study",
+        "style": "Heading 2"
+      }
+    ]
+  },
+  "notes": [
+    "Direct formatting is not always wrong, but it often causes inconsistent output when templates change.",
+    "Heading-like paragraphs not using Heading styles can break TOC and accessibility."
+  ]
+}

@@ -205,6 +205,20 @@ def test_returned_layer1_contract_accepts_documented_larger_requested_batch(tmp_
     assert receipt["effective_train_batch_size"] == 64
 
 
+def test_returned_layer1_contract_accepts_consumer_gpu_requested_batch(tmp_path):
+    run, split_path, package_path, source = _build_fake_run(tmp_path)
+    config_path = run / "run_configuration.json"
+    configuration = json.loads(config_path.read_text())
+    configuration["arguments"]["train_batch_size"] = 8
+    configuration["arguments"]["eval_batch_size"] = 16
+    config_path.write_text(json.dumps(configuration))
+    state_path = run / "checkpoints" / "checkpoint-1" / "trainer_state.json"
+    state_path.write_text(json.dumps({"train_batch_size": 8}))
+    receipt = validate_layer1_run(run, split_path, package_path, source)
+    assert receipt["requested_train_batch_size"] == 8
+    assert receipt["effective_train_batch_size"] == 8
+
+
 def test_returned_layer1_contract_rejects_model_tree_tamper(tmp_path):
     run, split_path, package_path, source = _build_fake_run(tmp_path)
     (run / "best_model" / "model.safetensors").write_bytes(b"tampered")

@@ -32,6 +32,9 @@ EXPECTED_LAYER1_ARGUMENTS: dict[str, Any] = {
 }
 
 ALLOWED_LAYER1_REQUESTED_BATCH_PAIRS = {
+    (8, 16),
+    (16, 32),
+    (32, 64),
     (64, 128),
     (128, 256),
 }

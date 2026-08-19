@@ -380,7 +380,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dataloader-workers",
         type=int,
-        default=min(8, max(0, (os.cpu_count() or 2) - 1)),
+        default=0 if sys.platform.startswith("win") else min(8, max(0, (os.cpu_count() or 2) - 1)),
     )
     parser.add_argument("--preprocessing-workers", type=int, default=1)
     parser.add_argument(
@@ -583,10 +583,33 @@ def main() -> None:
     best_model_dir = output_dir / "best_model"
     trainer.save_model(str(best_model_dir))
     tokenizer.save_pretrained(str(best_model_dir))
-    prediction = trainer.predict(validation_dataset, metric_key_prefix="validation")
-    probabilities = positive_probabilities(prediction.predictions)
+
+    # Evaluate validation rows sequentially to guarantee exact row-ID alignment
+    model.eval()
+    val_contexts = validation_rows["text"].tolist()
+    val_probs: list[float] = []
+    eval_batch = max(1, args.eval_batch_size)
+    use_device = torch.device("cuda" if use_cuda else "cpu")
+    with torch.inference_mode():
+        for start in range(0, len(val_contexts), eval_batch):
+            batch_texts = val_contexts[start : start + eval_batch]
+            encoded = tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=args.max_length,
+                return_tensors="pt",
+            )
+            encoded = {k: v.to(use_device) for k, v in encoded.items()}
+            encoded.pop("token_type_ids", None)
+            logits = model(**encoded).logits
+            probs = torch.softmax(logits.float(), dim=-1)[:, 1]
+            val_probs.extend(probs.cpu().numpy().tolist())
+
+    probabilities = np.array(val_probs, dtype=np.float64)
     labels = validation_rows["label"].to_numpy(dtype=np.int8)
     threshold, validation_metrics = select_f05_threshold(labels, probabilities)
+    eval_at_05 = metrics_at_threshold(labels, probabilities, 0.5)
 
     prediction_output = validation_rows[
         ["row_id", "conversation_id", "line", "label"]
@@ -611,7 +634,15 @@ def main() -> None:
             "best_checkpoint": trainer.state.best_model_checkpoint,
             "best_validation_pr_auc": trainer.state.best_metric,
             "train_metrics": train_result.metrics,
-            "prediction_metrics": prediction.metrics,
+            "prediction_metrics": {
+                "validation_accuracy": eval_at_05["accuracy"],
+                "validation_precision_at_0_5": eval_at_05["precision"],
+                "validation_recall_at_0_5": eval_at_05["recall"],
+                "validation_f1_at_0_5": eval_at_05["f1"],
+                "validation_f0_5_at_0_5": eval_at_05["f0_5"],
+                "validation_pr_auc": eval_at_05["pr_auc"],
+                "validation_roc_auc": eval_at_05["roc_auc"],
+            },
             "selected_threshold": threshold,
             "validation_metrics_at_selected_threshold": validation_metrics,
             "best_model_tree_sha256": tree_sha256(best_model_dir),

@@ -43,8 +43,8 @@
     },
     {
       "path": "train_layer1_author_proxy.py",
-      "bytes": 23241,
-      "sha256": "1521d6538e791d1f49157793215d18c27742a98f94242cd390417144befaf183"
+      "bytes": 24652,
+      "sha256": "25ad7c3d6f6601ae233d565831db70170a1110b228fe03c4f905b4d519a02701"
     },
     {
       "path": "verify_package.ps1",
