@@ -4,15 +4,17 @@
 
 The adviser approved only the primary endpoint: conversation-level
 identification of PAN12 conversations containing at least one author on the
-official predator list. This package prepares an implementation of that
-endpoint; it does not mean that every downstream feature, hyperparameter, or
-statistical choice has separately received adviser approval.
+official predator list. This package implements and records the completed
+experiment for that endpoint; it does not imply that every downstream feature,
+hyperparameter, or statistical choice separately received adviser approval.
 
-As of 2026-08-17, this is preparation code only. No returned Layer 1 run has
-been accepted, no development cache has been generated, neither revised LSTM
-has been trained, and the locked final test has not been scored. The preserved
-historical pipeline and its results remain development history, not revised
-evidence.
+As of 2026-08-24, the revised pipeline has completed. The accepted Layer 1 run,
+development caches, centroid, comparators, deterministic LSTM searches, freeze
+receipt, and final evaluation are retained locally under `revised_runs/`. The
+one-time final-test ledger is consumed. **Do not arm or score the final test
+again, and do not use final-test predictions to change a model, feature,
+threshold, or comparator.** The commands below document the executed workflow;
+development-only stages remain reusable on training and validation data.
 
 The revised endpoint is author-derived and conversation-level. A Layer 1 score
 is a predator-author proxy under prefix context, not a validated probability
@@ -98,9 +100,11 @@ Stop if validation fails. Do not work around a hash, argument, row-ID,
 threshold, label, or no-test-scoring error.
 
 Return the complete run, including its retained `checkpoint-*` Trainer state.
-The validator accepts only the package-documented requested batch pairs
-`64/128` or `128/256` (training/evaluation) and records the effective training
-batch after any automatic memory reduction.
+The validator accepts the documented hardware-dependent requested batch pairs
+`8/16`, `16/32`, `32/64`, `64/128`, or `128/256`
+(training/evaluation) and records the effective training batch after any
+automatic memory reduction. The completed Layer 1 run used `8/16` with
+gradient accumulation 1.
 
 ### 2. Generate train/validation caches only
 

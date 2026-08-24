@@ -666,6 +666,81 @@ Word document, and presentation were not changed in this preparation. A later
 consistency pass still must align Chapter I, the research questions, objectives,
 and scope with the adviser-approved endpoint before final submission.
 
+## Completed revised experiment and manuscript state (2026-08-24)
+
+The adviser-approved revised experiment is complete for the defined endpoint:
+**a PAN12 conversation contains at least one author on the official predator
+list**. The endpoint is author-derived and conversation-level. It does not mean
+that every turn is grooming, and the system is not a message-level intent or
+grooming-stage classifier.
+
+The connected-author split remained fixed throughout execution: 13,031
+training conversations, 1,827 validation conversations, and 1,862 held-out
+final-test conversations (44 endpoint-positive and 1,818 endpoint-negative)
+across 1,800 final-test author-connected components. Model/checkpoint selection,
+shared feature settings, comparator fitting, and operating thresholds were
+completed before the one-time final evaluation. The persistent final-test
+ledger has been consumed. The final partition must not be rescored, and no
+model may now be retrained or threshold, feature, comparator, or hyperparameter
+choice retuned against that result. A new experiment would require a new,
+independent test partition and a separately frozen protocol.
+
+The frozen final-test results reported in the current Chapter IV are:
+
+| Method | PR-AUC [95% CI] | ROC-AUC [95% CI] | F0.5 [95% CI] | Precision | Recall | Specificity | TP | FP | FN | TN |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Keyword rule | 0.4451 [0.2930, 0.5664] | 0.8038 [0.7536, 0.8665] | 0.6888 [0.5072, 0.8010] | 0.7105 | 0.6136 | 0.9939 | 27 | 11 | 17 | 1,807 |
+| Maximum Layer 1 proxy | 0.5523 [0.3210, 0.7422] | 0.9678 [0.9087, 0.9916] | 0.5529 [0.3053, 0.7042] | 0.5610 | 0.5227 | 0.9901 | 23 | 18 | 21 | 1,800 |
+| Weighted scorer | 0.8050 [0.6163, 0.9263] | 0.9719 [0.9063, 0.9971] | 0.7500 [0.5384, 0.8649] | 0.7347 | 0.8182 | 0.9928 | 36 | 13 | 8 | 1,805 |
+| **Primary trajectory LSTM** | **0.9153 [0.7781, 0.9876]** | **0.9930 [0.9790, 0.9997]** | **0.8621 [0.6944, 0.9513]** | **0.8511** | **0.9091** | **0.9961** | **40** | **7** | **4** | **1,811** |
+| Enhanced LSTM | 0.9483 [0.7940, 0.9965] | 0.9987 [0.9964, 0.9999] | 0.8836 [0.7181, 0.9667] | 0.8723 | 0.9318 | 0.9967 | 41 | 6 | 3 | 1,812 |
+
+The matched seven-input comparison supports the primary conclusion. Relative
+to the weighted scorer, the primary LSTM improved PR-AUC by +0.1103 (95% CI
+[+0.0251, +0.2254]) and F0.5 by +0.1121 (95% CI [+0.0194, +0.2336]); the
+paired intervals are above zero. The enhanced model's higher point estimates do
+not establish superiority: primary-minus-enhanced PR-AUC was -0.0330 (95% CI
+[-0.1095, +0.0326]) and F0.5 was -0.0216 (95% CI [-0.1008, +0.0547]). Those
+intervals contain zero, so the enhanced comparison is inconclusive and supports
+neither superiority nor equivalence.
+
+The authoritative manuscript record is complete at the Markdown level.
+`Finals_Revised_Paper_WASD.md` contains the aligned Chapters I-III methodology,
+claims, scope, and ethics language; `CHAPTER_IV_RESULTS_AND_DISCUSSION.md`
+contains the frozen final results, paired component-bootstrap analysis, error
+analysis, limitations, and chapter conclusion. The central claim is confident
+but bounded: learned recurrent aggregation of the same seven chronological
+features outperformed the matched static weighted scorer for unseen
+author-connected PAN12 conversations under the defined endpoint. The manuscript
+does not claim message-level grooming detection, generalization beyond PAN12,
+autonomous moderation validity, or enhanced-model superiority.
+
+The root `Finals Revised Paper WASD.docx` was regenerated from the 2026-08-24
+authoritative Chapters I-III Markdown and replaced only after structural and
+visual QA passed. The synchronized package retains the cover and References,
+contains 4 Heading 1, 15 Heading 2, and 20 Heading 3 paragraphs, preserves all
+13 hyperlinks and three page breaks, and renders as 21 Letter-size pages with
+one-inch margins and no out-of-bounds text. All 21 pages were inspected; the
+numbered lists, equations, and both methodology tables render correctly. The
+authoritative DOCX SHA-256 is
+`F631C00B4CA0E777B3E200EC0631472304327C4A4E52E7AC0B4FAA38752A6F96`.
+
+The live demonstration is bound to the frozen Layer 1 DistilBERT, selected
+seven-feature LSTM, feature configuration, thresholds, weighted/raw comparator
+settings, and 50-term training-derived keyword lexicon. Formal decisions retain
+the frozen `score >= threshold` rule, while the spike feature retains its
+separate strict `score > spike_threshold` definition. Presets are newly written
+synthetic examples rather than held-out PAN12 records; raw conversation IDs,
+direct phone data, and external web-font calls are absent. The interface uses
+the privacy-neutral statuses `Below threshold` and `Flagged for review`, states
+the author-derived conversation endpoint visibly, and warns that prefix curves
+are exploratory and outputs are not person-level or message-level findings.
+The demo is a frozen presentation interface, not a route for model tuning or
+another final-test evaluation. Scoring requests are serialized so Auto-Play
+waits for each inference result, stale responses cannot overwrite a reset
+conversation, the LSTM output is displayed as an endpoint score rather than a
+calibrated percentage, and topic distance uses its defined 0-to-2 scale.
+
 ## Authoritative Evidence Files
 
 - `CURRENT_STATE_ZERO_AMBIGUITY.md` — this report.

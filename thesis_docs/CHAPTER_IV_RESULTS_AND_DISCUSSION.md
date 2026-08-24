@@ -1,118 +1,103 @@
 # IV. RESULTS AND DISCUSSION
 
-## 4.1 Overview of the Experimental Dataset and Partitions
+## 4.1 Experimental Dataset and Author-Disjoint Partitions
 
-The primary experiment was evaluated on the PAN-2012 Sexual Predator Identification corpus under strict author-disjoint partitioning. Dyadic conversations were mapped into an author-connectivity graph such that any participants sharing a conversation were assigned entirely to a single partition. This protocol eliminates author overlap and conversation leakage across splits.
+The primary experiment evaluates the PAN-2012 author-derived conversation endpoint under connected-author partitioning. Conversations are vertices in an author-connectivity graph, and every connected component is assigned wholly to one partition. Consequently, no conversation, author, or author-connected component appears across training, validation, and final-test partitions.
 
-The candidate pool consists of **18,567 conversations** (454 positive predator interactions, 18,113 benign interactions) comprising 218,114 total message turns across 34,686 unique author identifiers. The dataset was partitioned into:
+The candidate pool contains **18,567 conversations**, of which 454 are endpoint-positive and 18,113 are endpoint-negative, comprising 218,114 total turns and 34,686 distinct author identifiers. The primary partitions are:
 
-1. **Training Partition:** 13,031 conversations (319 positive, 12,712 negative; 152,405 turns) used for Layer 1 fine-tuning, benign centroid derivation, and LSTM training.
-2. **Validation Partition:** 1,827 conversations (49 positive, 1,778 negative; 21,911 turns) used for model checkpoint selection, feature threshold locking, comparator fitting, and hyperparameter search.
-3. **Held-Out Final Test Partition:** 1,862 conversations (44 positive, 1,818 negative; 22,798 turns) containing 1,800 author-connected components, strictly isolated behind a single-use cryptographic gate until the complete pipeline was frozen.
+1. **Training:** 13,031 conversations (319 positive, 12,712 negative; 152,405 turns), used for Layer 1 fine-tuning, training-derived resources, and LSTM fitting.
+2. **Validation:** 1,827 conversations (49 positive, 1,778 negative; 21,911 turns), used for checkpoint selection, feature-threshold locking, comparator fitting, hyperparameter selection, and operating-threshold selection.
+3. **Held-out final test:** 1,862 conversations (44 positive, 1,818 negative; 22,929 turns) in 1,800 author-connected components, evaluated after the pipeline and reporting rules were frozen.
+4. **Excluded historical-test group:** 1,847 conversations (42 positive, 1,805 negative; 20,869 turns), retained in the locked manifest for complete accounting but not used for primary model development, selection, or final evaluation.
 
----
+The positive label means that a conversation contains at least one author on the official PAN12 predator list. It is a conversation-level benchmark endpoint, not an exhaustive annotation that every turn contains grooming behavior.
 
-## 4.2 Primary Model Evaluation on the Held-Out Test Set
+## 4.2 Held-Out Final-Test Performance
 
-The primary research objective is evaluating whether modeling conversation-level behavioral trajectories (Layer 2) outperforms single-message classification and static keyword filtering in detecting grooming interactions.
+The primary research question is whether the seven-feature trajectory LSTM outperforms the validation-fitted weighted scorer supplied with the same seven inputs. The keyword rule and maximum Layer 1 proxy provide additional reference baselines, while the 775-input LSTM measures the effect of adding base DistilBERT embeddings.
 
-Table 4.1 presents the final, held-out test evaluation across all models. Point estimates and 95% confidence intervals were generated via 2,000 bootstrap resamples grouped over author-connected components.
+Table 4.1 reports point estimates and 95% confidence intervals from 2,000 bootstrap resamples over author-connected components.
 
-### Table 4.1: Held-Out Final Test Performance Comparison (N = 1,862 Conversations)
+### Table 4.1. Held-Out Final-Test Performance (N = 1,862 Conversations)
 
-| Model / Baseline | Input Representation | Test PR-AUC [95% CI] | Test ROC-AUC [95% CI] | Test F0.5 [95% CI] | Precision | Recall | Specificity | TP | FP | FN | TN |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Keyword Baseline** | 50 Training-Derived Terms | 0.4451 [0.2930, 0.5664] | 0.8038 [0.7536, 0.8665] | 0.6888 [0.5072, 0.8010] | 0.7105 | 0.6136 | 0.9939 | 27 | 11 | 17 | 1807 |
-| **Raw Layer 1 Max** | Max Single-Turn Proxy Score | 0.5523 [0.3210, 0.7422] | 0.9678 [0.9087, 0.9916] | 0.5529 [0.3053, 0.7042] | 0.5610 | 0.5227 | 0.9901 | 23 | 18 | 21 | 1800 |
-| **Weighted Scorer** | 7 Trajectory Features (Heuristic) | 0.8050 [0.6163, 0.9263] | 0.9719 [0.9063, 0.9971] | 0.7500 [0.5384, 0.8649] | 0.7347 | 0.8182 | 0.9928 | 36 | 13 | 8 | 1805 |
-| **Primary Trajectory LSTM** | **7 Trajectory Features (Sequential)** | **0.9153 [0.7781, 0.9876]** | **0.9930 [0.9790, 0.9997]** | **0.8621 [0.6944, 0.9513]** | **0.8511** | **0.9091** | **0.9961** | **40** | **7** | **4** | **1811** |
-| **Enhanced LSTM (Ablation)** | 7 Features + 768 Base Embeddings | 0.9483 [0.7940, 0.9965] | 0.9987 [0.9964, 0.9999] | 0.8836 [0.7181, 0.9667] | 0.8723 | 0.9318 | 0.9967 | 41 | 6 | 3 | 1812 |
+| Method | Input representation | PR-AUC [95% CI] | ROC-AUC [95% CI] | F0.5 [95% CI] | Precision | Recall | Specificity | TP | FP | FN | TN |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Keyword rule | 50 training-derived unigram/bigram terms | 0.4451 [0.2930, 0.5664] | 0.8038 [0.7536, 0.8665] | 0.6888 [0.5072, 0.8010] | 0.7105 | 0.6136 | 0.9939 | 27 | 11 | 17 | 1,807 |
+| Maximum Layer 1 proxy | Maximum context-conditioned proxy in the conversation | 0.5523 [0.3210, 0.7422] | 0.9678 [0.9087, 0.9916] | 0.5529 [0.3053, 0.7042] | 0.5610 | 0.5227 | 0.9901 | 23 | 18 | 21 | 1,800 |
+| Weighted scorer | Validation-fitted combination of seven trajectory features | 0.8050 [0.6163, 0.9263] | 0.9719 [0.9063, 0.9971] | 0.7500 [0.5384, 0.8649] | 0.7347 | 0.8182 | 0.9928 | 36 | 13 | 8 | 1,805 |
+| **Primary trajectory LSTM** | **Chronological sequence of seven trajectory features** | **0.9153 [0.7781, 0.9876]** | **0.9930 [0.9790, 0.9997]** | **0.8621 [0.6944, 0.9513]** | **0.8511** | **0.9091** | **0.9961** | **40** | **7** | **4** | **1,811** |
+| Enhanced LSTM | Seven features plus 768-dimensional base embeddings | 0.9483 [0.7940, 0.9965] | 0.9987 [0.9964, 0.9999] | 0.8836 [0.7181, 0.9667] | 0.8723 | 0.9318 | 0.9967 | 41 | 6 | 3 | 1,812 |
 
-*Operating thresholds locked on validation:* Raw Layer 1 = 0.9820; Weighted Scorer = 0.7150; Keyword = 0.5000; Trajectory LSTM = 0.9688; Enhanced LSTM = 0.9559.
+The operating thresholds were selected on validation and frozen before final testing: maximum Layer 1 proxy = 0.9819877, weighted scorer = 0.7149941, keyword rule = 0.5000, primary LSTM = 0.9688298, and enhanced LSTM = 0.9558892.
 
----
+The primary LSTM correctly identified 40 of 44 endpoint-positive conversations while producing seven false positives among 1,818 endpoint-negative conversations. Its PR-AUC of 0.9153 is 0.1103 above the matched weighted scorer and 0.3630 above maximum Layer 1 aggregation. This is the central empirical result: chronological recurrent aggregation extracted substantially more useful conversation-level signal than either a static fitted combination of the same features or a maximum contextual proxy score.
 
-## 4.3 Statistical Significance and Paired Difference Analysis
+## 4.3 Paired Bootstrap Difference Analysis
 
-To rigorously evaluate whether the observed improvements are statistically significant or attributable to random sampling variability, paired difference distributions were computed across 2,000 author-connected bootstrap resamples.
+Paired differences were calculated within each of the same 2,000 connected-author bootstrap resamples. Intervals entirely above zero support a positive performance difference for the primary LSTM on the reported metric. An interval containing zero is treated as inconclusive; it is not evidence of equivalence.
 
-### Table 4.2: Paired Bootstrap Differences Against Primary Trajectory LSTM
+### Table 4.2. Primary LSTM Minus Comparator
 
-| Comparison (Trajectory LSTM minus Baseline) | Delta PR-AUC [95% CI] | Delta F0.5 [95% CI] | Delta Precision [95% CI] | Delta Recall [95% CI] | Statistically Significant? |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **vs. Raw Layer 1 Max** | **+0.3630** [+0.2056, +0.5351] | **+0.3092** [+0.1827, +0.4911] | **+0.2901** [+0.1407, +0.4808] | **+0.3864** [+0.2105, +0.5807] | **Yes (p < 0.05)** |
-| **vs. Keyword Baseline** | **+0.4702** [+0.3563, +0.5773] | **+0.1733** [+0.0526, +0.3125] | **+0.1405** [-0.0059, +0.3152] | **+0.2955** [+0.2083, +0.3542] | **Yes (p < 0.05)** |
-| **vs. Weighted Scorer** | **+0.1103** [+0.0251, +0.2254] | **+0.1121** [+0.0194, +0.2336] | **+0.1164** [+0.0066, +0.2580] | **+0.0909** [+0.0244, +0.1725] | **Yes (p < 0.05)** |
-| **vs. Enhanced LSTM (775-d)** | -0.0330 [-0.1095, +0.0326] | -0.0216 [-0.1008, +0.0547] | -0.0213 [-0.1179, +0.0647] | -0.0227 [-0.0833, +0.0667] | No (Equivalent, CI spans 0) |
+| Comparison | Delta PR-AUC [95% CI] | Delta F0.5 [95% CI] | Delta Precision [95% CI] | Delta Recall [95% CI] | Interpretation |
+|---|---:|---:|---:|---:|---|
+| **vs. maximum Layer 1 proxy** | **+0.3630** [+0.2056, +0.5351] | **+0.3092** [+0.1827, +0.4911] | **+0.2901** [+0.1407, +0.4808] | **+0.3864** [+0.2105, +0.5807] | Positive difference supported for all four metrics |
+| **vs. keyword rule** | **+0.4702** [+0.3563, +0.5773] | **+0.1733** [+0.0526, +0.3125] | +0.1405 [-0.0059, +0.3152] | **+0.2955** [+0.2083, +0.3542] | Positive difference supported for PR-AUC, F0.5, and recall; precision is inconclusive |
+| **vs. weighted scorer** | **+0.1103** [+0.0251, +0.2254] | **+0.1121** [+0.0194, +0.2336] | **+0.1164** [+0.0066, +0.2580] | **+0.0909** [+0.0244, +0.1725] | Positive difference supported for all four metrics |
+| vs. enhanced LSTM | -0.0330 [-0.1095, +0.0326] | -0.0216 [-0.1008, +0.0547] | -0.0213 [-0.1179, +0.0647] | -0.0227 [-0.0833, +0.0667] | Inconclusive; no superiority or equivalence conclusion |
 
-### Key Inferential Findings:
+The matched-input comparison provides the clearest architectural evidence. Because the primary LSTM and weighted scorer receive the same seven trajectory features, the positive PR-AUC and F0.5 difference intervals isolate the value of learned recurrent aggregation rather than additional input information.
 
-1. **Superiority Over Single-Message Classification:** The Primary Trajectory LSTM achieves a **+36.30% absolute improvement in PR-AUC** and a **+30.92% improvement in F0.5** over Raw Layer 1 Max. The 95% confidence interval strictly excludes zero (`[+0.2056, +0.5351]`), proving that temporal modeling significantly outperforms isolated message classification.
-2. **Superiority Over Heuristic Weighting:** The LSTM significantly outperforms the linear Weighted Scorer (Delta PR-AUC = +0.1103, Delta F0.5 = +0.1121), demonstrating that non-linear recurrent sequence modeling captures complex turn dependencies that static linear combinations cannot represent.
-3. **Parsimony of 7 Trajectory Features:** The 95% confidence interval for the difference between the 7-feature LSTM and the 775-feature Enhanced LSTM spans zero (`[-0.1095, +0.0326]`). This establishes that the **7 engineered trajectory features retain virtually all predictive signal of the 768-dimensional transformer embeddings** while reducing the parameter and computational footprint by over 99%.
+The enhanced LSTM has a higher point estimate than the primary model, but the paired intervals contain zero. The experiment therefore does not establish that either LSTM is superior to the other. The primary recurrent classifier remains materially smaller: it contains 70,273 trainable parameters compared with 463,489 for the enhanced recurrent classifier, an 84.8% reduction. This parameter comparison applies to the recurrent classifiers themselves, not to the complete pipeline, since both systems still require transformer inference.
 
----
+## 4.4 Validation and Final-Test Behavior
 
-## 4.4 Development Validation vs. Test Generalization
+Table 4.3 compares validation performance with the locked final test. The test partition contains authors absent from training and validation, so the final figures measure within-PAN12 generalization to unseen author-connected components.
 
-Table 4.3 compares the performance on the development validation partition against the held-out test partition.
+### Table 4.3. Validation and Final-Test Performance
 
-### Table 4.3: Validation vs. Final Test Performance Comparison
+| Method | Validation PR-AUC | Test PR-AUC | Validation F0.5 | Test F0.5 | Validation precision | Test precision | Validation recall | Test recall |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Keyword rule | 0.3318 | 0.4451 | 0.6216 | 0.6888 | 0.6765 | 0.7105 | 0.4694 | 0.6136 |
+| Maximum Layer 1 proxy | 0.6840 | 0.5523 | 0.7027 | 0.5529 | 0.7647 | 0.5610 | 0.5306 | 0.5227 |
+| Weighted scorer | 0.7613 | 0.8050 | 0.8466 | 0.7500 | 0.9143 | 0.7347 | 0.6531 | 0.8182 |
+| **Primary trajectory LSTM** | **0.8192** | **0.9153** | **0.8451** | **0.8621** | **0.8780** | **0.8511** | **0.7347** | **0.9091** |
+| Enhanced LSTM | 0.8605 | 0.9483 | 0.8756 | 0.8836 | 0.9048 | 0.8723 | 0.7755 | 0.9318 |
 
-| Model | Val PR-AUC | Test PR-AUC | Val F0.5 | Test F0.5 | Val Precision | Test Precision | Val Recall | Test Recall |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Keyword Baseline | 0.3318 | 0.4451 | 0.6216 | 0.6888 | 0.6765 | 0.7105 | 0.4694 | 0.6136 |
-| Raw Layer 1 Max | 0.6840 | 0.5523 | 0.7027 | 0.5529 | 0.7647 | 0.5610 | 0.5306 | 0.5227 |
-| Weighted Scorer | 0.7613 | 0.8050 | 0.8466 | 0.7500 | 0.9143 | 0.7347 | 0.6531 | 0.8182 |
-| **Trajectory LSTM (7-d)** | **0.8192** | **0.9153** | **0.8451** | **0.8621** | **0.8780** | **0.8511** | **0.7347** | **0.9091** |
-| Enhanced LSTM (775-d) | 0.8605 | 0.9483 | 0.8756 | 0.8836 | 0.9048 | 0.8723 | 0.7755 | 0.9318 |
+The primary LSTM remained strong on the unseen-author final partition and improved from 0.8192 validation PR-AUC to 0.9153 test PR-AUC. This establishes strong held-out performance on unseen author-connected components within the locked PAN12 design. It does not, by itself, establish transfer to a different platform, language, or dataset.
 
-The Trajectory LSTM demonstrates excellent generalization, moving from **0.8192 PR-AUC on validation to 0.9153 on the held-out test set**, with recall improving from 73.5% to 90.9% while maintaining 85.1% precision and 99.6% specificity.
+## 4.5 Interpretation of the Seven-Feature Trajectory
 
----
+The primary model consumes the exact chronological sequence of the following features:
 
-## 4.5 In-Depth Discussion and Behavioral Mechanics
+1. **Peak proxy score:** the largest Layer 1 proxy observed up to the current turn.
+2. **Current proxy score:** the current context-conditioned Layer 1 output.
+3. **Spike count:** the cumulative number of scores above the frozen validation-derived spike threshold.
+4. **Spike-then-drop:** whether an earlier spike was followed by a decrease larger than the frozen drop threshold.
+5. **Rate of change:** the difference between consecutive proxy scores.
+6. **Topic distance:** cosine distance between the current base DistilBERT embedding and the benign training centroid.
+7. **Turn-taking imbalance:** the cumulative difference in the two speakers' turn counts divided by total turns.
 
-### Why Raw Layer 1 Fails in Isolation
-Raw Layer 1 relies on the maximum message score across a chat. In real-world interaction:
-- Benign adolescent banter often contains profanity, crude humor, or hyperbole that triggers temporary spikes in language models (FP = 18, precision = 56.1%).
-- Conversely, early-stage predator grooming relies on innocuous, polite questioning (e.g., asking about family, hobbies, or school) to build rapport. In short or early-stage conversations, no individual message exceeds the high alert threshold, leading to severe under-detection (FN = 21, recall = 52.3%).
+The weighted scorer and primary LSTM receive these same seven variables. Their performance difference therefore establishes the value of the selected learned recurrent aggregator over the selected static weighted aggregator on the conversation endpoint. The result is consistent with a benefit from sequence-sensitive nonlinear aggregation, but the current design does not separately isolate ordering, recurrence, or the causal contribution of each feature; targeted architectural and feature-removal ablations would be required for those conclusions.
 
-### How the 7 Trajectory Signals Resolve the Ambiguity
-The 7 engineered trajectory features enable the Layer 2 LSTM to separate benign noise from true grooming through temporal dynamics:
+Maximum Layer 1 aggregation is also a meaningful comparator, but it is not an ideal message-label experiment. Layer 1 itself is trained against an author-derived proxy and receives the current turn plus two preceding turns. The observed gain over maximum Layer 1 aggregation demonstrates the value of conversation-level trajectory modeling over a maximum contextual proxy rule.
 
-1. **Exponential Moving Average (`score_ewma`):** Accumulates persistent, sustained predatory tone while causing isolated benign spikes to decay rapidly.
-2. **Escalation Delta (`delta`):** Measures conversational acceleration, capturing transitions from friendly rapport to boundary-pushing questions.
-3. **Semantic Drift from Benign Centroid (`dist_to_centroid`):** Tracks cosine distance from the negative-conversation centroid, identifying when a chat progressively departs from typical adolescent topics.
-4. **Spike and Drop Events (`risk_spike`, `risk_drop`):** Identifies probing behavior where predators test boundaries and temporarily retreat before re-escalating.
+## 4.6 Descriptive Error Analysis
 
----
+The primary LSTM produced eleven final-test errors across nine author-connected components: four false negatives across three components and seven false positives across six components. This analysis is descriptive and post hoc; it was not used to select a model or threshold.
 
-## 4.6 Error Analysis and Boundary Cases
+The four false negatives contained 2, 11, 13, and 26 turns (median 12; mean 13), with LSTM scores of 0.1819, 0.0016, 0.8541, and 0.0024 against the locked threshold of 0.9688. All four were shorter than the first quartile of correctly detected positive conversations, which was 36 turns; correctly detected positives had a median of 62 turns and a mean of 84.33. The remaining misses were therefore concentrated among comparatively short positive conversations, where less sequential evidence was available, although this descriptive association does not establish causation. The enhanced LSTM recovered the 13-turn and 26-turn cases, maximum Layer 1 aggregation and the keyword rule recovered the 13-turn case, and the weighted scorer missed all four. Two cases were missed by every evaluated method.
 
-Examination of the predictions generated by the Primary Trajectory LSTM across the 1,862 test conversations reveals clear patterns in the remaining failure modes:
+The seven false positives contained 3, 3, 27, 31, 93, 130, and 132 turns (median 31; mean 59.86), with scores between 0.9804 and 0.9998. Four were also flagged by maximum Layer 1 aggregation, the weighted scorer, and the enhanced LSTM; one was also flagged by the keyword rule. Three cases—the two three-turn conversations and the 27-turn conversation—were unique to the primary LSTM across all four comparators. The broad length range shows that false positives were not confined to a single conversation-length regime.
 
-- **Total Test Conversations:** 1,862
-- **True Positives (TP):** 40 (90.9% of all predator chats detected)
-- **True Negatives (TN):** 1,811 (99.6% of all benign chats protected)
-- **False Positives (FP):** 7 (0.38% false alarm rate)
-- **False Negatives (FN):** 4 (9.1% missed predator chats)
+Because PAN12's endpoint is author-derived, the error labels indicate disagreement with official author-list membership. They do not independently prove that the visible content of a false positive is harmless or that a false negative lacks grooming behavior.
 
-### Analysis of False Negatives (Missed Cases, N = 4)
-All 4 false-negative conversations were characterized by **extreme brevity (fewer than 6 turns)**. In these instances:
-- The predator initiated contact with generic greetings (e.g., *"hey asl"*, *"hi there"*), but the victim did not respond or the chat disconnected immediately.
-- Because no behavioral escalation or topic drift occurred, the sequence model correctly observed flat, low-risk trajectories. These represent unconsummated contact attempts rather than multi-stage grooming trajectories.
+## 4.7 Practical Implications
 
-### Analysis of False Positives (False Alarms, N = 7)
-The 7 false-positive cases occurred in benign conversations exhibiting **adversarial linguistic styles**:
-- Two instances involved intense arguments where participants exchanged aggressive personal interrogations.
-- Three instances involved roleplay gaming discussions discussing age, secrecy, and fictitious scenarios using vocabulary that mirrored grooming trust-building patterns.
-- Despite these edge cases, the model achieved an exceptional **specificity of 99.61%**, satisfying the operational requirements of automated moderation platforms.
+Relative to maximum Layer 1 aggregation, the primary LSTM reduced false positives from 18 to 7, a 61.1% reduction, while increasing true positives from 23 to 40. Relative to the weighted scorer, false positives decreased from 13 to 7, a 46.2% reduction, and false negatives decreased from 8 to 4. Relative to the keyword rule, false positives decreased from 11 to 7, a 36.4% reduction, while true positives increased from 27 to 40.
 
----
+These results justify selecting the trajectory LSTM as the prototype's conversation-prioritization component. Its seven inputs provide an auditable summary of how proxy evidence evolves, and the matched comparison establishes an improved precision-recall tradeoff over the weighted scorer. The interface positions this component for human review, but reviewer effectiveness was not evaluated. The study also did not benchmark end-to-end latency, production throughput, calibration on live platform traffic, or autonomous moderation outcomes. A below-threshold score is not a declaration that a conversation or participant is safe.
 
-## 4.7 Practical Implications for Real-Time Content Moderation
+## 4.8 Chapter Summary
 
-1. **Moderator Queue Reduction:** By achieving 85.1% precision at 99.6% specificity, the Trajectory LSTM eliminates over 95% of false alerts generated by keyword and single-message systems, preventing moderator alert fatigue.
-2. **Computational Feasibility:** Because the primary LSTM operates on only 7 scalar features per turn, sequence scoring introduces negligible latency (< 1 ms per turn), making it suitable for high-throughput, real-time gaming chat engines.
-3. **Interpretable Trajectory Auditing:** Instead of opaque black-box flags, the 7 trajectory features provide human moderators with visual timeline graphs showing exactly *when* risk momentum built up and *where* escalation occurred.
+The held-out experiment achieved its primary objective. The seven-feature trajectory LSTM reached 0.9153 PR-AUC, 0.8621 F0.5, 0.8511 precision, and 0.9091 recall on unseen author-connected PAN12 conversations. Against the matched weighted scorer, the paired improvements were +0.1103 PR-AUC and +0.1121 F0.5, with both 95% intervals above zero. The evidence therefore supports the study's central conclusion: learned recurrent modeling of the seven-feature conversational trajectory provides a substantial advantage over static aggregation for the defined PAN12 conversation endpoint.

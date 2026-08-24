@@ -4,6 +4,13 @@
 **/.pytest_tmp*/
 .tmp/
 *.py[cod]
+**/.venv/
+**/venv/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/htmlcov/
+**/node_modules/
 
 # Generated model/cache artifacts (preserved locally, not suitable for normal Git)
 *.safetensors
@@ -36,7 +43,17 @@ grooming-detector/grooming-detector-trajectory-pipeline/.runtime_search_e2e/
 
 # Recovered chat transcripts can contain large/sensitive history
 transcript*.jsonl
+transcripts/**/*.jsonl
 thesis_docs/archive/recovery/Latest Convo*.md
+
+# Generated DOCX staging and render products (receipts/scripts remain visible)
+Finals Revised Paper WASD.synced.docx
+thesis_docs/.docx_conversion_qa/final_sync_qa/
+thesis_docs/.docx_conversion_qa/reference_render/
+
+# Microsoft Office lock files
+~$*.docx
+~$*.pptx
 
 # OS/editor noise
 Thumbs.db

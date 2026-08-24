@@ -139,3 +139,66 @@ Final retained-artifact hashes:
 | Author-disjoint evaluation JSON | `2E9679A2291AF2DC196592EA8398773332946FDBF9A72427E8E0015F9DF86035` |
 | Active Layer 1 DistilBERT weights | `F90DB66B877587D36C4A38BDA9C4A4553D13D07902F4839170EE78BEC06E392B` |
 | Authoritative paper DOCX | `F51DC5AF95D9157C1AD4EFA3D1ACC82BCD7ACD6FDB6B476CFD47359392372CAC` |
+
+## 2026-08-24 Final Repository Cleanup
+
+After the revised experiment, manuscript alignment, demo hardening, and DOCX
+verification were complete, a second evidence-aware cleanup removed only
+artifacts that were reproducible, rejected, byte-duplicated, or superseded.
+The accepted Layer 1 run, both retained accepted checkpoints, all of
+`revised_runs/`, the consumed final-test ledger, datasets, transcripts,
+presentations, historical provenance caches, and `demo_live/lstm_weights.npz`
+were explicitly preserved.
+
+Removed local generated/rejected artifacts:
+
+- the extracted Layer 1 bundle virtual environment (approximately 4,846 MiB),
+  which is reproducible from the pinned requirements and setup script;
+- rejected run `layer1-author-proxy-20260817-082543` (approximately 1,791 MiB),
+  which lacked the required run summary, selected threshold, and validation
+  predictions;
+- four failed configuration-only run stubs (`20260818-223459`, `223948`,
+  `230410`, and `232130`);
+- unreferenced `test_sample_lstm.pt` and the byte-identical duplicate
+  `test_snapshots_weighted.pkl`, while retaining
+  `test_snapshots_conversation.pkl`;
+- generated DOCX render/contact-sheet directories after the accepted 21-page
+  QA result was reduced to `final_qa_receipt.json`;
+- accessible Python and pytest caches, plus the empty root `images/` folder.
+
+Tracked cleanup removed the obsolete temporary Chapter III DOCX, four one-off
+conversion scripts, four redundant root Word copies, the obsolete DOCX builder
+and style audit, and duplicate generated complete-paper DOCX files. The locally
+modified superseded complete-paper Markdown was not discarded: it was moved to
+`archive/paper_drafts/Finals_Complete_Paper_WASD_superseded.md`. The root file
+`Finals Revised Paper WASD.docx` is the sole authoritative editable Chapters
+I-III Word copy.
+
+Git maintenance ran `git prune-packed`, reducing redundant loose objects from
+3.38 GiB to approximately 989 KiB while preserving the 3.40 GiB packed history.
+The two legacy root transcripts were moved without content changes into
+`transcripts/legacy/`; all four distinct recovered transcripts remain locally
+preserved and ignored by Git.
+
+Some old `.tmp` and `.pytest_*` cache directories remain because their ACLs
+deny the current Windows account ownership and deletion privileges, including
+after an exact-target ownership/grant attempt. They remain excluded by
+`.gitignore` and are not part of the commit. No accepted evidence is stored in
+those directories; `.tmp` had previously been audited as generated render,
+package-extraction, dependency-copy, dry-run, and test output.
+
+The authoritative paper DOCX hash above is historical. The synchronized
+2026-08-24 authoritative DOCX now has SHA-256
+`F631C00B4CA0E777B3E200EC0631472304327C4A4E52E7AC0B4FAA38752A6F96`;
+its structural and visual receipt is stored under
+`thesis_docs/.docx_conversion_qa/final_qa_receipt.json`.
+
+Final validation after cleanup confirmed that the accepted Layer 1 run's run
+summary, selected threshold, validation predictions, and both retained
+checkpoints remain present. The frozen revised protocol and results, consumed
+final-test ledger, four recovered transcripts, two presentations, and ignored
+demo weights also remain present. The full pipeline suite passed 97 tests;
+JavaScript syntax, the DOCX checksum and JSON receipts, stale-claim and encoding
+scans, and Git whitespace validation passed. Approximately 9.8 GiB was
+reclaimed in total. No training, tuning, rescoring, or final-test reuse was
+performed during manuscript synchronization or cleanup.

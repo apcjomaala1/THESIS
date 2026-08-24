@@ -1,4 +1,4 @@
-__*AI-Based Detection of Grooming-Related Interactions in Chat Conversations Using Contextual and Behavioral Analysis*__
+__*AI-Based Identification of PAN12 Conversations Associated with Listed Predator Authors Using Contextual and Behavioral Trajectory Analysis*__
 
  
 
@@ -54,65 +54,56 @@ Andrei Luis M. Torres
 
 ## 1.1 Background of the Study
 
-The rapid growth of online multiplayer games and interactive digital platforms has led to the widespread use of real-time chat systems as a primary mode of communication among users. These systems enable collaboration, social interaction, and community building; however, they also introduce significant risks related to harmful user behavior. Among these, grooming-related interactions have become increasingly prevalent [1], [2], [3]. Existing moderation approaches in many platforms rely heavily on keyword-based filtering and user reporting mechanisms, which are often insufficient in addressing these complex and context-dependent threats [4], [5].
+The rapid growth of online multiplayer games and interactive digital platforms has made real-time chat central to online social activity. These systems support collaboration and community building, but they also create channels through which grooming-related interactions and other forms of harmful conduct can develop [1], [2], [3]. Keyword filters and user reports remain useful first-line controls, yet they are poorly suited to evidence distributed across ordinary-looking turns, altered spellings, coded language, and gradual shifts in conversational behavior [4], [5], [6], [7], [8].
 
-Traditional chat moderation systems primarily focus on detecting explicit keywords or predefined patterns. While effective in identifying straightforward violations such as profanity, these systems are easily bypassed through obfuscation techniques, including altered spellings, special characters, or coded language [6], [7], [8]. More critically, they lack the ability to understand conversational context, intent, and behavioral progression over time—key elements in identifying grooming-related interactions [2], [9]. Additionally, reliance on manual reporting introduces delays in response, allowing harmful interactions to persist before appropriate action is taken [5].
+Context-aware modeling addresses this limitation by evaluating a turn in relation to surrounding messages and by tracking how evidence changes across an interaction [6], [9]. This is particularly relevant to grooming-related risk because a single greeting, question, or request may be ambiguous, while its placement within a sustained exchange can be informative. The resulting technical problem is not merely text classification; it is the aggregation of sparse and noisy conversational evidence into a reliable interaction-level decision.
 
-A critical limitation of existing moderation approaches is their inability to detect a sufficient number of harmful interactions, particularly grooming, resulting in a high number of missed cases (false negatives). This highlights the need for approaches that improve detection coverage, particularly by reducing false negatives in identifying harmful interactions.
+The PAN-2012 Sexual Predator Identification corpus provides a strong benchmark for this problem because it combines large-scale chronological chat records, persistent speaker identifiers, and an official predator-author list [13]. These properties support two safeguards essential to the present study: conversation-level evaluation against a verifiable endpoint and connected-author partitioning that prevents any author from appearing across development and final-test partitions. PAN12 was therefore selected not only for its scale, but because its structure permits a rigorous test of temporal modeling under author-disjoint evaluation.
 
-Recent advancements in artificial intelligence, particularly in machine learning and natural language processing, provide opportunities to enhance moderation systems beyond static keyword detection [10]. By incorporating behavioral pattern recognition and contextual analysis, AI-driven systems can identify subtle and evolving forms of harmful communication [9]. These approaches enable the detection of suspicious interaction patterns across conversations, rather than relying solely on isolated messages, thereby improving both accuracy and timeliness of moderation.
+This study operationalizes a positive case as a dyadic PAN12 conversation containing at least one author on the official predator list. It implements a two-layer architecture. Layer 1 uses DistilBERT with the current turn and up to two preceding turns to estimate a contextualized predator-author proxy for the current speaker. Layer 2 receives the chronological sequence of seven trajectory features constructed from proxy scores, current-turn base-encoder embeddings, and cumulative speaker-turn counts, then produces the final conversation-level score. The proxy is not interpreted as a message-level grooming label; it is an intermediate signal whose value is tested through conversation-level aggregation.
 
-This study proposes the development of an AI-powered moderation approach designed to augment existing chat filtering and reporting mechanisms. The approach leverages machine learning, natural language processing, and behavioral pattern analysis to detect grooming-related interactions within chat environments. By combining content-level analysis with user behavior modeling, the proposed approach aims to address the limitations of current moderation systems and contribute to safer and more responsive digital communication platforms. 
+The primary scientific comparison is deliberately controlled: the seven-feature LSTM and a validation-fitted weighted scorer receive the same seven trajectory inputs. This controls input availability and directly compares learned recurrent aggregation with validation-fitted weighted aggregation. On the locked author-disjoint final test, the primary LSTM achieved a PR-AUC of 0.9153, precision of 0.8511, recall of 0.9091, and F0.5 of 0.8621. It exceeded the matched weighted scorer by 0.1103 PR-AUC and 0.1121 F0.5, with both paired 95% bootstrap intervals above zero. These results establish that learned temporal aggregation contributes substantial predictive value for the PAN12 conversation endpoint.
 
-Unlike traditional moderation systems that analyze messages in isolation, the proposed approach integrates conversational context and behavioral pattern tracking across multiple message turns within a conversation to enable earlier and more accurate detection of grooming-related interactions. Grooming is prioritized due to its reliance on contextual and behavioral progression, making it a suitable case for evaluating the effectiveness of the proposed approach.
-
-This study also supports the United Nations Sustainable Development Goals (SDGs), particularly SDG 9 (Industry, Innovation and Infrastructure) and SDG 16 (Peace, Justice and Strong Institutions). It supports SDG 9 through the development of an AI-powered moderation approach that applies machine learning, natural language processing, and behavioral analysis to improve digital safety technologies. It also supports SDG 16 by promoting safer online communication environments through improved detection of grooming-related interactions and stronger protection for vulnerable users in digital platforms.
+This study also supports the United Nations Sustainable Development Goals (SDGs), particularly SDG 9 (Industry, Innovation and Infrastructure) and SDG 16 (Peace, Justice and Strong Institutions). It supports SDG 9 by advancing a reproducible machine-learning approach for human-reviewed online-safety screening. It supports SDG 16 by contributing methods that can inform the development of safer and more accountable digital communication systems.
 
 ## 1.2 Statement of the Problem
 
-Existing chat moderation systems are widely used, yet harmful interactions such as grooming-related interactions persist [1][2][3]. Current approaches rely on keyword-based filtering, rule-based systems, and user reporting, which are often ineffective in detecting context-dependent behaviors [4][5]. These systems analyze messages in isolation and fail to capture conversational context and behavioral patterns over time [2][9].
+Keyword and rule-based moderation can detect explicit lexical violations, but they do not directly model the order, persistence, or interaction pattern of contextual evidence. A contextual classifier can improve local interpretation, yet reducing a conversation to its single maximum score discards the trajectory through which evidence accumulates or changes. The central research problem is therefore whether a recurrent model can use the same engineered trajectory information more effectively than static aggregation methods when identifying PAN12 conversations associated with officially listed predator authors.
 
-Reliance on user reporting also results in delayed and reactive moderation, increasing exposure to harmful interactions [5]. This highlights the need for more proactive and context-aware solutions. 
-
-This study explores the use of artificial intelligence, particularly machine learning and natural language processing, to enhance chat moderation through contextual analysis and behavioral pattern recognition [9][10].
+The study addresses this problem under severe class imbalance and a strict author-disjoint protocol. It evaluates all methods on identical conversation IDs, selects every learned configuration and threshold using validation data, and reserves the final partition for one locked comparison. This design permits a direct assessment of predictive performance while preventing author overlap and final-test threshold tuning.
 
 This study seeks to answer the following questions:
 
-1. How effective are existing chat moderation systems in detecting grooming-related interactions? 
-2. What are the limitations of keyword-based and rule-based moderation approaches in handling context-dependent communication? 
-3. How can machine learning and natural language processing be utilized to analyze behavioral patterns and conversational context in chat systems? 
-4. To what extent can an AI-driven moderation module improve detection performance, particularly in terms of recall and reduction of false negatives, compared to existing approaches?
+1. How effectively do the keyword rule, aggregated Layer 1 proxy, weighted trajectory scorer, and LSTM-based models identify PAN12 conversations containing an officially listed predator author under author-disjoint evaluation?
+2. Does the seven-feature trajectory LSTM outperform the matched seven-feature weighted scorer on PR-AUC, F0.5, precision, and recall?
+3. How much does the trajectory LSTM improve conversation-level performance over the keyword rule and maximum Layer 1 proxy aggregation?
+4. What additional predictive value is observed when the seven trajectory features are supplemented with 768-dimensional base DistilBERT embeddings?
 
 ## 1.3 Objectives of the Study
 
-__General Objective:__ Develop an AI-powered moderation module that enhances existing chat moderation systems by incorporating behavioral pattern analysis and contextual understanding to detect grooming-related interactions in chat environments.
+__General Objective:__ Develop and evaluate a two-layer contextual trajectory model for identifying PAN12 conversations containing an officially listed predator author under strict author-disjoint testing.
 
 - __Specific Objective:__
-	1. Evaluate the limitations and effectiveness of existing keyword-based and rule-based chat moderation systems in handling context-dependent communication.
-	2. Design and develop an AI-based chat moderation module that applies machine learning and NLP techniques to analyze behavioral patterns and conversational context across multiple chat interactions.
-	3. Assess the improvement in detection performance of the proposed AI-driven module, specifically focusing on the reduction of false negatives compared to traditional keyword-based and report-driven approaches.
+	1. Fine-tune a context-conditioned DistilBERT classifier using official predator-author membership as an explicitly defined proxy target.
+	2. Construct seven chronological trajectory features and compare recurrent LSTM aggregation with a validation-fitted weighted scorer receiving the same inputs.
+	3. Evaluate the primary model, keyword rule, raw Layer 1 aggregation, weighted scorer, and enhanced-input LSTM on identical locked conversation partitions using PR-AUC, ROC-AUC, precision, recall, specificity, F1, F0.5, and confusion counts.
+	4. Quantify uncertainty and paired method differences by bootstrap resampling connected-author components.
 
 ## 1.4 Scope and Limitations
 
 ### 1.4.1 Scope of the Study
 
-The study includes a comparative analysis between the proposed prototype and a keyword-based moderation baseline using the same dataset. This comparison evaluates whether the proposed approach improves detection performance, particularly in terms of recall and reduction of false negatives. 
+The primary experiment uses eligible dyadic conversations from the PAN12 training corpus with non-empty messages, chronological turn order, and valid conversation and author identifiers. The candidate pool contains 18,567 conversations and 218,114 turns. The official predator-author list is the sole source of supervision: Layer 1 uses current-author membership as a weak proxy target, and Layer 2 uses the derived conversation endpoint.
 
-The proposed prototype is platform-independent and intended for possible future adaptation into chat-based moderation workflows. Rather than replacing existing moderation mechanisms, it is designed to augment them by introducing contextual analysis and behavioral pattern tracking. 
+The study compares five methods on identical connected-author partitions: a training-derived keyword rule, maximum Layer 1 proxy aggregation, a validation-fitted weighted trajectory scorer, a primary seven-feature LSTM, and a secondary LSTM that adds 768-dimensional base DistilBERT embeddings. The primary architecture comparison is the seven-feature LSTM against the seven-feature weighted scorer because both receive the same information.
 
-The prototype uses natural language processing and machine learning techniques to analyze chat messages and identify behavioral indicators associated with grooming-related interactions. It analyzes ordered conversation records and simulates sequential chat analysis to determine whether suspicious interaction patterns can be detected earlier within a conversation. 
+The prototype processes stored or locally entered messages in chronological order through offline sequential replay. It demonstrates how contextual scores and conversation trajectories can be inspected, but it is not evaluated as a live platform integration.
 
-For evaluation, the prototype is tested using PAN12-derived data, real conversation datasets, and synthetically generated annotated chat data. To ensure the system's analysis is highly relevant to contemporary users, the training and evaluation datasets will actively incorporate current internet language, modern gaming lingo, and up-to-date obfuscation methods used to bypass standard filters. This allows the study to assess its performance in handling current, context-dependent, and behavior-based grooming detection scenarios. 
+### 1.4.2 Limitations of the Study
 
-__1.4.2 Limitations of the Study__
+The evaluated endpoint is PAN12 conversation-level predator-author presence. The experiment does not provide exhaustive message-level grooming labels and therefore does not measure grooming-message classification, grooming stage, onset, or intent at an individual turn. Author-derived Layer 1 supervision is necessarily coarse: a turn written by a listed author is a positive proxy observation even when that turn is linguistically ordinary.
 
-This study is limited to the development of a prototype moderation module and does not involve full deployment in a live chat environment. The scope is further limited to grooming-related interactions. As such, the module will not be tested with real users, and its performance is evaluated only through controlled datasets and simulations.
-
-The study focuses specifically on detecting grooming-related interactions in English-language chat data. Although the study is motivated in part by online-safety concerns in the Philippines, the present evaluation does not establish performance for Filipino, Taglish, or other Philippine-language conversations.
-
-The study builds upon pre-trained machine learning models and libraries, which are further adapted and fine-tuned for the specific task of detecting grooming-related interactions. As a result, system performance is influenced by the capabilities and limitations of these underlying models.
-
-Additionally, while the prototype simulates sequential analysis of chat messages, the evaluation is conducted within a controlled offline environment rather than a live deployment. Actual performance in real-world deployment may vary depending on platform integration, scalability, latency, and data variability. The study also does not account for all possible variations in language, cultural context, or evolving evasion techniques used by malicious users.
+The final results establish generalization to unseen authors within the locked PAN12 partitions. They do not establish performance on contemporary gaming platforms, external corpora, Filipino or Taglish conversations, or live users. The offline prototype is intended for human-review decision support; latency, throughput, platform integration, and autonomous moderation are outside the evaluated scope.
 
 ## 1.5 Significance of the Study
 
@@ -120,27 +111,23 @@ This section explains the importance and potential impact of the research, ident
 
 ### 1.5.1 Academic Contribution
 
-This research contributes to the academic field of computer science, artificial intelligence, and cybersecurity by advancing the understanding of AI-driven content moderation. The proposed approach bridges a gap in existing literature by demonstrating how machine learning and natural language processing can be combined with behavioral pattern analysis to detect nuanced forms of harmful communication. 
+This research contributes a controlled evaluation of temporal aggregation for an imbalanced, author-derived conversation endpoint. Its principal result is not merely that an LSTM produces a strong score, but that the seven-feature LSTM outperforms a validation-fitted weighted scorer supplied with the same seven inputs. This matched comparison provides direct evidence that recurrent sequence modeling adds predictive value beyond static combination of the engineered trajectory features.
 
-This work provides a framework for contextual analysis in chat moderation that goes beyond traditional keyword-based approaches. The findings will be valuable for researchers exploring AI applications in safety and security, offering insights into feature extraction techniques, model architecture, and evaluation methodologies for detecting complex communication patterns. 
-
-Additionally, this study contributes to theoretical knowledge in understanding grooming-related interactions in digital environments.
+The study also contributes a reproducible evaluation design for conversational safety research: connected-author partitions; training-only construction of the benign centroid and keyword lexicon; validation-only selection of checkpoints, model configurations, feature thresholds, scorer weights, and operating thresholds; a single held-out final comparison; and component-grouped uncertainty estimates. These controls address a common but consequential source of overstatement in conversation datasets, where the same participant can otherwise appear across multiple splits.
 
 ### 1.5.2 Industry and Practical Applications
 
-For the technology industry and online platform providers, this research has significant practical implications. Chat-based platforms, gaming communities, social networks, and collaborative tools can leverage the proposed moderation module to enhance user safety and platform integrity. 
+For platform and moderation researchers, the prototype demonstrates a practical architecture for combining contextual language modeling with an auditable sequence representation. The seven-feature recurrent head is compact, its input signals can be inspected over time, and its output is intended to prioritize conversations for human review. These properties make the design a credible candidate for later platform-specific validation and integration research.
 
-By supporting the detection of harmful interactions, platforms may reduce the burden on manual moderation teams, enabling them to focus on complex cases requiring human judgment. The prototype currently demonstrates sequential analysis through controlled offline replay; possible integration into live moderation workflows remains future work. This application is particularly relevant to platforms serving vulnerable user populations, including minors.
-
-Furthermore, the proposed module can be adapted into existing moderation workflows without replacing current filtering mechanisms, offering a scalable and non-disruptive enhancement to platform safety. The adoption of such advanced moderation techniques positions platforms as responsible actors in digital safety, potentially building user trust and reducing legal liabilities.
+The present evidence supports offline decision assistance rather than autonomous action. Any operational deployment would require representative platform data, calibration, privacy and fairness review, throughput measurement, and a clearly defined human escalation process.
 
 ### 1.5.3 Societal Benefits
 
-Beyond academia and industry, this research has direct societal benefits. Online harassment and grooming pose serious threats to user well-being, particularly affecting vulnerable populations such as children, adolescents, and individuals with limited digital literacy. By improving detection mechanisms, this study contributes to creating safer online environments where users can interact with reduced fear of exploitation or harm. The development of effective AI-driven moderation tools can help prevent real-world harm that originates from online interactions, including trauma and abuse. 
+Beyond academia and industry, this research has potential societal value. Online harassment and grooming pose serious threats to user well-being, particularly for children, adolescents, and individuals with limited digital literacy. The present study contributes an experimentally evaluated screening architecture that future platform-specific research can adapt for human-reviewed digital-safety workflows. Its PAN12 results do not by themselves demonstrate prevention of real-world harm, but they provide evidence for a more effective way to prioritize conversations under the study's endpoint.
 
 In the Philippine context, the study is relevant to continuing efforts to protect young people who participate in online gaming, social media, and digital communication platforms. The research offers a prototype and an evaluation approach that local platform administrators and digital-safety researchers may build upon. It does not, however, claim Philippine-specific or Filipino/Taglish model validation; that requires representative local data and separate evaluation.
 
-Furthermore, the accessibility and scalability of the proposed solution mean that smaller platforms and communities with limited moderation resources can also implement advanced safety measures, democratizing access to robust content moderation technology.
+The work provides a foundation that organizations with limited moderation resources may evaluate and adapt, subject to representative data, governance, and human-review safeguards.
 
 ### 1.5.4 Implications for Future Research
 
@@ -152,7 +139,7 @@ The study also highlights the importance of addressing challenges such as lingui
 
 ### 1.5.5 Sustainable Development Goal (SDG) Contribution
 
-This study supports Sustainable Development Goal 9 (Industry, Innovation and Infrastructure) through the development of an AI-driven moderation prototype that applies machine learning and natural language processing techniques to enhance digital communication safety systems. The study also supports Sustainable Development Goal 16 (Peace, Justice and Strong Institutions) by contributing to safer online environments through improved detection of grooming-related interactions and harmful communication patterns. By augmenting existing moderation systems with contextual and behavioral analysis, the proposed approach aims to support more secure and responsible digital communication platforms.
+This study supports Sustainable Development Goal 9 (Industry, Innovation and Infrastructure) through the development of an AI-driven moderation prototype that applies machine learning and natural language processing to contextual conversation analysis. It also supports Sustainable Development Goal 16 (Peace, Justice and Strong Institutions) by contributing a reproducible, human-review-oriented method for prioritizing PAN12 conversations associated with listed predator authors. The study establishes this contribution on its defined benchmark endpoint while reserving real-platform safety effects for later external validation.
 
 ## 1.6 Definition of Terms
 
@@ -172,7 +159,7 @@ Natural Language Processing (NLP) - A field of artificial intelligence that focu
 
 Obfuscation Techniques - Methods used to conceal or disguise harmful content, such as altered spellings, special characters, coded language, or other modifications designed to bypass keyword-based filters.
 
-Online Grooming Discourse Model (OGDM) - The core theoretical framework used in this study that explains online grooming as a non-linear process of communicative actions, such as trust-building and isolation.
+Online Grooming Discourse Model (OGDM) - The theoretical lens used to motivate analysis of grooming as a non-linear, cross-turn discourse process. In this study it informs the sequence-modeling rationale; it is not treated as a source of verified message-stage labels.
 
 Predatory Behavior - Actions or communication patterns intended to exploit, manipulate, or harm other users, particularly targeting vulnerable individuals.
 
@@ -184,7 +171,7 @@ User Reporting Mechanism - A system feature that allows chat platform users to r
 
 This chapter presents a review and synthesis of existing literature and empirical studies related to AI-based chat moderation and the detection of harmful interactions in online communication environments. The discussion focuses on recent developments in natural language processing (NLP), machine learning-based moderation frameworks, and behavioral analysis techniques used to identify grooming-related interactions and other context-dependent harmful communication patterns.
 
-The purpose of this chapter is to establish the scholarly foundation of the study, examine current moderation approaches and methodologies, and identify research gaps that justify the development of a behavioral and context-aware moderation prototype for grooming detection in chat systems.
+The purpose of this chapter is to establish the scholarly foundation of the study, examine current moderation approaches and methodologies, and identify research gaps that justify the development of a behavioral and context-aware prototype for conversation-level safety screening.
 
 ## 2.1 Review of Related Literature
 
@@ -202,9 +189,11 @@ Despite these advancements, current moderation systems remain constrained by the
 
 Several empirical studies have explored the application of artificial intelligence in detecting grooming-related interactions within online environments.
 
-The empirical study of automated grooming detection is anchored in the PAN-2012 Sexual Predator Identification task introduced by Inches and Crestani [13], which released the benchmark corpus of chat logs used throughout this line of research and defined the task in two parts: identifying the predators among all participants in a set of conversations, and identifying the specific lines most characteristic of predatory behavior. This task definition established the author-level labeling protocol—in which a participant is treated as predatory across the conversations they take part in—that subsequent grooming-detection systems, including the present study, adopt.
+The empirical study of automated grooming detection is anchored in the PAN-2012 Sexual Predator Identification task introduced by Inches and Crestani [13]. PAN12 defined separate author-identification and distinctive-line tasks. The present study adopts the official predator-author list as its verified supervision and derives a conversation endpoint from author presence; it does not reinterpret author membership as an exhaustive message-level grooming annotation.
 
-Building on this benchmark, Villatoro-Tello et al. [14] proposed a two-step approach that first separates predatory from non-predatory participants and then identifies the most suspicious users, combining content-based features with behavioral features such as the proportion and pattern of a user’s interventions within a conversation. Their system achieved the highest performance among the sixteen teams in the PAN-2012 competition, demonstrating that participation and interaction-pattern features—not message content alone—carry discriminative signal for predator detection. This finding directly motivates the use of behavioral trajectory features alongside message-level analysis in the present study.
+PAN12 is especially suitable for the present research question because its scale, chronological message order, and persistent speaker identifiers support trajectory construction and connected-author evaluation. These properties make it possible to test generalization to conversations involving unseen authors while preserving the sequential structure required by the LSTM. Author-derived labels are therefore used as weak supervision for an intermediate contextual proxy, while the final empirical claim remains at the conversation level.
+
+Building on this benchmark, Villatoro-Tello et al. [14] proposed a two-step approach that first separates predatory from non-predatory participants and then identifies the most suspicious users, combining content-based features with behavioral features such as the proportion and pattern of a user’s interventions within a conversation. Their system achieved the highest performance among the sixteen teams in the PAN-2012 competition, demonstrating that participation and interaction-pattern features—not message content alone—carry discriminative signal for predator detection. This finding directly motivates the use of behavioral trajectory features alongside context-conditioned turn-level proxy signals in the present study.
 
 Street et al. [2] developed a transformer-based classification approach using BERT and RoBERTa models to identify online grooming interactions by analyzing conversational roles between adults and minors. Their contextual determination framework improved cross-dataset robustness in identifying suspicious communication patterns across multiplayer gaming chats. 
 
@@ -222,9 +211,9 @@ The theoretical foundation of this study is based on advancements in machine lea
 
 Beyond the computational literature, the detection task is grounded in discourse-analytic models of how grooming unfolds in conversation. O’Connell [12] provided one of the earliest typologies, describing online grooming as a progression through stages—friendship forming, relationship forming, risk assessment, exclusivity, and a sexual stage—in which an offender gradually escalates a relationship with a minor. While influential, this stage model assumes a largely linear progression that later empirical work has shown offenders do not consistently follow.
 
-The primary theoretical framework adopted in this study is the model of online grooming discourse developed by Lorenzo-Dus, Izura, and Pérez-Tattam [11]. Drawing on a large corpus of offender chat logs, their analysis characterizes grooming not as a fixed linear sequence but as an entrapment network realized through four interrelated communicative processes: deceptive trust development, sexual gratification, compliance testing, and isolation. Deceptive trust development—the discursive building of rapport and a sense of an exclusive relationship—was found to be the most frequent process and to correlate with the others. Compliance testing refers to repeatedly probing a target’s boundaries and then retreating to gauge and condition responses, while isolation works to separate the target from sources of support and to concentrate the interaction within the dyad. Because these processes are defined at the level of observable language behavior rather than fixed conversational turns, they provide a basis for measuring grooming risk as it accumulates across a conversation.
+The primary theoretical framework adopted in this study is the model of online grooming discourse developed by Lorenzo-Dus, Izura, and Pérez-Tattam [11]. Drawing on a large corpus of offender chat logs, their analysis characterizes grooming not as a fixed linear sequence but as an entrapment network realized through four interrelated communicative processes: deceptive trust development, sexual gratification, compliance testing, and isolation. Deceptive trust development—the discursive building of rapport and a sense of an exclusive relationship—was found to be the most frequent process and to correlate with the others. Compliance testing refers to repeatedly probing a target’s boundaries and then retreating to gauge and condition responses, while isolation works to separate the target from sources of support and to concentrate the interaction within the dyad. Because these processes can unfold across multiple turns rather than at fixed conversational positions, the framework provides a strong rationale for studying cross-turn evidence and interaction trajectories.
 
-To connect this discourse model to a computable system, the study operationalizes selected OGDM processes as quantitative features computed over conversation history. Operationalization—the standard methodological practice of translating a theoretical construct into a measurable variable [15] —provides the bridge between the qualitative model and the numeric signals a classifier can consume. The compliance-testing process is operationalized as a spike-then-drop pattern in per-message risk scores together with a count of risk spikes; the isolation and dominance behaviors of the entrapment network are operationalized as turn-taking imbalance between the two most active participants, consistent with the behavioral-feature approach of Villatoro-Tello et al. [14]; and the steering of conversation away from neutral small-talk toward intimate content is operationalized as topic drift relative to a benign-conversation baseline. The persistence of risk once predatory content has appeared is retained as the peak risk score observed so far. Each feature therefore traces to a documented OGDM construct rather than an ad hoc heuristic—an auditable property that distinguishes this approach from opaque end-to-end classification.
+OGDM supplies the theoretical reason to examine evidence across a conversation rather than treating turns as independent observations. The implemented trajectory features translate that general sequence-oriented rationale into inspectable computational signals: proxy-score level and change, threshold-crossing patterns, semantic distance from a training-derived benign centroid, and speaker-turn imbalance. These features are not direct measurements of OGDM stages or communicative processes, because PAN12 does not provide the message-level discourse annotations needed to validate such a mapping. Their empirical role is therefore tested through the matched comparison between recurrent and static aggregation, while OGDM remains the interpretive framework for why cross-turn dynamics may matter.
 
 Recent moderation frameworks adopt sequence modeling techniques, which evaluate conversations as evolving interaction chains rather than isolated textual inputs [6]. This approach allows systems to detect behavioral trajectories characteristic of grooming related activities, such as gradual trust-building, self-disclosure, or attempts to isolate users within private communication channels. 
 
@@ -234,7 +223,7 @@ These limitations reveal a methodological gap in existing moderation systems, pa
 
 To address these challenges, contemporary research recommends hybrid moderation frameworks combining automated AI-based triage with human-in-the-loop (HITL) review mechanisms. Such layered architectures enable high-speed real-time flagging of suspicious interactions while preserving human oversight for nuanced adjudication and minimizing algorithmic bias. 
 
-This study adopts these theoretical principles, operationalizing the OGDM communicative processes as measurable trajectory features, in the development of a behavioral-contextual moderation module designed to enhance existing chat moderation systems by integrating conversational history analysis and user interaction tracking.
+This study adopts the sequence-oriented implication of these theoretical principles by modeling how contextual proxy evidence and interaction structure change across turns. The resulting trajectory variables are computational features for the PAN12 endpoint, not validated OGDM stage labels. This distinction preserves a clear boundary between the discourse theory that motivates temporal analysis and the supervised evidence available for evaluating the system.
 
 # III. METHODOLOGY
 
@@ -242,7 +231,7 @@ This study adopts these theoretical principles, operationalizing the OGDM commun
 
 This study uses a developmental and experimental research design [15] to build and evaluate an offline conversation-analysis prototype. The approved primary endpoint is **conversation-level identification of PAN12 conversations that contain at least one author listed by PAN12 as a sexual predator**. The endpoint is author-derived and conversation-level; it is not a claim that PAN12 provides complete message-level grooming or grooming-onset annotations.
 
-The proposed system has two learned layers. Layer 1 fine-tunes DistilBERT using the official predator-author list as weak supervision. For each current turn, it processes that turn together with the two preceding turns and produces a **predator-author proxy score**. Layer 2 uses the chronological sequence of proxy-derived trajectory features to estimate whether the conversation contains a listed predator. The LSTM remains the proposed sequence model, while a weighted scorer, an aggregated raw Layer 1 score, and a keyword rule serve as comparison methods.
+The proposed system has two learned layers. Layer 1 fine-tunes DistilBERT using the official predator-author list as weak supervision. For each current turn, it processes that turn together with the two preceding turns and produces a **predator-author proxy score**. Layer 2 uses the chronological sequence of features constructed from proxy-score dynamics, base-encoder topic distance, and cumulative turn structure to estimate whether the conversation contains a listed predator. The LSTM is the sequence model, while a weighted scorer, an aggregated raw Layer 1 score, and a keyword rule serve as comparison methods.
 
 All model development and evaluation are conducted through chronological offline replay of dataset conversations. The study does not evaluate deployment latency, platform integration, live users, or autonomous moderation. The output is intended as decision support for human review. A below-threshold result is not a determination that a conversation or participant is safe.
 
@@ -264,7 +253,7 @@ DistilBERT serves as the text encoder and Layer 1 sequence classifier. It is a l
 
 ### 3.2.4 Development Environment
 
-The prototype system is developed and tested using Jupyter Notebook and Visual Studio Code within a Python-based experimental environment. Layer 1 training is designed to use an NVIDIA CUDA-capable GPU with mixed-precision computation when supported, while retaining a CPU-compatible path. Table 3.1 records the local development environment available when the protocol was revised. The final training run will additionally serialize the teammate workstation's GPU model, CUDA version, package versions, command-line arguments, random seed, source-data hashes, split-manifest hash, and output-checkpoint hash.
+The prototype system was developed and tested using Jupyter Notebook and Visual Studio Code within a Python-based experimental environment. Layer 1 training used an NVIDIA RTX 3060 Ti with CUDA, BF16 mixed precision, and TF32. The returned run recorded its software environment, command-line configuration, random seed, and locked split assignment. Table 3.1 records the local environment used to rerun and demonstrate the completed pipeline.
 
 | Component | Version |
 |---|---:|
@@ -282,7 +271,7 @@ The prototype system is developed and tested using Jupyter Notebook and Visual S
 
 ### 3.3.1 Corpus and Label Provenance
 
-The primary experiment uses the PAN12 Sexual Predator Identification training corpus and its official predator-author list [13]. After strict removal of empty or malformed rows and restriction to dyadic conversations, the locked candidate pool contains 218,114 turns across 18,567 conversations, including 454 positive conversations and 34,686 distinct author identifiers. Seven malformed rows and one negative conversation that had appeared in the historical validation audit are excluded rather than assigning missing author labels to the negative class.
+The primary experiment uses the PAN12 Sexual Predator Identification training corpus and its official predator-author list [13]. After strict removal of rows that fail the required conversation, chronology, author, or label checks and restriction to dyadic conversations, the locked candidate pool contains 218,114 turns across 18,567 conversations, including 454 positive conversations and 34,686 distinct author identifiers. Invalid records are excluded rather than assigning a missing author label to the negative class.
 
 For conversation \(c\), let \(A_c\) be its set of authors and \(P\) the official PAN12 predator-author set. The primary ground-truth label is
 
@@ -298,16 +287,9 @@ Z_t = \mathbf{1}[a_t \in P].
 
 Because \(Z_t\) repeats an author-level identity label on that author's turns, it does not establish that a particular turn contains grooming behavior. The Layer 1 output is therefore called a predator-author proxy score rather than a grooming-message probability.
 
-Table 3.2 separates the valid supervision from project artifacts that are not eligible for the revised experiment.
+PAN12 was selected because it is a large established benchmark available to the project with the combination required by this experiment: chronological conversation records, persistent speaker identifiers, and an official author-level endpoint. This supports sequence construction at scale and permits every connected group of authors to be assigned wholly to one partition.
 
-| Data artifact | Available supervision | Role in the revised experiment |
-|---|---|---|
-| PAN12 training conversations and official predator list | Author identity and derived conversation label | Sole source for primary training, validation, and final evaluation |
-| PAN12 training `diff.txt` / project `is_suspicious` | Locations where released text was modified | Excluded from every filter, target, loss, feature decision, and metric |
-| Project synthetic chat files | Generator-, scenario-, or speaker-role-derived proxy labels without completed independent review | Excluded from the primary experiment |
-| PAN12 Problem 2 judged test lines | Pooled post-competition line judgments; matching test text is not available locally | Not used; eligible only for a separately qualified future external evaluation if the exact test corpus is recovered |
-
-*Table 3.2. Label provenance and eligibility for the revised experiment.*
+The author-derived target is intentionally interpreted as weak supervision over contextualized turns. It allows Layer 1 to estimate the author-derived target from contextualized text without claiming that every positive-author turn expresses grooming. No per-message field is used as exhaustive grooming ground truth, and all primary training, selection, and evaluation claims are made against the official author-derived conversation endpoint.
 
 ### 3.3.2 Inclusion and Preprocessing
 
@@ -321,21 +303,21 @@ Text normalization is deliberately conservative: character encoding and whitespa
 
 The dataset is partitioned before negative sampling, context caching, centroid construction, model fitting, or threshold selection. Conversations are represented as vertices in a graph; any conversations sharing an author are connected. Every resulting connected component is assigned wholly to one partition, creating zero conversation overlap and zero author overlap across training, validation, and final test data.
 
-Because an earlier pipeline already exposed results on its historical test partition, that partition is retained only as development history. Before training the revised model, a new final holdout is selected from previously unscored connected-author components using metadata only: component membership, partition size, and class balance. No model score or text-derived feature is used to choose the holdout. The remaining eligible components are assigned to training and validation. The locked manifest assigns 13,031 conversations to training, 1,827 to validation, 1,862 to the new final test, and 1,847 to the excluded historical test. The corresponding positive-conversation counts are 319, 49, 44, and 42. The manifest records zero conversation, author, and connected-component overlap across all four groups together with the random seed, source-data hash, and manifest hash.
+The locked manifest assigns 13,031 conversations to training, 1,827 to validation, and 1,862 to the final test; an additional 1,847 conversations are excluded from the primary experiment. The corresponding positive-conversation counts are 319, 49, 44, and 42. Partition assignment uses connected-component membership, partition size, and class balance rather than model scores or text-derived features. The manifest records zero conversation, author, and connected-component overlap across all groups together with the random seed, source-data hash, and manifest hash.
 
-The training partition is used for parameter estimation and may downsample negative Layer 1 rows using a recorded ratio. Downsampling occurs only after the split and only in training. Validation and final test distributions remain untouched. The validation partition is used for checkpoint selection, hyperparameter selection, comparator fitting, and threshold selection. The locked final test is evaluated once after code, checkpoints, thresholds, feature definitions, and reporting rules are frozen.
+The training partition is used for parameter estimation. After partitioning, negative Layer 1 training rows were downsampled to three negatives per positive row; validation and final-test distributions remained untouched. The validation partition was used for checkpoint selection, hyperparameter selection, comparator fitting, and threshold selection. The locked final test was evaluated once after code, checkpoints, thresholds, feature definitions, and reporting rules were frozen.
 
 ### 3.3.4 Feature Engineering
 
-Let \(R_i\) denote the Layer 1 predator-author proxy score at turn \(i\), \(E_t\) the 768-dimensional embedding from the unchanged base `distilbert-base-uncased` encoder for the current turn, \(C_b\) a benign-chat centroid computed only from negative conversations in the training partition, \(T_a\) the number of turns contributed by participant \(a\), \(\tau\) the spike threshold, and \(\delta\) the drop threshold. The seven trajectory features at turn \(t\) are:
+Let \(R_i\) denote the Layer 1 predator-author proxy score at turn \(i\), \(E_t\) the 768-dimensional embedding from the unchanged base `distilbert-base-uncased` encoder for the current turn, \(C_b\) a benign-chat centroid computed only from negative conversations in the training partition, \(T_a(t)\) the cumulative number of turns contributed by participant \(a\) through turn \(t\), \(\tau\) the spike threshold, and \(\delta\) the drop threshold. The seven trajectory features at turn \(t\) are:
 
 1. **Peak proxy score:** \(\max_{1 \leq i \leq t} R_i\), with range \([0,1]\).
 2. **Current proxy score:** \(R_t\), with range \([0,1]\).
 3. **Spike count:** \(\sum_{i=1}^{t}\mathbf{1}[R_i>\tau]\), with range \([0,t]\).
-4. **Spike-then-drop:** 1 when an earlier score exceeded \(\tau\) and a later score dropped by more than \(\delta\); otherwise 0.
+4. **Spike-then-drop:** 1 from the first turn whose score falls by more than \(\delta\) below a previous peak that exceeded \(\tau\), and 1 thereafter; otherwise 0.
 5. **Rate of change:** \(R_t-R_{t-1}\), or 0 for the first turn, with range \([-1,1]\).
 6. **Topic distance:** \(1-\cos(E_t,C_b)\), with theoretical range \([0,2]\).
-7. **Turn-taking imbalance:** \(\lvert T_A-T_B\rvert/(T_A+T_B)\), with range \([0,1]\). The implementation counts turns, not words.
+7. **Turn-taking imbalance:** \(\lvert T_A(t)-T_B(t)\rvert/(T_A(t)+T_B(t))\), with range \([0,1]\). The implementation uses cumulative turn counts through the current turn, not word counts or full-conversation totals.
 
 The centroid source conversation IDs and embedding-model digest are recorded, and validation or test text is never used to construct it. The spike and drop thresholds are selected on validation data and then frozen. Each turn-level cache is keyed by the stable dataset/conversation/line identifier and records the context-construction version, Layer 1 checkpoint digest, base-encoder digest, and split assignment.
 
@@ -345,15 +327,15 @@ The centroid source conversation IDs and embedding-model digest are recorded, an
 | Seven trajectory features | Peak, current, spike count, spike-then-drop, rate of change, topic distance, and turn imbalance | Weighted scorer and primary matched-input LSTM |
 | Base DistilBERT embedding | 768-dimensional contextual text representation, separate from the Layer 1 proxy | Secondary enhanced-input LSTM only |
 
-*Table 3.3. Inputs used by the revised comparison methods.*
+*Table 3.2. Inputs used by the comparison methods.*
 
 ## 3.4 Model Development
 
 ### 3.4.1 Author-Derived Layer 1 Classifier
 
-Layer 1 uses `distilbert-base-uncased` with a two-class sequence-classification head. Its input is the current turn plus the two preceding turns defined in Section 3.3.2, and its target is the current author's official predator-list membership \(Z_t\). The training loss is two-class cross-entropy. Negative-row downsampling is confined to the training partition; validation and final test rows retain their natural class distribution.
+Layer 1 uses `distilbert-base-uncased` with a two-class sequence-classification head. Its input is the current turn plus up to two preceding turns defined in Section 3.3.2, and its target is the current author's official predator-list membership \(Z_t\). The training loss is two-class cross-entropy. Negative-row downsampling is confined to the training partition; validation and final test rows retain their natural class distribution.
 
-Optimization uses fused AdamW on a compatible NVIDIA GPU, BF16 when supported and FP16 otherwise, TF32 on Ampere-or-newer hardware, gradient clipping at 1.0, and random seed 42. The locked initial configuration uses a maximum of five epochs, learning rate \(2\times10^{-5}\), weight decay 0.01, warm-up ratio 0.10, three sampled training negatives per positive row, physical training batch size 64, validation batch size 128, and early-stopping patience of two epoch evaluations. Automatic batch-size reduction is allowed only when required by GPU memory and is recorded in the run artifacts. The checkpoint is selected using validation area under the precision-recall curve (PR-AUC), and its operating threshold is selected separately on validation data using F0.5. The selected checkpoint, tokenizer, configuration, metrics history, row manifest, and cryptographic hashes are saved together.
+Optimization uses fused AdamW on an NVIDIA RTX 3060 Ti, BF16 mixed precision, TF32, gradient clipping at 1.0, and random seed 42. The completed run uses five epochs, learning rate \(2\times10^{-5}\), weight decay 0.01, warm-up ratio 0.10, three sampled training negatives per positive row, physical training batch size 8, validation batch size 16, gradient accumulation 1, and early-stopping patience of two epoch evaluations. The checkpoint is selected using validation PR-AUC, and its operating threshold is selected separately on validation data using F0.5. The selected checkpoint, tokenizer, configuration, metrics history, and row manifest are saved together.
 
 The positive-class softmax output is denoted \(R_t\). It estimates the weak author-derived classification target under the available text context. It must not be described as a validated probability of grooming content, grooming phase, or grooming onset.
 
@@ -361,7 +343,9 @@ The positive-class softmax output is denoted \(R_t\). It estimates the weak auth
 
 The primary Layer 2 model is an LSTM that receives the chronological sequence of the same seven features supplied to the weighted scorer. Padding masks ensure that padded turns do not affect hidden-state computation. A secondary enhanced-input LSTM concatenates the 768-dimensional base DistilBERT embedding with the seven trajectory features, producing a 775-dimensional turn vector; its result is reported separately and is not used to claim a matched-input architectural advantage.
 
-Layer 2 is trained only against the valid conversation label \(Y_c\). Binary cross-entropy with logits is applied to the output at the final valid turn, with any positive-class weighting computed from training conversations only. No turn-level loss, cumulative `is_suspicious` target, or repeated predator-author label is used as grooming-onset supervision. Validation selects the LSTM checkpoint and its conversation flagging threshold. Intermediate prefix scores may be displayed to demonstrate sequence processing, but the first threshold crossing is reported only as an exploratory prefix statistic, not as validated grooming onset or time-to-harm.
+The selected primary model is a unidirectional, single-layer LSTM with hidden dimension 128 and dropout 0.20, trained with batch size 32, Adam learning rate 0.001, weight decay 0.0001, gradient clipping at 1.0, a maximum of 20 epochs, and early-stopping patience of four validation evaluations. The selected enhanced model uses the same hidden dimension, layer count, dropout, batch size, and stopping rule with learning rate 0.0005. Both searches use seed 42 and select by validation PR-AUC with validation F0.5 as the first tie-break criterion.
+
+Layer 2 is trained only against the valid conversation label \(Y_c\). `BCEWithLogitsLoss` is applied to the output at the final valid turn using a positive-class weight of 39.8495, computed solely from the 12,712 negative and 319 positive training conversations. No turn-level loss, cumulative `is_suspicious` target, or repeated predator-author label is used as grooming-onset supervision. Validation selects the LSTM checkpoint and its conversation flagging threshold. Intermediate prefix scores may be displayed to demonstrate sequence processing, but the first threshold crossing is reported only as an exploratory prefix statistic, not as validated grooming onset or time-to-harm.
 
 ### 3.4.3 Comparison Models
 
@@ -380,7 +364,7 @@ The principal architecture comparison is the seven-feature LSTM versus the seven
 
 All development decisions are made from the training and validation partitions. Layer 1 checkpoint selection, negative-sampling configuration, LSTM configuration, weighted-scorer weights, keyword lexicon, feature thresholds, and every classification threshold are frozen before the new final holdout is scored. The final evaluation script verifies the data and configuration hashes, evaluates every method on identical conversation IDs, and writes predictions and metrics without modifying the saved configuration.
 
-The historical LSTM result obtained before this correction is retained only as a development diagnostic because its Layer 1 supervision, comparator tuning, and test-use history do not satisfy the revised protocol. It is not combined with or substituted for the new final evaluation. The revised result is reported even if the LSTM does not outperform a baseline.
+The reported result is generated only by this frozen evaluation path. Every method is evaluated on the same ordered conversation IDs, and the final report retains the outcome regardless of which model performs best.
 
 ### 3.5.2 Metrics and Comparative Analysis
 
@@ -396,13 +380,13 @@ F_1=\frac{2PR}{P+R}, \qquad
 F_{0.5}=\frac{1.25PR}{0.25P+R}.
 \]
 
-PR-AUC is emphasized alongside thresholded metrics because positive conversations are rare. Validation PR-AUC selects checkpoints, while validation F0.5 selects operating thresholds; no threshold is retuned on the final test. Ninety-five-percent confidence intervals are estimated by bootstrap resampling connected-author components so that conversations linked by an author remain grouped. Pairwise thresholded predictions may additionally be compared with McNemar's test when the number of discordant final-test cases is sufficient.
+PR-AUC is emphasized alongside thresholded metrics because positive conversations are rare. Validation PR-AUC selects checkpoints, while validation F0.5 selects operating thresholds; no threshold is retuned on the final test. Ninety-five-percent confidence intervals and paired method-difference intervals are estimated by bootstrap resampling connected-author components so that conversations linked by an author remain grouped.
 
 Prefix-level scores and first-threshold-crossing turns are summarized only as exploratory sequence behavior. PAN12 does not supply exhaustive training annotations for the first grooming turn, so these summaries are not evaluated or described as message-level detection accuracy, grooming-stage accuracy, or true time to detection.
 
 ## 3.6 Ethical Considerations
 
-All datasets used in this study are handled in accordance with applicable data-protection and research-ethics principles. The PAN12 corpus is a publicly available research dataset with established usage guidelines. In the local demonstration interface, common direct identifiers—including email addresses, phone numbers, URLs, IPv4 addresses, and common account handles—are masked before model scoring and in-memory retention. Responses are marked as non-cacheable, and resetting the demonstration deletes the active in-process conversation object. These safeguards reduce exposure but do not guarantee complete anonymization: automatic pattern matching may miss names, indirect identifiers, unusual formats, or identifying combinations of details. Real sensitive information must therefore not be entered into the prototype, and any research data still requires access control and manual privacy review.
+All datasets used in this study are handled in accordance with applicable data-protection and research-ethics principles. PAN12 is a research benchmark used under its applicable access and usage conditions. In the local demonstration interface, common direct identifiers—including email addresses, phone numbers, URLs, IPv4 addresses, and common account handles—are masked on the server before model scoring; the masked history then replaces the browser's active conversation history and displayed text. Responses are marked as non-cacheable, and resetting the demonstration clears the browser's active conversation state. Raw text remains briefly in the local browser while a request is processed. These safeguards reduce exposure but do not guarantee complete anonymization: automatic pattern matching may miss names, indirect identifiers, unusual formats, or identifying combinations of details. Real sensitive information must therefore not be entered into the prototype, and any research data still requires access control and manual privacy review.
 
 The study does not involve direct interaction with real users. The revised primary experiment is evaluated offline using PAN12-derived records only. The locally retained synthetic candidate data and any separately collected conversation files are excluded from primary training, validation, and testing unless a later study completes appropriate provenance, licensing, privacy, and independent annotation review.
 

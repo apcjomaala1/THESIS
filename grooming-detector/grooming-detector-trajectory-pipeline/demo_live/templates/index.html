@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conversation Trajectory Lab - PAN12 Endpoint Demo</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Header Navigation -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">
+          <span class="pulse-dot"></span>
+          <span class="brand-name">TRAJECTORY LAB</span>
+        </div>
+        <span class="brand-sub">PAN12 Conversation Review Prototype</span>
+      </div>
+
+      <div class="topbar-metrics">
+        <div class="stat-pill">
+          <span class="stat-label">FINAL PR-AUC</span>
+          <span class="stat-val">{{ '%.4f' % lstm_metrics.get('pr_auc', 0) }}</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">PRECISION</span>
+          <span class="stat-val">{{ '%.1f%%' % (lstm_metrics.get('precision', 0) * 100) }}</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">RECALL</span>
+          <span class="stat-val">{{ '%.1f%%' % (lstm_metrics.get('recall', 0) * 100) }}</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">SPECIFICITY</span>
+          <span class="stat-val">{{ '%.1f%%' % (lstm_metrics.get('specificity', 0) * 100) }}</span>
+        </div>
+        <div class="stat-pill pill-model">
+          <span class="stat-label">ACTIVE MODEL</span>
+          <span class="stat-val highlight">LSTM (7-d)</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="endpoint-banner" role="note" aria-label="Research endpoint and interpretation caveat">
+      <span class="endpoint-kicker">RESEARCH ENDPOINT</span>
+      <div class="endpoint-copy">
+        <strong>{{ endpoint }}</strong>
+        <span>Author-proxy and conversation-review signals only; not message-level labels, intent findings, autonomous safety verdicts, or proof about a person. Prefix curves are exploratory. Common direct identifiers are masked before model scoring, but real sensitive data must not be entered.</span>
+      </div>
+    </div>
+
+    <!-- Main Content Workspace -->
+    <div class="workspace">
+      <!-- Left Column: Interactive Chat Studio -->
+      <section class="chat-section">
+        <!-- Scenario Presets Bar -->
+        <div class="scenario-bar">
+          <span class="scenario-label">Synthetic Demo Scenarios:</span>
+          <div class="scenario-chips" id="scenario-chips">
+            {% for sc in scenarios %}
+            <button class="scenario-chip {{ 'chip-active' if loop.first else '' }}" data-id="{{ sc.id }}">
+              {{ sc.title }}
+            </button>
+            {% endfor %}
+            <button class="scenario-chip chip-custom" data-id="custom">
+              ✍️ Custom Chat
+            </button>
+          </div>
+        </div>
+
+        <!-- Scenario Info Box -->
+        <div class="scenario-info" id="scenario-info">
+          <div class="info-header">
+            <span class="badge {{ scenarios[0].badge_class }}" id="info-badge">{{ scenarios[0].badge }}</span>
+            <h3 id="info-title">{{ scenarios[0].title }}</h3>
+          </div>
+          <p id="info-desc">{{ scenarios[0].description }}</p>
+          <div class="scenario-actions">
+            <button id="btn-autoplay" class="btn btn-primary btn-sm">▶ Auto-Play Scenario</button>
+            <button id="btn-step" class="btn btn-secondary btn-sm">⏭ Step Next Turn</button>
+            <button id="btn-reset" class="btn btn-ghost btn-sm">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- Chat Stream Window -->
+        <div class="chat-window" id="chat-window">
+          <div class="chat-empty" id="chat-empty">
+            <div class="empty-icon">💬</div>
+            <h4>Ready for Frozen-Model Simulation</h4>
+            <p>Click <b>Auto-Play</b> above or type messages below. Each turn is processed through the accepted DistilBERT checkpoint and selected 7-signal Trajectory LSTM.</p>
+          </div>
+          <div class="messages-list" id="messages-list"></div>
+        </div>
+
+        <!-- Message Composer -->
+        <form class="composer-form" id="composer-form">
+          <div class="speaker-toggle-wrapper">
+            <button type="button" class="btn-speaker speaker-a active" id="btn-toggle-speaker" title="Click to toggle speaker (or press Tab)">
+              <span class="speaker-avatar" id="current-speaker-avatar">A</span>
+              <span class="speaker-label" id="current-speaker-label">Speaker A</span>
+              <span class="speaker-switch-hint">⇄ Switch (Tab)</span>
+            </button>
+          </div>
+
+          <div class="input-row">
+            <input type="text" id="msg-input" class="msg-input" placeholder="Type a message and press Enter..." autocomplete="off" maxlength="800" />
+            <button type="submit" id="btn-send" class="btn btn-primary">
+              <span>Send Turn</span>
+              <span class="btn-icon">&rarr;</span>
+            </button>
+          </div>
+          <div class="composer-footnote">
+            Local-only inference. Presets are synthetic; no telemetry or external API calls.
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Real-Time Diagnostic Dashboard -->
+      <aside class="dashboard-section">
+        <!-- 1. LSTM Decision Gauge & Status Banner -->
+        <div class="card gauge-card" id="gauge-card">
+          <div class="card-header">
+            <h3>Layer 2 LSTM Conversation Endpoint Score</h3>
+            <span class="threshold-tag">Threshold: {{ '%.4f' % lstm_threshold }}</span>
+          </div>
+
+          <div class="gauge-body">
+            <div class="gauge-dial">
+              <svg class="gauge-svg" viewBox="0 0 160 160">
+                <circle class="gauge-track" cx="80" cy="80" r="65" />
+                <circle class="gauge-fill" id="gauge-fill" cx="80" cy="80" r="65" />
+                <line class="gauge-threshold-tick" x1="80" y1="15" x2="80" y2="25" />
+              </svg>
+              <div class="gauge-center">
+                <span class="gauge-pct" id="gauge-pct">0.0000</span>
+                <span class="gauge-caption">Endpoint Score</span>
+              </div>
+            </div>
+
+            <div class="decision-box" id="decision-box">
+              <div class="status-badge badge-neutral" id="status-badge">
+                <span class="status-indicator"></span>
+                <span id="status-text">AWAITING CONVERSATION</span>
+              </div>
+              <p class="decision-desc" id="decision-desc">Awaiting the first turn. The current-prefix score will be compared with the frozen threshold.</p>
+              <div class="prefix-crossing" id="prefix-crossing" style="display: none;">
+                Exploratory prefix first crossed at Turn <span id="flag-turn-num">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Live Trajectory Timeline Chart -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3>Exploratory Current-Prefix Score Trajectory</h3>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="dot dot-lstm"></span> LSTM Prefix Score</span>
+              <span class="legend-item"><span class="dot dot-l1"></span> Author-Proxy Score</span>
+              <span class="legend-item"><span class="dot dot-topic"></span> Topic Distance (0–2 scale)</span>
+              <span class="legend-item"><span class="dot dot-thresh"></span> Threshold</span>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <svg class="trajectory-svg" id="trajectory-svg" preserveAspectRatio="none" viewBox="0 0 500 160">
+              <!-- Grid lines -->
+              <line x1="0" y1="15" x2="500" y2="15" class="grid-line" />
+              <line x1="0" y1="50" x2="500" y2="50" class="grid-line" />
+              <line x1="0" y1="85" x2="500" y2="85" class="grid-line" />
+              <line x1="0" y1="120" x2="500" y2="120" class="grid-line" />
+              <!-- Threshold Line (0.9688) -->
+              <line x1="0" y1="18" x2="500" y2="18" class="thresh-line" />
+              <!-- Chart Paths rendered dynamically by app.js -->
+              <path id="path-topic" class="chart-path path-topic" d="" />
+              <path id="path-l1" class="chart-path path-l1" d="" />
+              <path id="path-lstm" class="chart-path path-lstm" d="" />
+              <g id="chart-points"></g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 3. 7-Signal Behavioral Matrix -->
+        <div class="card signals-card">
+          <div class="card-header">
+            <h3>Frozen 7-Signal Feature Vector</h3>
+            <span class="signals-badge">Auditable Vectors</span>
+          </div>
+          <div class="signals-grid">
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="sig-name">Peak Author-Proxy Score</span>
+                <span class="sig-val" id="val-peak">0.0000</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill" id="bar-peak" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="sig-name">Current Author-Proxy Score</span>
+                <span class="sig-val" id="val-curr">0.0000</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill" id="bar-curr" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="sig-name">Cumulative Spikes (>{{ '%.4f' % spike_threshold }})</span>
+                <span class="sig-val" id="val-spikes">0</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill fill-amber" id="bar-spikes" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="sig-name">Spike-Then-Drop Event</span>
+                <span class="sig-val" id="val-drop">False</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill fill-red" id="bar-drop" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="sig-name">Adjacent Score Delta</span>
+                <span class="sig-val" id="val-rate">0.0000</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill fill-cyan" id="bar-rate" style="width: 50%;"></div></div>
+            </div>
+
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="sig-name">Topic Distance (Training Centroid)</span>
+                <span class="sig-val" id="val-topic">0.0000</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill fill-purple" id="bar-topic" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="signal-item signal-span-2">
+              <div class="signal-header">
+                <span class="sig-name">Turn-Taking Imbalance</span>
+                <span class="sig-val" id="val-imbalance">0.0000</span>
+              </div>
+              <div class="sig-bar-track"><div class="sig-bar-fill fill-blue" id="bar-imbalance" style="width: 0%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Multi-Model Benchmark Comparison Matrix -->
+        <div class="card comparators-card">
+          <div class="card-header">
+            <h3>Multi-Model Comparator Status</h3>
+            <span class="signals-badge">Current Prefix Comparison</span>
+          </div>
+          <div class="comparators-table">
+            <div class="comp-row comp-header">
+              <span>Model Architecture</span>
+              <span>Input Dim</span>
+              <span>Score / Status</span>
+              <span>Review Status</span>
+            </div>
+
+            <div class="comp-row comp-row-primary">
+              <span class="comp-name"><b>Primary Trajectory LSTM</b></span>
+              <span class="comp-dim">7 features</span>
+              <span class="comp-score" id="comp-lstm-score">0.0000</span>
+              <span class="comp-flag" id="comp-lstm-flag"><span class="badge badge-below">BELOW THRESHOLD</span></span>
+            </div>
+
+            <div class="comp-row">
+              <span class="comp-name">Weighted Scorer (Linear)</span>
+              <span class="comp-dim">7 features</span>
+              <span class="comp-score" id="comp-weighted-score">0.0000</span>
+              <span class="comp-flag" id="comp-weighted-flag"><span class="badge badge-below">BELOW THRESHOLD</span></span>
+            </div>
+
+            <div class="comp-row">
+              <span class="comp-name">Maximum Layer 1 Contextual Proxy</span>
+              <span class="comp-dim">1 score</span>
+              <span class="comp-score" id="comp-raw-score">0.0000</span>
+              <span class="comp-flag" id="comp-raw-flag"><span class="badge badge-below">BELOW THRESHOLD</span></span>
+            </div>
+
+            <div class="comp-row">
+              <span class="comp-name">Frozen Keyword Baseline</span>
+              <span class="comp-dim">{{ keyword_term_count }} terms</span>
+              <span class="comp-score" id="comp-keyword-score">No hit</span>
+              <span class="comp-flag" id="comp-keyword-flag"><span class="badge badge-below">BELOW THRESHOLD</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Explainability Context Inspector -->
+        <div class="card inspector-card">
+          <div class="card-header">
+            <h3>Layer 1 Context Window & Audit Inspector</h3>
+            <span class="signals-badge">3-Turn Prefix</span>
+          </div>
+          <div class="inspector-body">
+            <div class="context-label">DistilBERT Prefix Context Input:</div>
+            <div class="context-box" id="context-box">[Awaiting conversation messages...]</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

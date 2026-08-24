@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "verified_utc": "2026-08-24T03:49:00Z",
+  "authoritative_docx": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+  "authoritative_sha256": "F631C00B4CA0E777B3E200EC0631472304327C4A4E52E7AC0B4FAA38752A6F96",
+  "source_markdown": "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md",
+  "render_engine": "LibreOffice PDF export plus PyMuPDF page rasterization",
+  "rendered_page_count": 21,
+  "page_geometry": "Letter portrait with one-inch margins",
+  "visual_inspection": {
+    "pages_inspected": 21,
+    "missing_or_clipped_content": 0,
+    "overlaps": 0,
+    "list_markers_visible": true,
+    "equations_visible": true,
+    "methodology_tables_rendered_as_tables": true
+  },
+  "structural_qa": {
+    "heading_1": 4,
+    "heading_2": 15,
+    "heading_3": 20,
+    "page_breaks": 3,
+    "hyperlinks": 13,
+    "visible_list_paragraphs": 20,
+    "tracked_changes_comments_or_fields": 0,
+    "out_of_bounds_pdf_text_blocks": 0
+  },
+  "accessibility_audit": {
+    "high_findings": 0,
+    "medium_findings": 1,
+    "medium_note": "The preserved two-row cover author table has no semantic header row.",
+    "low_findings": 13,
+    "low_note": "Reference hyperlinks display their raw URLs."
+  }
+}
