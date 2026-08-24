@@ -28,7 +28,7 @@ from lxml import etree
 
 
 EXPECTED_REFERENCE_SHA256 = (
-    'F631C00B4CA0E777B3E200EC0631472304327C4A4E52E7AC0B4FAA38752A6F96'
+    'D920524D78C871F7E503675C423C6F82573C3BE5E53D7587E7D4005BF11D9FE3'
 )
 PANDOC_READER = (
     'markdown+pipe_tables+tex_math_dollars+tex_math_single_backslash'
@@ -430,7 +430,7 @@ def normalize_list_numbering(document: Any) -> dict[str, int]:
         if old_id not in ordered_groups:
             ordered_groups.append(old_id)
     counts = Counter(old_id for _, old_id in paragraphs)
-    expected_counts = [4, 1, 4, 7, 4]
+    expected_counts = [4, 1, 3, 7, 4]
     actual_counts = [counts[group] for group in ordered_groups]
     if actual_counts != expected_counts:
         raise SyncError(
@@ -625,9 +625,9 @@ def validate_output(
         raise SyncError(f'Unexpected table structure: {table_shapes}')
     numbered = count_numbered_paragraphs(document)
     visible_markers = count_visible_list_markers(document)
-    if numbered != 0 or visible_markers != 20:
+    if numbered != 0 or visible_markers != 19:
         raise SyncError(
-            'Expected 20 viewer-independent list markers and no automatic '
+            'Expected 19 viewer-independent list markers and no automatic '
             f'numbering; found visible={visible_markers}, automatic={numbered}'
         )
     special = tracked_or_field_counts(document)

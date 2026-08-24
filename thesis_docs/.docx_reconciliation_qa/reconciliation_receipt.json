@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-08-24T04:31:45.999802+00:00",
+  "reference": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+  "teammate_source": "C:\\Projects\\THESIS\\Finalized_Complete_Paper_WASD_updated.docx",
+  "chapter_iv_source": "C:\\Projects\\THESIS\\thesis_docs\\CHAPTER_IV_RESULTS_AND_DISCUSSION.md",
+  "chapter_v_source": "C:\\Projects\\THESIS\\thesis_docs\\CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md",
+  "output": "C:\\Projects\\THESIS\\Finalized Complete Paper WASD - reconciled.docx",
+  "reference_sha256": "F631C00B4CA0E777B3E200EC0631472304327C4A4E52E7AC0B4FAA38752A6F96",
+  "teammate_sha256": "D1973E367C391AD0A2752804FFD1743CE0B42B4009B0D7C0B57AFECE429F686A",
+  "chapter_iv_sha256": "4D80AB3CA48F1E55CD232FCE3A0123EE7BEF07BC2664C68C059BCB46F1CE4EF5",
+  "chapter_v_sha256": "8319FBDE43D5BBD09B362D7B41050D88AD659C191D021392BDADC65509EE4B8D",
+  "output_sha256": "02ED4BD332F452B2371E8516BB7648947F907183940983436A7D8309AB337BD3",
+  "pandoc_command": [
+    "C:\\Users\\JM\\AppData\\Local\\Pandoc\\pandoc.exe",
+    "C:\\Users\\JM\\AppData\\Local\\Temp\\thesis-reconcile-rqewn_3z\\chapters_iv_v.md",
+    "-f",
+    "markdown+pipe_tables+tex_math_dollars+tex_math_single_backslash",
+    "-t",
+    "docx",
+    "--reference-doc",
+    "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+    "-o",
+    "C:\\Users\\JM\\AppData\\Local\\Temp\\thesis-reconcile-rqewn_3z\\chapters_iv_v.docx"
+  ],
+  "qa": {
+    "protected_fingerprints": {
+      "cover_without_title": "691D8A9D7124BA3836C9534513927FA892573C70620FE1EFEF8622D8023DEF2B",
+      "cover_author_table": "0C2CCF945A56B44598DB743753B9C75907F18733999E5746068446574A2C0AB9",
+      "references": "DB6F5EC713237E669E4134CCD463E780F8A81F6B9785D68462660DED3203B8E8",
+      "chapter_i": "28FA2E3CB2CF624A39C3AE15892A59CF2034A3988164A709E030C2F0DA68EC4F",
+      "chapter_ii": "841A677DBC18BC7F167C5F9BA3AC8F16AAFF397766DB29B15C90C568567FD1F5",
+      "chapter_iii": "990BA937ADB750D685A3AFC8D4394BE988940A0890F5E54898B9F26BD234D641"
+    },
+    "heading_counts": {
+      "Heading 1": 6,
+      "Heading 2": 26,
+      "Heading 3": 20
+    },
+    "direct_page_breaks": 5,
+    "hyperlinks": 13,
+    "visible_list_paragraphs": 43,
+    "automatic_numbered_paragraphs": 0,
+    "special_content_counts": {
+      "comments": 0,
+      "insertions": 0,
+      "deletions": 0,
+      "fields": 0,
+      "field_codes": 0
+    },
+    "table_shapes": [
+      [
+        2,
+        2
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        6,
+        5
+      ]
+    ],
+    "result_table_geometry_checks": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "stale_claim_patterns_found": [],
+    "sections": 1
+  },
+  "experiment_boundary": {
+    "retrained": false,
+    "retuned": false,
+    "final_test_rescored": false
+  }
+}

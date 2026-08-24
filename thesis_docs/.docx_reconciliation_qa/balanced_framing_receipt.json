@@ -1,0 +1,55 @@
+{
+  "operation": "restore-depth-with-factual-boundaries",
+  "timestamp_utc": "2026-08-24T05:14:00.255530+00:00",
+  "source_lineage": {
+    "original_framing_commit": "c597cb8",
+    "narrowed_overhaul_commit": "1681e28",
+    "authoritative_markdown": "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md"
+  },
+  "decisions": [
+    "Restored broad AI moderation, grooming-related interaction, contextual-analysis, and behavioral-trajectory framing.",
+    "Restored the original research questions and exact adviser-locked objectives.",
+    "Retained author-derived PAN12 supervision as the empirical operationalization.",
+    "Retained exclusions of unsupported message-level, onset, stage, external-dataset, language, and deployment claims.",
+    "Reframed OGDM features as theoretically informed behavioral indicators rather than validated discourse-stage labels.",
+    "Kept Chapter III onward text unchanged."
+  ],
+  "rendering_performed": false,
+  "rendering_note": "Intentionally skipped at the user's explicit request to avoid a render-fix loop.",
+  "files": [
+    {
+      "path": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+      "sha256_before": "FD6DDF9A1C60B09C899848D5CB239613D59673F9B9A82F20B690F5792EB1DD71",
+      "sha256_after": "D920524D78C871F7E503675C423C6F82573C3BE5E53D7587E7D4005BF11D9FE3",
+      "chapter_1_2_content_paragraphs": 99,
+      "heading_counts": {
+        "Heading 1": 4,
+        "Heading 2": 15,
+        "Heading 3": 20
+      },
+      "table_count": 3,
+      "page_break_count": 3,
+      "hyperlink_count": 13,
+      "chapter_3_onward_text_unchanged": true,
+      "non_title_cover_text_unchanged": true,
+      "tables_unchanged": true
+    },
+    {
+      "path": "C:\\Projects\\THESIS\\Finalized Complete Paper WASD - reconciled.docx",
+      "sha256_before": "4D2734C5EB29200E1CB7B0F1B7832390BD802A87586268DC88D3FF01DD479528",
+      "sha256_after": "8768C86EE698D945531784783D95E41FA29BC31CB7A13C2800441569318148A9",
+      "chapter_1_2_content_paragraphs": 99,
+      "heading_counts": {
+        "Heading 1": 6,
+        "Heading 2": 26,
+        "Heading 3": 20
+      },
+      "table_count": 10,
+      "page_break_count": 5,
+      "hyperlink_count": 13,
+      "chapter_3_onward_text_unchanged": true,
+      "non_title_cover_text_unchanged": true,
+      "tables_unchanged": true
+    }
+  ]
+}

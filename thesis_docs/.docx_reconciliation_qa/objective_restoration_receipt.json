@@ -1,0 +1,47 @@
+{
+  "operation": "restore-original-committed-objectives",
+  "timestamp_utc": "2026-08-24T04:51:07.613422+00:00",
+  "source_commit": "c597cb8",
+  "rendering_performed": false,
+  "rendering_note": "Intentionally skipped at the user's explicit request.",
+  "validation": [
+    "Exact objective text present once in both DOCX files",
+    "Superseded narrowed objective text absent",
+    "Chapter V objective-to-results mapping synchronized in complete DOCX",
+    "Heading counts unchanged",
+    "Table count and cell text unchanged",
+    "Only expected paragraph-count deltas occurred"
+  ],
+  "files": [
+    {
+      "path": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+      "sha256_before": "F631C00B4CA0E777B3E200EC0631472304327C4A4E52E7AC0B4FAA38752A6F96",
+      "sha256_after": "FD6DDF9A1C60B09C899848D5CB239613D59673F9B9A82F20B690F5792EB1DD71",
+      "paragraph_count_before": 201,
+      "paragraph_count_after": 200,
+      "heading_counts": {
+        "Heading 1": 4,
+        "Heading 2": 15,
+        "Heading 3": 20
+      },
+      "table_count": 3,
+      "objectives_source_commit": "c597cb8",
+      "chapter_v_aligned": false
+    },
+    {
+      "path": "C:\\Projects\\THESIS\\Finalized Complete Paper WASD - reconciled.docx",
+      "sha256_before": "02ED4BD332F452B2371E8516BB7648947F907183940983436A7D8309AB337BD3",
+      "sha256_after": "4D2734C5EB29200E1CB7B0F1B7832390BD802A87586268DC88D3FF01DD479528",
+      "paragraph_count_before": 273,
+      "paragraph_count_after": 273,
+      "heading_counts": {
+        "Heading 1": 6,
+        "Heading 2": 26,
+        "Heading 3": 20
+      },
+      "table_count": 10,
+      "objectives_source_commit": "c597cb8",
+      "chapter_v_aligned": true
+    }
+  ]
+}
