@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-02",
+  "document": {
+    "path": "C:\\Projects\\THESIS\\Alignment Table.docx",
+    "original_template_sha256": "83397C6AC5EBEFF1612BCFA1BED18A14ADA4E322886219730DC5E01316094BD0",
+    "prior_filled_version_sha256": "55EBEE308B884CA38E800F37905F5BE9AFC4F107B9EAA9343C78F29007CE22D1",
+    "output_sha256": "043977835F6D5B95310E2E6BB9E7A2B1E3BC91EC9B717C53C4DC9564DF02298F"
+  },
+  "authoritative_sources": [
+    "thesis_docs/Finals_Revised_Paper_WASD.md sections 1.2, 1.3, and Chapter III",
+    "thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md sections 4.1 through 4.8"
+  ],
+  "alignment": [
+    {
+      "row": 1,
+      "research_questions": [1],
+      "specific_objective": 1,
+      "reason": "RQ1 addresses effectiveness; Specific Objective 1 covers both effectiveness and limitations."
+    },
+    {
+      "row": 2,
+      "research_questions": [2],
+      "specific_objective": 1,
+      "reason": "RQ2 addresses limitations; Specific Objective 1 covers both effectiveness and limitations."
+    },
+    {
+      "row": 3,
+      "research_questions": [3],
+      "specific_objective": 2
+    },
+    {
+      "row": 4,
+      "research_questions": [4],
+      "specific_objective": 3
+    }
+  ],
+  "content_boundaries": {
+    "research_questions_changed": false,
+    "objectives_changed_in_manuscript": false,
+    "general_objective_stacked_in_table": false,
+    "report_driven_comparator_claimed": false,
+    "model_retrained": false,
+    "model_retuned": false,
+    "final_test_rescored": false
+  },
+  "verification": {
+    "document_reopened": true,
+    "table_count": 1,
+    "rows": 5,
+    "columns": 4,
+    "body_cells": 16,
+    "body_cells_with_exactly_one_paragraph": 16,
+    "empty_body_cells": 0,
+    "header_row_repeats": true,
+    "all_required_questions_present": true,
+    "all_specific_objective_mappings_present": true,
+    "exact_objective_wording_reproduced_in_cells": false,
+    "chapter_3_methods_present": true,
+    "chapter_4_evidence_present": true,
+    "placeholder_text_remaining": false,
+    "visual_qa_performed": false,
+    "visual_qa_omission_reason": "Explicit user instruction: No Visual QA Pass."
+  },
+  "generator": "C:\\Projects\\THESIS\\thesis_docs\\.docx_reconciliation_qa\\fill_alignment_table.ps1",
+  "committed": false
+}

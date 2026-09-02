@@ -1,5 +1,5 @@
 /**
- * Controller for the Live Conversation Trajectory Lab
+ * PAN12 Conversation Trajectory Benchmark - Frontend Controller
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -93,14 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function setSpeaker(speaker) {
     currentSpeaker = speaker;
     if (speaker === "user_A") {
-      btnToggleSpeaker.className = "btn-speaker speaker-a active";
+      currentSpeakerAvatar.className = "speaker-pill pill-a active";
       currentSpeakerAvatar.textContent = "A";
-      currentSpeakerAvatar.style.backgroundColor = "var(--accent-purple)";
-      currentSpeakerLabel.textContent = "Speaker A";
+      currentSpeakerLabel.textContent = "Speaker A (Initiator)";
     } else {
-      btnToggleSpeaker.className = "btn-speaker speaker-b active";
+      currentSpeakerAvatar.className = "speaker-pill pill-b active";
       currentSpeakerAvatar.textContent = "B";
-      currentSpeakerAvatar.style.backgroundColor = "var(--accent-cyan)";
       currentSpeakerLabel.textContent = "Speaker B";
     }
   }
@@ -109,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setSpeaker(currentSpeaker === "user_A" ? "user_B" : "user_A");
   });
 
-  // Global Tab key to quickly switch speaker
+  // Global Tab key to switch speaker when focused on input
   document.addEventListener("keydown", (e) => {
     if (e.key === "Tab" && document.activeElement === msgInput) {
       e.preventDefault();
@@ -124,21 +122,21 @@ document.addEventListener("DOMContentLoaded", () => {
     scenarioStepIndex = 0;
     resetConversation();
 
-    // Update chips
-    document.querySelectorAll(".scenario-chip").forEach((chip) => {
-      chip.classList.toggle("chip-active", chip.dataset.id === sc.id);
+    // Update tab states
+    document.querySelectorAll(".scenario-tab").forEach((tab) => {
+      tab.classList.toggle("tab-active", tab.dataset.id === sc.id);
     });
 
     if (sc.id === "custom") {
       infoBadge.textContent = "Custom Mode";
-      infoBadge.className = "badge badge-neutral";
-      infoTitle.textContent = "Custom Synthetic Conversation";
-      infoDesc.textContent = "Type newly written messages to inspect how the frozen Layer 1 author-proxy model and Layer 2 LSTM respond to the current prefix.";
+      infoBadge.className = "meta-badge badge-neutral";
+      infoTitle.textContent = "Custom Synthetic Conversation Transcript";
+      infoDesc.textContent = "Enter messages below to inspect how the frozen Layer 1 DistilBERT author-proxy and Layer 2 LSTM respond to the chronological prefix.";
       btnAutoPlay.style.display = "none";
       btnStep.style.display = "none";
     } else {
       infoBadge.textContent = sc.badge;
-      infoBadge.className = `badge ${sc.badge_class}`;
+      infoBadge.className = `meta-badge ${sc.badge_class}`;
       infoTitle.textContent = sc.title;
       infoDesc.textContent = sc.description;
       btnAutoPlay.style.display = "inline-flex";
@@ -147,9 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   scenarioChips.addEventListener("click", (e) => {
-    const chip = e.target.closest(".scenario-chip");
-    if (!chip) return;
-    const id = chip.dataset.id;
+    const tab = e.target.closest(".scenario-tab");
+    if (!tab) return;
+    const id = tab.dataset.id;
     if (id === "custom") {
       selectScenario({ id: "custom" });
     } else {
@@ -170,22 +168,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // Append to UI immediately
     chatEmpty.style.display = "none";
     const row = document.createElement("div");
-    row.className = `chat-bubble-row ${author === "user_A" ? "bubble-a" : "bubble-b"}`;
+    row.className = `transcript-row ${author === "user_A" ? "row-speaker-a" : "row-speaker-b"}`;
     row.id = `turn-row-${turnIndex}`;
     row.innerHTML = `
-      <div class="chat-avatar ${author === "user_A" ? "avatar-a" : "avatar-b"}">
-        ${author === "user_A" ? "A" : "B"}
-      </div>
-      <div class="chat-bubble-content">
-        <div class="bubble-meta">
-          <span class="author-tag ${author === "user_A" ? "author-a" : "author-b"}">
+      <div class="turn-header">
+        <div class="turn-speaker-group">
+          <span class="speaker-tag ${author === "user_A" ? "tag-a" : "tag-b"}">
             ${author === "user_A" ? "Speaker A" : "Speaker B"}
           </span>
-          <span class="turn-tag">Turn #${turnIndex}</span>
-          <span class="score-tag" id="score-tag-${turnIndex}">Scoring...</span>
+          <span class="turn-index">Turn #${turnIndex}</span>
         </div>
-        <div class="chat-text">${escapeHtml(text)}</div>
+        <span class="turn-metric" id="score-tag-${turnIndex}">Evaluating...</span>
       </div>
+      <div class="turn-text">${escapeHtml(text)}</div>
     `;
     messagesList.appendChild(row);
     chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -206,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (Array.isArray(data.sanitized_history)) {
         conversationHistory = data.sanitized_history;
         const sanitizedText = conversationHistory[conversationHistory.length - 1].text;
-        const visibleText = row.querySelector(".chat-text");
+        const visibleText = row.querySelector(".turn-text");
         if (visibleText) visibleText.textContent = sanitizedText;
       }
       updateDashboard(data);
@@ -256,13 +251,13 @@ document.addEventListener("DOMContentLoaded", () => {
       stopAutoPlay();
       return;
     }
-    autoPlayTimer = setTimeout(runAutoPlayTurn, 1600);
+    autoPlayTimer = setTimeout(runAutoPlayTurn, 1400);
   }
 
   function startAutoPlay() {
     if (autoPlayActive) return;
     autoPlayActive = true;
-    btnAutoPlay.textContent = "⏸ Pause Auto-Play";
+    btnAutoPlay.textContent = "Pause Auto-Play";
     btnAutoPlay.className = "btn btn-secondary btn-sm";
     runAutoPlayTurn();
   }
@@ -273,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
       clearTimeout(autoPlayTimer);
       autoPlayTimer = null;
     }
-    btnAutoPlay.textContent = "▶ Auto-Play Scenario";
+    btnAutoPlay.textContent = "Auto-Play Scenario";
     btnAutoPlay.className = "btn btn-primary btn-sm";
   }
 
@@ -312,25 +307,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update Turn Score Tag
     const scoreTag = document.getElementById(`score-tag-${data.turns_count}`);
     if (scoreTag) {
-      scoreTag.textContent = `L1 Proxy: ${latest.layer1_score.toFixed(4)}`;
+      scoreTag.textContent = `L1: ${latest.layer1_score.toFixed(4)}`;
       if (latest.proxy_spike) {
-        scoreTag.className = "score-tag score-high";
+        scoreTag.className = "turn-metric metric-spike";
+        scoreTag.textContent = `L1: ${latest.layer1_score.toFixed(4)} (Spike)`;
+      } else {
+        scoreTag.className = "turn-metric";
       }
     }
 
-    // A. Update Circular Gauge
+    // A. Update Linear Meter & Score Readout
     const lstmScore = decision.lstm.score;
     gaugePct.textContent = lstmScore.toFixed(4);
-
-    // Circumference = 2 * PI * 65 = 408.4
-    const offset = 408.4 - (lstmScore * 408.4);
-    gaugeFill.style.strokeDashoffset = offset;
+    gaugeFill.style.width = `${Math.min(100, Math.max(0, lstmScore * 100))}%`;
 
     if (decision.lstm.flagged) {
-      gaugeFill.style.stroke = "var(--accent-red)";
+      gaugeFill.style.backgroundColor = "var(--status-flagged)";
       statusBadge.className = "status-badge badge-danger-live";
       statusText.textContent = "FLAGGED FOR REVIEW";
-      decisionDesc.textContent = `Current-prefix score (${lstmScore.toFixed(4)}) meets or exceeds the frozen threshold (${decision.lstm.threshold.toFixed(4)}). Route this conversation for human review.`;
+      decisionDesc.textContent = `Current-prefix score (${lstmScore.toFixed(4)}) meets or exceeds the frozen decision threshold (${decision.lstm.threshold.toFixed(4)}). Route conversation for human review.`;
 
       if (!firstCrossedTurn) {
         firstCrossedTurn = data.turns_count;
@@ -338,10 +333,10 @@ document.addEventListener("DOMContentLoaded", () => {
         flagTurnNum.textContent = firstCrossedTurn;
       }
     } else {
-      gaugeFill.style.stroke = "#64748b";
+      gaugeFill.style.backgroundColor = "var(--accent-blue)";
       statusBadge.className = "status-badge badge-below-live";
-      statusText.textContent = "BELOW THRESHOLD";
-      decisionDesc.textContent = `Current-prefix score (${lstmScore.toFixed(4)}) remains below the frozen threshold (${decision.lstm.threshold.toFixed(4)}). This is not a safety finding.`;
+      statusText.textContent = "NOMINAL (BELOW THRESHOLD)";
+      decisionDesc.textContent = `Current-prefix score (${lstmScore.toFixed(4)}) remains below the frozen decision threshold (${decision.lstm.threshold.toFixed(4)}).`;
     }
 
     // B. Update 7 Signals
@@ -355,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
     valSpikes.textContent = f.spike_count;
     barSpikes.style.width = `${Math.min(100, f.spike_count * 25)}%`;
 
-    valDrop.textContent = f.spike_then_drop ? "True (Observed)" : "False";
+    valDrop.textContent = f.spike_then_drop ? "True" : "False";
     barDrop.style.width = f.spike_then_drop ? "100%" : "0%";
 
     valRate.textContent = (f.rate_of_change >= 0 ? "+" : "") + f.rate_of_change.toFixed(4);
@@ -370,26 +365,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // C. Update Comparators Table
     compLstmScore.textContent = decision.lstm.score.toFixed(4);
     compLstmFlag.innerHTML = decision.lstm.flagged
-      ? '<span class="badge badge-flagged">FLAGGED FOR REVIEW</span>'
-      : '<span class="badge badge-below">BELOW THRESHOLD</span>';
+      ? '<span class="table-badge badge-flagged">Flagged</span>'
+      : '<span class="table-badge badge-nominal">Nominal</span>';
 
     compWeightedScore.textContent = decision.weighted.score.toFixed(4);
     compWeightedFlag.innerHTML = decision.weighted.flagged
-      ? '<span class="badge badge-flagged">FLAGGED FOR REVIEW</span>'
-      : '<span class="badge badge-below">BELOW THRESHOLD</span>';
+      ? '<span class="table-badge badge-flagged">Flagged</span>'
+      : '<span class="table-badge badge-nominal">Nominal</span>';
 
     compRawScore.textContent = decision.raw_layer1.score.toFixed(4);
     compRawFlag.innerHTML = decision.raw_layer1.flagged
-      ? '<span class="badge badge-flagged">FLAGGED FOR REVIEW</span>'
-      : '<span class="badge badge-below">BELOW THRESHOLD</span>';
+      ? '<span class="table-badge badge-flagged">Flagged</span>'
+      : '<span class="table-badge badge-nominal">Nominal</span>';
 
     const matchedTerms = decision.keyword.matched_terms || [];
     compKeywordScore.textContent = decision.keyword.flagged
-      ? `${matchedTerms.length} frozen-term hit${matchedTerms.length === 1 ? "" : "s"}`
+      ? `${matchedTerms.length} hit${matchedTerms.length === 1 ? "" : "s"}`
       : "No hit";
     compKeywordFlag.innerHTML = decision.keyword.flagged
-      ? '<span class="badge badge-flagged">FLAGGED FOR REVIEW</span>'
-      : '<span class="badge badge-below">BELOW THRESHOLD</span>';
+      ? '<span class="table-badge badge-flagged">Flagged</span>'
+      : '<span class="table-badge badge-nominal">Nominal</span>';
 
     // D. Update Context Box
     contextBox.textContent = latest.context || "[No context available]";
@@ -400,11 +395,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resetDashboard() {
     gaugePct.textContent = "0.0000";
-    gaugeFill.style.strokeDashoffset = 408.4;
-    gaugeFill.style.stroke = "#64748b";
+    gaugeFill.style.width = "0%";
+    gaugeFill.style.backgroundColor = "var(--accent-blue)";
     statusBadge.className = "status-badge badge-neutral";
-    statusText.textContent = "AWAITING CONVERSATION";
-    decisionDesc.textContent = "Awaiting the first turn. The current-prefix score will be compared with the frozen threshold.";
+    statusText.textContent = "AWAITING INPUT";
+    decisionDesc.textContent = "Awaiting initial turn. Prefix scores are evaluated sequentially against the frozen decision boundary.";
     prefixCrossing.style.display = "none";
 
     valPeak.textContent = "0.0000";
@@ -423,13 +418,13 @@ document.addEventListener("DOMContentLoaded", () => {
     barImbalance.style.width = "0%";
 
     compLstmScore.textContent = "0.0000";
-    compLstmFlag.innerHTML = '<span class="badge badge-below">BELOW THRESHOLD</span>';
+    compLstmFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
     compWeightedScore.textContent = "0.0000";
-    compWeightedFlag.innerHTML = '<span class="badge badge-below">BELOW THRESHOLD</span>';
+    compWeightedFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
     compRawScore.textContent = "0.0000";
-    compRawFlag.innerHTML = '<span class="badge badge-below">BELOW THRESHOLD</span>';
+    compRawFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
     compKeywordScore.textContent = "No hit";
-    compKeywordFlag.innerHTML = '<span class="badge badge-below">BELOW THRESHOLD</span>';
+    compKeywordFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
 
     contextBox.textContent = "[Awaiting conversation messages...]";
 
@@ -448,9 +443,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const width = 500;
     const height = 160;
     const padTop = 15;
-    const padBottom = 20;
-    const padLeft = 20;
-    const padRight = 20;
+    const padBottom = 15;
+    const padLeft = 15;
+    const padRight = 15;
 
     const plotW = width - padLeft - padRight;
     const plotH = height - padTop - padBottom;
@@ -486,10 +481,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const y = getY(s);
       const isFlagged = Boolean(curve.lstm_flags[i]);
       pointsHtml += `
-        <circle cx="${x}" cy="${y}" r="${isFlagged ? 5 : 3.5}"
-                fill="${isFlagged ? '#ef4444' : '#a855f7'}"
-                stroke="#0a0d14" stroke-width="1.5">
-          <title>Turn ${i + 1}: LSTM Score = ${s.toFixed(4)}</title>
+        <circle cx="${x}" cy="${y}" r="${isFlagged ? 4 : 3}"
+                fill="${isFlagged ? '#ef4444' : '#3b82f6'}"
+                stroke="#0c1017" stroke-width="1.5">
+          <title>Turn ${i + 1}: LSTM = ${s.toFixed(4)}</title>
         </circle>
       `;
     });

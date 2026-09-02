@@ -6,13 +6,14 @@
                },
     "output":  {
                    "path":  "C:\\Projects\\THESIS\\WASD - Thesis 2 - final revised.pptx",
-                   "sha256":  "E6AE00B9AC91F8ED18BDC5071DCB734E6A054CCEAE4477237AC6472CB617D9F2"
+                   "sha256":  "EB0F97D9E4C0060774DB4D07149F2B01F50CBF7475A4656CE29BAD9148BC6CA8"
                },
     "narrative":  "Research problem and architecture first; PAN-2012 presented as the selected evaluation dataset; results and objective-aligned conclusions follow.",
     "changes":  [
                     "Revised visible copy into concise presentation language rather than manuscript prose.",
                     "Replaced the obsolete comment-matrix section with frozen results and conclusions.",
                     "Added an editable held-out results table with exact approved metrics.",
+                    "Slightly enlarged body text for presentation readability.",
                     "Added plain-language speaker scripts and source blocks to the presentation slides.",
                     "Preserved the existing visual template and resource slides."
                 ],
@@ -62,7 +63,9 @@
                          "text_overflow_warnings":  [
 
                                                     ],
-                         "visual_rendering_performed":  false
+                         "visual_rendering_performed":  true,
+                         "visual_render_count":  1,
+                         "visual_render_directory":  "C:\\Projects\\THESIS\\thesis_docs\\.pptx_revision_qa\\visual_qa_pass"
                      },
     "experiment_boundary":  {
                                 "retrained":  false,

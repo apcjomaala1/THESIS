@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-02",
+  "deliverable": "Independent AI model architecture diagram",
+  "generator": "C:\\Projects\\THESIS\\thesis_docs\\.pptx_revision_qa\\generate_ai_architecture_diagram.ps1",
+  "outputs": {
+    "svg": {
+      "path": "C:\\Projects\\THESIS\\thesis_docs\\assets\\AI_Model_Architecture_Diagram.svg",
+      "width": 1600,
+      "height": 900,
+      "sha256": "0BF057DBB7CB5FE63844166D5D78AD0DE85F5D093E4C343803D99970C180F108"
+    },
+    "png": {
+      "path": "C:\\Projects\\THESIS\\thesis_docs\\assets\\AI_Model_Architecture_Diagram.png",
+      "width": 1600,
+      "height": 900,
+      "sha256": "AD71BA49D69AB0D45447CB85AED7CCB82408200878DFE4FB90D797004ED84832"
+    }
+  },
+  "methodology_sources": [
+    "thesis_docs/Finals_Revised_Paper_WASD.md sections 3.3.4, 3.4.1, 3.4.2, and 3.5",
+    "thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md section 4.5"
+  ],
+  "content_contract": {
+    "input": "current turn plus up to two preceding turns",
+    "layer_1": "context-conditioned DistilBERT classifier",
+    "turn_signal": "author-derived contextual proxy score R_t",
+    "trajectory_feature_count": 7,
+    "layer_2": "primary LSTM sequence model",
+    "output": "conversation-level priority for human review",
+    "autonomous_enforcement_claim": false,
+    "dataset_named_in_architecture": false
+  },
+  "verification": {
+    "svg_xml_parsed": true,
+    "view_box": "0 0 1600 900",
+    "required_labels_checked": true,
+    "single_png_visual_inspection": true,
+    "overlap_or_clipping_observed": false,
+    "presentation_modified_by_diagram_task": false,
+    "powerpoint_regeneration_script_architecture_references": 0,
+    "presentation_sha256_after_task": "EB0F97D9E4C0060774DB4D07149F2B01F50CBF7475A4656CE29BAD9148BC6CA8"
+  },
+  "experiment_boundary": {
+    "retrained": false,
+    "retuned": false,
+    "final_test_rescored": false
+  },
+  "committed": false
+}
