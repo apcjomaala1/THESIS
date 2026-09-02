@@ -1,0 +1,112 @@
+{
+    "schema_version":  1,
+    "operation":  "align-conclusions-to-locked-objectives",
+    "created_utc":  "2026-09-02T02:31:26.581018+00:00",
+    "source":  {
+                   "path":  "C:\\Projects\\THESIS\\thesis_docs\\CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md",
+                   "sha256":  "FADD299524EC36710126B7BCCFAE600BFBE011414C4CDC19C76A528182F54BE7"
+               },
+    "objectives_authority":  {
+                                 "path":  "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md",
+                                 "unchanged":  true,
+                                 "earliest_git_baseline":  "5d29fca"
+                             },
+    "decisions":  [
+                      "Map Conclusions 1-3 directly to Specific Objectives 1-3.",
+                      "Add an explicit fourth conclusion answering the unchanged General Objective.",
+                      "State the implemented architecture, working interface, recall, and false-negative reductions directly.",
+                      "Treat report-driven moderation as a complementary workflow because it was not a quantitative model baseline.",
+                      "Avoid repeating the detailed PAN12 label-boundary discussion in the conclusion."
+                  ],
+    "document":  {
+                     "path":  "C:\\Projects\\THESIS\\Finalized Complete Paper WASD - reconciled.docx",
+                     "sha256_before":  "72D23405C1FCB2882DFEAA4915C045F0298C4209D8914D7F0B1E4FAE0F1B6FD3",
+                     "sha256_after":  "B4C4BB0069C408185A1C18D234C03CDC0D4039B762BACAC568BE3F37CD135E1D",
+                     "heading_counts":  {
+                                            "Heading 1":  6,
+                                            "Heading 2":  26,
+                                            "Heading 3":  20
+                                        },
+                     "table_shapes":  [
+                                          [
+                                              2,
+                                              2
+                                          ],
+                                          [
+                                              8,
+                                              2
+                                          ],
+                                          [
+                                              4,
+                                              3
+                                          ],
+                                          [
+                                              6,
+                                              5
+                                          ],
+                                          [
+                                              6,
+                                              4
+                                          ],
+                                          [
+                                              6,
+                                              5
+                                          ],
+                                          [
+                                              5,
+                                              4
+                                          ],
+                                          [
+                                              5,
+                                              4
+                                          ],
+                                          [
+                                              6,
+                                              5
+                                          ],
+                                          [
+                                              6,
+                                              5
+                                          ]
+                                      ],
+                     "direct_page_breaks":  5,
+                     "hyperlinks":  13,
+                     "special_content_counts":  {
+                                                    "comments":  0,
+                                                    "insertions":  0,
+                                                    "deletions":  0,
+                                                    "fields":  0,
+                                                    "field_codes":  0
+                                                },
+                     "result_table_geometry_checks":  [
+                                                          true,
+                                                          true,
+                                                          true,
+                                                          true,
+                                                          true,
+                                                          true,
+                                                          true
+                                                      ]
+                 },
+    "verification":  {
+                         "research_questions_unchanged":  true,
+                         "general_objective_unchanged":  true,
+                         "specific_objectives_unchanged":  true,
+                         "conclusions_mapped_to_objectives":  true,
+                         "pan12_scope_boundary_repeated_in_conclusion":  false,
+                         "metrics_unchanged":  true,
+                         "methods_unchanged":  true,
+                         "model_artifacts_changed":  false,
+                         "retrained":  false,
+                         "retuned":  false,
+                         "final_test_rescored":  false
+                     },
+    "rendering_performed":  false,
+    "rendering_note":  "Intentionally skipped at the user\u0027s explicit request.",
+    "current_status":  "approved-and-synchronized-to-docx",
+    "docx_synchronization_rolled_back":  true,
+    "premature_complete_docx_sha256":  "B4C4BB0069C408185A1C18D234C03CDC0D4039B762BACAC568BE3F37CD135E1D",
+    "current_complete_docx_sha256":  "C204E31B375F9F833BA6252BF334C9121CB50BFD69E69CCD104F13E27CA89661",
+    "objective_aligned_conclusions_in_current_docx":  true,
+    "word_sync_pending_user_approval":  false
+}

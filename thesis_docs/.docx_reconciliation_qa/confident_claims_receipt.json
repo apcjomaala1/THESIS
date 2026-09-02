@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "operation": "confident-claims-language-pass",
+  "created_utc": "2026-09-02T02:06:53.147030+00:00",
+  "authoritative_sources": {
+    "chapters_i_iii": {
+      "path": "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md",
+      "sha256": "B7AC62D94D6AC17234A166D779B5F2E6F153383C05D1CD9AF5C049856131695D",
+      "paragraph_replacements": 7
+    },
+    "chapter_iv": {
+      "path": "C:\\Projects\\THESIS\\thesis_docs\\CHAPTER_IV_RESULTS_AND_DISCUSSION.md",
+      "sha256": "7AF60A6D690D211A86AE6AA35D8FFA3A33AC642ABA85B5C5BD35A634F504E797",
+      "paragraph_replacements": 5
+    },
+    "chapter_v": {
+      "path": "C:\\Projects\\THESIS\\thesis_docs\\CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md",
+      "sha256": "784428D869F68CBCA17E54FC1FB6A78F2B2F38B09EB5582C2F3DC92D5CF2AEE3",
+      "paragraph_replacements": 7
+    }
+  },
+  "decisions": [
+    "State the completed two-layer AI moderation module and working sequential-review interface directly.",
+    "State the trajectory LSTM performance, false-negative reductions, and matched recurrent-aggregation result confidently.",
+    "Concentrate PAN12 endpoint boundaries in scope, methodology, ethics, and error interpretation instead of repeating them as apologies.",
+    "Preserve the title, adviser-locked objectives, broad research questions, methods, metrics, confidence intervals, tables, and frozen experiment records.",
+    "Present external validation, deployment measurement, ablations, Philippine-context data, and multi-party extension as forward research stages."
+  ],
+  "documents": [
+    {
+      "path": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+      "sha256_before": "D920524D78C871F7E503675C423C6F82573C3BE5E53D7587E7D4005BF11D9FE3",
+      "sha256_after": "F41F2ACA02CE053DD649AE1C9940B66665667B63F2A8B21A1F2F55F3378EC55C",
+      "heading_counts": {
+        "Heading 1": 4,
+        "Heading 2": 15,
+        "Heading 3": 20
+      },
+      "table_shapes": [
+        [
+          2,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "direct_page_breaks": 3,
+      "hyperlinks": 13,
+      "special_content_counts": {
+        "comments": 0,
+        "insertions": 0,
+        "deletions": 0,
+        "fields": 0,
+        "field_codes": 0
+      }
+    },
+    {
+      "path": "C:\\Projects\\THESIS\\Finalized Complete Paper WASD - reconciled.docx",
+      "sha256_before": "8768C86EE698D945531784783D95E41FA29BC31CB7A13C2800441569318148A9",
+      "sha256_after": "72D23405C1FCB2882DFEAA4915C045F0298C4209D8914D7F0B1E4FAE0F1B6FD3",
+      "heading_counts": {
+        "Heading 1": 6,
+        "Heading 2": 26,
+        "Heading 3": 20
+      },
+      "table_shapes": [
+        [
+          2,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          6,
+          5
+        ]
+      ],
+      "direct_page_breaks": 5,
+      "hyperlinks": 13,
+      "special_content_counts": {
+        "comments": 0,
+        "insertions": 0,
+        "deletions": 0,
+        "fields": 0,
+        "field_codes": 0
+      },
+      "result_table_geometry_checks": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "stale_claim_patterns_found": []
+    }
+  ],
+  "verification": {
+    "authoritative_markdown_synchronized": true,
+    "required_confident_claims_present": true,
+    "selected_repetitive_minimizing_phrases_removed": true,
+    "objectives_unchanged": true,
+    "research_questions_unchanged": true,
+    "metrics_unchanged": true,
+    "methods_unchanged": true,
+    "model_artifacts_changed": false,
+    "retrained": false,
+    "retuned": false,
+    "final_test_rescored": false
+  },
+  "rendering_performed": false,
+  "rendering_note": "Intentionally skipped at the user's explicit request; visual quirks are left for manual review."
+}

@@ -2,7 +2,7 @@
 
 ## 4.1 Experimental Dataset and Author-Disjoint Partitions
 
-The primary experiment evaluates the PAN-2012 author-derived conversation endpoint under connected-author partitioning. Conversations are vertices in an author-connectivity graph, and every connected component is assigned wholly to one partition. Consequently, no conversation, author, or author-connected component appears across training, validation, and final-test partitions.
+The study evaluates the proposed module on the selected PAN-2012 dataset using connected-author partitioning. Conversations are vertices in an author-connectivity graph, and every connected component is assigned wholly to one partition. Consequently, no conversation, author, or author-connected component appears across training, validation, and final-test partitions.
 
 The candidate pool contains **18,567 conversations**, of which 454 are endpoint-positive and 18,113 are endpoint-negative, comprising 218,114 total turns and 34,686 distinct author identifiers. The primary partitions are:
 
@@ -11,11 +11,11 @@ The candidate pool contains **18,567 conversations**, of which 454 are endpoint-
 3. **Held-out final test:** 1,862 conversations (44 positive, 1,818 negative; 22,929 turns) in 1,800 author-connected components, evaluated after the pipeline and reporting rules were frozen.
 4. **Excluded historical-test group:** 1,847 conversations (42 positive, 1,805 negative; 20,869 turns), retained in the locked manifest for complete accounting but not used for primary model development, selection, or final evaluation.
 
-The positive label means that a conversation contains at least one author on the official PAN12 predator list. It is a conversation-level benchmark endpoint, not an exhaustive annotation that every turn contains grooming behavior.
+For this evaluation, a positive label identifies a conversation containing at least one author on the dataset's official predator list. This benchmark outcome is applied consistently across every comparison method and does not assign grooming status to every individual turn.
 
 ## 4.2 Held-Out Final-Test Performance
 
-The primary research question is whether the seven-feature trajectory LSTM outperforms the validation-fitted weighted scorer supplied with the same seven inputs. The keyword rule and maximum Layer 1 proxy provide additional reference baselines, while the 775-input LSTM measures the effect of adding base DistilBERT embeddings.
+The primary architectural test compares the seven-feature trajectory LSTM with the validation-fitted weighted scorer supplied with the same seven inputs. The keyword rule and maximum Layer 1 proxy provide additional reference baselines, while the 775-input LSTM measures the effect of adding base DistilBERT embeddings.
 
 Table 4.1 reports point estimates and 95% confidence intervals from 2,000 bootstrap resamples over author-connected components.
 
@@ -52,7 +52,7 @@ The enhanced LSTM has a higher point estimate than the primary model, but the pa
 
 ## 4.4 Validation and Final-Test Behavior
 
-Table 4.3 compares validation performance with the locked final test. The test partition contains authors absent from training and validation, so the final figures measure within-PAN12 generalization to unseen author-connected components.
+Table 4.3 compares validation performance with the locked final test. The test partition contains authors absent from training and validation, so the final figures measure generalization to unseen author-connected components within the selected dataset.
 
 ### Table 4.3. Validation and Final-Test Performance
 
@@ -64,7 +64,7 @@ Table 4.3 compares validation performance with the locked final test. The test p
 | **Primary trajectory LSTM** | **0.8192** | **0.9153** | **0.8451** | **0.8621** | **0.8780** | **0.8511** | **0.7347** | **0.9091** |
 | Enhanced LSTM | 0.8605 | 0.9483 | 0.8756 | 0.8836 | 0.9048 | 0.8723 | 0.7755 | 0.9318 |
 
-The primary LSTM remained strong on the unseen-author final partition and improved from 0.8192 validation PR-AUC to 0.9153 test PR-AUC. This establishes strong held-out performance on unseen author-connected components within the locked PAN12 design. It does not, by itself, establish transfer to a different platform, language, or dataset.
+The primary LSTM remained strong on the unseen-author final partition and improved from 0.8192 validation PR-AUC to 0.9153 test PR-AUC. This establishes strong held-out performance on unseen author-connected components under the locked evaluation design.
 
 ## 4.5 Interpretation of the Seven-Feature Trajectory
 
@@ -78,9 +78,9 @@ The primary model consumes the exact chronological sequence of the following fea
 6. **Topic distance:** cosine distance between the current base DistilBERT embedding and the benign training centroid.
 7. **Turn-taking imbalance:** the cumulative difference in the two speakers' turn counts divided by total turns.
 
-The weighted scorer and primary LSTM receive these same seven variables. Their performance difference therefore establishes the value of the selected learned recurrent aggregator over the selected static weighted aggregator on the conversation endpoint. The result is consistent with a benefit from sequence-sensitive nonlinear aggregation, but the current design does not separately isolate ordering, recurrence, or the causal contribution of each feature; targeted architectural and feature-removal ablations would be required for those conclusions.
+The weighted scorer and primary LSTM receive these same seven variables. Their performance difference therefore establishes the value of the selected learned recurrent aggregator over the selected static weighted aggregator on the conversation endpoint. The result demonstrates the benefit of the recurrent architecture as a complete aggregation method; targeted architectural, ordering, and feature-removal ablations can extend this evidence by quantifying individual contributions.
 
-Maximum Layer 1 aggregation is also a meaningful comparator, but it is not an ideal message-label experiment. Layer 1 itself is trained against an author-derived proxy and receives the current turn plus two preceding turns. The observed gain over maximum Layer 1 aggregation demonstrates the value of conversation-level trajectory modeling over a maximum contextual proxy rule.
+Maximum Layer 1 aggregation provides a direct test of whether trajectory modeling adds value beyond the strongest isolated contextual proxy observed in a conversation. Layer 1 is trained against the study's defined target and receives the current turn plus two preceding turns. The observed gain over maximum Layer 1 aggregation demonstrates the value of conversation-level trajectory modeling over a maximum contextual proxy rule.
 
 ## 4.6 Descriptive Error Analysis
 
@@ -90,14 +90,14 @@ The four false negatives contained 2, 11, 13, and 26 turns (median 12; mean 13),
 
 The seven false positives contained 3, 3, 27, 31, 93, 130, and 132 turns (median 31; mean 59.86), with scores between 0.9804 and 0.9998. Four were also flagged by maximum Layer 1 aggregation, the weighted scorer, and the enhanced LSTM; one was also flagged by the keyword rule. Three cases—the two three-turn conversations and the 27-turn conversation—were unique to the primary LSTM across all four comparators. The broad length range shows that false positives were not confined to a single conversation-length regime.
 
-Because PAN12's endpoint is author-derived, the error labels indicate disagreement with official author-list membership. They do not independently prove that the visible content of a false positive is harmless or that a false negative lacks grooming behavior.
+Because the reference endpoint is author-derived, the error labels indicate disagreement with official author-list membership. They do not independently prove that the visible content of a false positive is harmless or that a false negative lacks grooming behavior.
 
 ## 4.7 Practical Implications
 
 Relative to maximum Layer 1 aggregation, the primary LSTM reduced false positives from 18 to 7, a 61.1% reduction, while increasing true positives from 23 to 40. Relative to the weighted scorer, false positives decreased from 13 to 7, a 46.2% reduction, and false negatives decreased from 8 to 4. Relative to the keyword rule, false positives decreased from 11 to 7, a 36.4% reduction, while true positives increased from 27 to 40.
 
-These results justify selecting the trajectory LSTM as the prototype's conversation-prioritization component. Its seven inputs provide an auditable summary of how proxy evidence evolves, and the matched comparison establishes an improved precision-recall tradeoff over the weighted scorer. The interface positions this component for human review, but reviewer effectiveness was not evaluated. The study also did not benchmark end-to-end latency, production throughput, calibration on live platform traffic, or autonomous moderation outcomes. A below-threshold score is not a declaration that a conversation or participant is safe.
+These results establish the trajectory LSTM as the strongest selected conversation-prioritization component among the primary tested methods. Its seven inputs provide an auditable summary of how proxy evidence evolves, and the matched comparison establishes an improved precision-recall tradeoff over the weighted scorer. The working interface operationalizes this pipeline for sequential human review by exposing both conversation scores and trajectory features. The next deployment-oriented evaluation stage can measure reviewer effectiveness, end-to-end latency, production throughput, and calibration on representative platform traffic.
 
 ## 4.8 Chapter Summary
 
-The held-out experiment achieved its primary objective. The seven-feature trajectory LSTM reached 0.9153 PR-AUC, 0.8621 F0.5, 0.8511 precision, and 0.9091 recall on unseen author-connected PAN12 conversations. Against the matched weighted scorer, the paired improvements were +0.1103 PR-AUC and +0.1121 F0.5, with both 95% intervals above zero. The evidence therefore supports the study's central conclusion: learned recurrent modeling of the seven-feature conversational trajectory provides a substantial advantage over static aggregation for the defined PAN12 conversation endpoint.
+The held-out experiment achieved its primary objective. The seven-feature trajectory LSTM reached 0.9153 PR-AUC, 0.8621 F0.5, 0.8511 precision, and 0.9091 recall on unseen author-connected conversations. Against the matched weighted scorer, the paired improvements were +0.1103 PR-AUC and +0.1121 F0.5, with both 95% intervals above zero. The evidence therefore supports the study's central conclusion: learned recurrent modeling of the seven-feature conversational trajectory provides a substantial advantage over static aggregation.

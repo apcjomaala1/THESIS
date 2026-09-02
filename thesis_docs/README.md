@@ -26,23 +26,11 @@ Older paper drafts, recovery transcripts, and superseded plans are under
 The authoritative editable Chapters I-III paper remains at the workspace root:
 `C:\Projects\THESIS\Finals Revised Paper WASD.docx`.
 
-**Current 2026-08-24 DOCX status:** the title and Chapters I-II were revised to
-restore the study's full AI-moderation, contextual-analysis, behavioral-
-trajectory, and OGDM-informed framing while retaining the factual PAN12 label
-and evaluation boundaries. The exact original objectives and broad research
-questions are present; Chapter III onward, tables, hyperlinks, and chapter
-breaks were structurally preserved. Its SHA-256 is
-`D920524D78C871F7E503675C423C6F82573C3BE5E53D7587E7D4005BF11D9FE3`.
+**Current 2026-09-02 manuscript status:** the latest authoritative Markdown has completed a full Chapters I-V framing review. The research problem, two-layer contextual and behavioral architecture, and evaluation requirements are presented first; PAN-2012 is presented as the dataset selected to evaluate that work. Dataset-specific label boundaries remain only where they are necessary for scope, methodology, and correct error interpretation. The exact original title, research questions, and adviser-locked objectives are unchanged.
 
-The current complete paper is at the workspace root:
-`C:\Projects\THESIS\Finalized Complete Paper WASD - reconciled.docx`.
-It contains the balanced Chapters I-II, the verified methodology, authoritative
-Chapter IV, and objective-aligned Chapter V. Its SHA-256 is
-`8768C86EE698D945531784783D95E41FA29BC31CB7A13C2800441569318148A9`.
-Structural and content checks passed. At the user's explicit direction, no
-rendering was performed after this framing revision; the older 21-page render
-predates these edits and is not current visual-QA evidence.
+Following user approval, the authoritative Markdown was synchronized into both Word manuscripts. `Finals Revised Paper WASD.docx` now has SHA-256 `481A95449DD144EC07ADA0DD6E6B90100972BBE287645AE7501DC5606FB582D2`. `Finalized Complete Paper WASD - reconciled.docx` now has SHA-256 `C204E31B375F9F833BA6252BF334C9121CB50BFD69E69CCD104F13E27CA89661` and includes the approved Chapters IV-V wording and objective-aligned conclusions. Structural and exact-text verification passed. At the user's standing direction, no rendering was performed.
 
+The current defense deck is `WASD - Thesis 2 - final revised.pptx`, SHA-256 `6E13F194D0B7DFAE7F737DA10F951E8AA597769E86527B2B87617022E2ED1990`. It presents the research problem and two-layer architecture before explaining why PAN-2012 was selected for evaluation. The obsolete comment-matrix section was replaced with the frozen experimental setup, an editable held-out results table, the matched recurrent-versus-static comparison, and objective-aligned conclusions. Plain-language speaker scripts with source blocks are included on slides 1 and 3-29. Slides 2 and 30-34 remain unchanged. Structural and text-fit checks passed with zero overflow warnings; no visual rendering was performed at the user's direction.
 `archive/paper_drafts/Finals_Complete_Paper_WASD_superseded.md` preserves the
 superseded generated complete-paper draft for history only; it must not be used
 for submission or methodology reference.

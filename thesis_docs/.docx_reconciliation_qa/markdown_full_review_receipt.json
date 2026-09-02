@@ -1,0 +1,42 @@
+{
+    "date":  "2026-09-02",
+    "status":  "approved-and-synchronized-to-docx",
+    "framing":  "Research problem and two-layer architecture first; PAN-2012 selected afterward as an appropriate evaluation dataset.",
+    "files":  [
+                  {
+                      "path":  "thesis_docs/Finals_Revised_Paper_WASD.md",
+                      "sha256":  "21C8BFE6207E2F62A47A7E45B8CAD1879FA5C5D2FA3F2A922CFBC1DE545FCC61",
+                      "pan_mentions":  14
+                  },
+                  {
+                      "path":  "thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md",
+                      "sha256":  "D7C92319EF0B2C0DEA7B6C0049ADD98616719D25F5F3B39B85153115F5C27D32",
+                      "pan_mentions":  1
+                  },
+                  {
+                      "path":  "thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md",
+                      "sha256":  "4D6E8C76C8274714063A41FBA38B020EEF94EC8DD326E89B29809AC2EEC412A9",
+                      "pan_mentions":  1
+                  }
+              ],
+    "verification":  {
+                         "title_unchanged":  true,
+                         "research_questions_match_earliest_git_baseline":  true,
+                         "objectives_match_earliest_git_baseline":  true,
+                         "chapter_iv_tables_unchanged":  true,
+                         "key_metrics_and_confidence_intervals_unchanged":  true,
+                         "required_scope_boundary_retained":  true,
+                         "required_label_provenance_retained":  true,
+                         "required_error_interpretation_retained":  true,
+                         "chapter_v_conclusion_repeats_scope_boundary":  false,
+                         "model_or_run_files_changed":  false,
+                         "latest_markdown_synchronized_to_docx":  true,
+                         "rendering_performed":  false,
+                         "committed":  false
+                     },
+    "docx_state":  {
+                       "chapters_1_3_sha256":  "481A95449DD144EC07ADA0DD6E6B90100972BBE287645AE7501DC5606FB582D2",
+                       "complete_sha256":  "C204E31B375F9F833BA6252BF334C9121CB50BFD69E69CCD104F13E27CA89661",
+                       "word_sync_pending_user_approval":  false
+                   }
+}

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-02T02:58:00.843394+00:00",
+  "reference": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+  "source": "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md",
+  "output": "C:\\Projects\\THESIS\\thesis_docs\\.docx_conversion_qa\\approved_markdown_stage.docx",
+  "reference_sha256": "F41F2ACA02CE053DD649AE1C9940B66665667B63F2A8B21A1F2F55F3378EC55C",
+  "source_sha256": "21C8BFE6207E2F62A47A7E45B8CAD1879FA5C5D2FA3F2A922CFBC1DE545FCC61",
+  "output_sha256": "481A95449DD144EC07ADA0DD6E6B90100972BBE287645AE7501DC5606FB582D2",
+  "title": "AI-Based Detection of Grooming-Related Interactions in Chat Conversations Using Contextual and Behavioral Analysis",
+  "copied_body_nodes": {
+    "I. Introduction": 69,
+    "II. RELATED WORK": 28,
+    "III. METHODOLOGY": 76
+  },
+  "removed_body_nodes": {
+    "I. Introduction": 69,
+    "II. RELATED WORK": 28,
+    "III. METHODOLOGY": 76
+  },
+  "normalized_numbering_map": {
+    "1001": 20,
+    "1002": 21,
+    "1003": 22,
+    "1004": 23,
+    "1005": 24
+  },
+  "materialized_list_markers": 19,
+  "pandoc_command": [
+    "C:\\Users\\JM\\AppData\\Local\\Pandoc\\pandoc.exe",
+    "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md",
+    "-f",
+    "markdown+pipe_tables+tex_math_dollars+tex_math_single_backslash",
+    "-t",
+    "docx",
+    "--reference-doc",
+    "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+    "-o",
+    "C:\\Users\\JM\\AppData\\Local\\Temp\\thesis-docx-sync-9nlqtf6o\\pandoc_generated.docx"
+  ],
+  "pandoc_stdout": "",
+  "pandoc_stderr": "",
+  "qa": {
+    "heading_counts": {
+      "Heading 1": 4,
+      "Heading 2": 15,
+      "Heading 3": 20
+    },
+    "direct_page_breaks": 3,
+    "hyperlinks": 13,
+    "table_shapes": [
+      [
+        2,
+        2
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        4,
+        3
+      ]
+    ],
+    "automatic_numbered_paragraphs": 0,
+    "visible_list_paragraphs": 19,
+    "special_content_counts": {
+      "comments": 0,
+      "insertions": 0,
+      "deletions": 0,
+      "fields": 0,
+      "field_codes": 0
+    },
+    "section_geometry": {
+      "page_width_inches": 8.5,
+      "page_height_inches": 11.0,
+      "top_margin_inches": 1.0,
+      "right_margin_inches": 1.0,
+      "bottom_margin_inches": 1.0,
+      "left_margin_inches": 1.0
+    },
+    "preserved_fingerprints": {
+      "cover_without_title": "691D8A9D7124BA3836C9534513927FA892573C70620FE1EFEF8622D8023DEF2B",
+      "cover_author_table": "0C2CCF945A56B44598DB743753B9C75907F18733999E5746068446574A2C0AB9",
+      "references": "DB6F5EC713237E669E4134CCD463E780F8A81F6B9785D68462660DED3203B8E8",
+      "page_breaks": "B2E50F57AE06A011B5A170628144EB29393BF7E74454C374E633B5E5D5B19F48"
+    }
+  }
+}

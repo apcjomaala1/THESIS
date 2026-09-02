@@ -104,3 +104,54 @@ Chapter III onward, unchanged tables, preserved heading counts, three/five
 chapter breaks, and 13 hyperlinks. No rendering was performed at the user's
 explicit request. No model was retrained or retuned, and no final-test data was
 rescored.
+
+## Confident-claims pass (2026-09-02)
+
+The authoritative manuscript received a focused voice revision so the completed
+two-layer module, working review interface, trajectory-LSTM performance,
+false-negative reductions, and matched recurrent-aggregation result are stated
+directly and confidently. The revision removed apologetic repetition from the
+significance, results interpretation, practical implications, conclusions, and
+recommendations while preserving the substantive PAN12 label boundary in the
+scope, methodology, ethical considerations, and error-analysis sections.
+
+The pass did not alter the title, adviser-locked objectives, research questions,
+methods, model artifacts, thresholds, tables, metrics, confidence intervals, or
+experimental records. The updated Chapters I-III DOCX has SHA-256
+`F41F2ACA02CE053DD649AE1C9940B66665667B63F2A8B21A1F2F55F3378EC55C`; the
+updated complete DOCX has SHA-256
+`72D23405C1FCB2882DFEAA4915C045F0298C4209D8914D7F0B1E4FAE0F1B6FD3`.
+Structural and textual QA passed. Rendering was intentionally skipped at the
+user's request.
+
+## Objective-aligned conclusions (2026-09-02)
+
+Section 5.2 was reorganized to answer the unchanged research objectives
+directly. Conclusions 1-3 now correspond to Specific Objectives 1-3, and the
+fourth conclusion explicitly states that the General Objective was achieved.
+The quantitative conclusion records recall and false-negative reductions
+against the tested keyword, maximum Layer 1, and weighted approaches, while
+describing report-driven moderation as a complementary workflow rather than an
+unperformed quantitative baseline.
+
+The conclusion does not repeat the detailed PAN12 label-boundary discussion
+already contained in the scope, methodology, ethics, and error-analysis
+sections. No research question, objective, method, model artifact, threshold,
+table, metric, confidence interval, or experimental record changed. The updated
+complete DOCX has SHA-256
+`B4C4BB0069C408185A1C18D234C03CDC0D4039B762BACAC568BE3F37CD135E1D`.
+Structural and textual QA passed. Rendering was intentionally skipped at the
+user's request.
+
+## Markdown-first full framing review (2026-09-02)
+
+A complete semantic review of the authoritative Chapters I-V Markdown established a consistent research-first, dataset-second narrative. The manuscript first presents the moderation problem, the two-layer contextual and behavioral trajectory architecture, and the comparison requirements. PAN-2012 is then identified as the dataset selected because its scale, chronology, persistent speaker identifiers, and official author list support the required sequence construction and author-disjoint evaluation.
+
+Repeated dataset-specific caveats were removed from the background, significance, general results interpretation, chapter summary, and conclusion. The factual label boundary remains in the dedicated Scope and Limitations, Corpus and Label Provenance, evaluation interpretation, and error-analysis passages where omitting it would misstate what the experiment measures. The title, four research questions, General Objective, three Specific Objectives, methods, Chapter IV tables, model artifacts, thresholds, metrics, confidence intervals, and frozen results were not changed.
+
+This review is Markdown-only pending user approval. It was not synchronized into either Word document, no document rendering was performed, and no model training, tuning, or final-test rescoring occurred. The complete DOCX was restored to its pre-objective-alignment content at SHA-256 `8D50D502A87542651EB59D12312B0852AD2414CC25ADE03D2A15E899BFCB686A`.
+## Approved Markdown-to-DOCX synchronization (2026-09-02)
+
+After the user approved the full Markdown framing review, the authoritative Chapters I-III Markdown was synchronized into `Finals Revised Paper WASD.docx` and the authoritative Chapters IV-V Markdown was inserted into `Finalized Complete Paper WASD - reconciled.docx`. The resulting hashes are `481A95449DD144EC07ADA0DD6E6B90100972BBE287645AE7501DC5606FB582D2` and `C204E31B375F9F833BA6252BF334C9121CB50BFD69E69CCD104F13E27CA89661`, respectively.
+
+Verification confirmed the research-first, dataset-second framing; the exact original title, research questions, and adviser-locked objectives; the objective-aligned Chapter V conclusions; unchanged Chapter IV table geometry and reported metrics; preserved cover, author table, references, hyperlinks, and chapter breaks; and the absence of comments, tracked changes, or fields. No model training, tuning, or final-test rescoring occurred. At the user's standing direction, no render-based QA was performed.
