@@ -12,7 +12,7 @@
       <div>
         <p class="eyebrow">WASD thesis prototype</p>
         <h1>Conversation Model Demo</h1>
-        <p class="subtitle">Type a message or run an example to see the frozen model process a conversation turn by turn.</p>
+        <p class="subtitle">See the held-out Chapter IV results, then try the frozen model on a synthetic conversation.</p>
       </div>
       <div class="pipeline" aria-label="Model pipeline">
         <span>DistilBERT</span><b aria-hidden="true">&#8594;</b>
@@ -21,8 +21,57 @@
       </div>
     </header>
 
+    <section class="panel chapter-results" id="chapter4-results" aria-labelledby="chapter4-heading">
+      <div class="chapter-results-heading">
+        <div>
+          <p class="eyebrow">Chapter IV results</p>
+          <h2 id="chapter4-heading">What the held-out test showed</h2>
+          <p>Frozen final-test results on {{ '{:,}'.format(chapter4.conversations) }} unseen-author conversations. These values are read from the accepted evaluation report; opening this demo does not rerun the final test.</p>
+        </div>
+        <div class="sample-count">
+          <strong>{{ '{:,}'.format(chapter4.conversations) }}</strong>
+          <span>held-out conversations</span>
+        </div>
+      </div>
+
+      <div class="result-facts" aria-label="Primary LSTM results">
+        <div><span>PR-AUC</span><strong>{{ '%.4f' % chapter4.primary.pr_auc }}</strong></div>
+        <div><span>F0.5</span><strong>{{ '%.4f' % chapter4.primary.f0_5 }}</strong></div>
+        <div><span>Positive conversations found</span><strong>{{ chapter4.primary.tp }} of {{ chapter4.positive_conversations }}</strong></div>
+        <div><span>Final-test errors</span><strong>{{ chapter4.primary.fp }} FP · {{ chapter4.primary.fn }} FN</strong></div>
+      </div>
+
+      <div class="matched-result">
+        <strong>Key finding:</strong> with the same seven features, the LSTM improved over the weighted scorer by
+        <strong>{{ '%+.4f' % chapter4.matched_pr_auc.point_difference }} PR-AUC</strong>
+        and <strong>{{ '%+.4f' % chapter4.matched_f0_5.point_difference }} F0.5</strong>.
+        Both 95% paired intervals remained above zero. False positives fell from {{ chapter4.weighted_false_positives }} to {{ chapter4.primary.fp }}, and false negatives from {{ chapter4.weighted_false_negatives }} to {{ chapter4.primary.fn }}.
+      </div>
+
+      <div class="results-table-wrap">
+        <table class="results-table">
+          <caption>Held-out point estimates reported in Chapter IV</caption>
+          <thead>
+            <tr><th>Method</th><th>PR-AUC</th><th>F0.5</th><th>Precision</th><th>Recall</th></tr>
+          </thead>
+          <tbody>
+            {% for method in chapter4.methods %}
+            <tr{% if method.primary %} class="primary-method"{% endif %}>
+              <th scope="row">{{ method.label }}{% if method.primary %} <span>primary</span>{% endif %}</th>
+              <td>{{ '%.4f' % method.pr_auc }}</td>
+              <td>{{ '%.4f' % method.f0_5 }}</td>
+              <td>{{ '%.4f' % method.precision }}</td>
+              <td>{{ '%.4f' % method.recall }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="results-footnote">The enhanced LSTM uses 768 additional embedding inputs. Its higher point estimate did not establish a supported difference from the smaller primary LSTM; the primary matched-input comparison tests recurrent aggregation directly.</p>
+    </section>
+
     <p class="demo-note">
-      Local research demonstration using synthetic chats. Scores support human review and are not message-level ground truth or automatic decisions.
+      The live section below uses newly written synthetic chats to show how the frozen model produces those conversation-level decisions. It does not replay or expose final-test records.
     </p>
 
     <div class="demo-grid">

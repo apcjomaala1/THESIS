@@ -28,6 +28,10 @@ def test_autoplay_waits_for_each_scored_turn():
 
 def test_interface_is_simple_and_explanatory():
     assert "Conversation Model Demo" in TEMPLATE
+    assert "Chapter IV results" in TEMPLATE
+    assert "What the held-out test showed" in TEMPLATE
+    assert "Held-out point estimates reported in Chapter IV" in TEMPLATE
+    assert "opening this demo does not rerun the final test" in TEMPLATE
     assert "Run full chat" in TEMPLATE
     assert "Add next message" in TEMPLATE
     assert "Below threshold does not mean safe" in TEMPLATE

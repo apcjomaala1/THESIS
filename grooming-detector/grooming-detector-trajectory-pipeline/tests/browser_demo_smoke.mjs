@@ -101,6 +101,10 @@ try {
     return evaluate(`({
       title: document.title,
       heading: document.querySelector("h1")?.textContent,
+      resultsHeading: document.getElementById("chapter4-heading")?.textContent,
+      resultsRows: document.querySelectorAll(".results-table tbody tr").length,
+      primaryResults: Array.from(document.querySelectorAll(".results-table .primary-method td")).map(cell => cell.textContent.trim()),
+      matchedFinding: document.querySelector(".matched-result")?.textContent.replace(/\\s+/g, " ").trim(),
       messages: document.querySelectorAll(".message").length,
       status: document.getElementById("status-chip")?.textContent,
       score: document.getElementById("lstm-score")?.textContent,
@@ -108,7 +112,7 @@ try {
     })`);
   }
 
-  await waitFor(`document.getElementById("btn-autoplay") !== null`);
+  await waitFor(`document.getElementById("activity-text")?.textContent.startsWith("Example loaded")`);
   const initial = await snapshot();
 
   await evaluate(`document.getElementById("btn-autoplay").click()`);
@@ -166,6 +170,7 @@ try {
 
   const checks = {
     initial_loaded: initial.title === "Conversation Model Demo" && initial.status === "Waiting",
+    chapter4_results: initial.resultsHeading === "What the held-out test showed" && initial.resultsRows === 5 && initial.primaryResults.join("|") === "0.9153|0.8621|0.8511|0.9091" && initial.matchedFinding.includes("+0.1103 PR-AUC") && initial.matchedFinding.includes("+0.1121 F0.5"),
     flagged_example: flagged.messages === 6 && flagged.status === "Flagged for review" && flagged.score === "0.9942",
     routine_example: routine.messages === 6 && routine.status === "Below threshold" && routine.score === "0.0086",
     add_next_message: limitationStep.messages === 1 && limitationStep.status !== "Waiting",

@@ -22,6 +22,59 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 _engine = None
 
 
+METHOD_LABELS = (
+    ("keyword", "Keyword rule"),
+    ("raw_layer1", "Maximum Layer 1"),
+    ("weighted", "Weighted scorer"),
+    ("lstm_trajectory7", "Primary LSTM"),
+    ("lstm_enhanced775", "Enhanced LSTM"),
+)
+
+
+def build_chapter4_summary(eval_report: dict) -> dict:
+    """Extract display values from the already-frozen final evaluation report."""
+    audit = eval_report["audit"]
+    metrics = eval_report["metrics"]
+    primary = metrics["lstm_trajectory7"]["point_estimate"]
+    weighted = metrics["weighted"]["point_estimate"]
+    paired = eval_report["paired_component_bootstrap_differences"]
+    matched = paired["lstm_trajectory7_minus_weighted"]["differences"]
+    enhanced = paired["lstm_trajectory7_minus_lstm_enhanced775"]["differences"]
+
+    methods = []
+    for key, label in METHOD_LABELS:
+        point = metrics[key]["point_estimate"]
+        methods.append(
+            {
+                "key": key,
+                "label": label,
+                "pr_auc": point["pr_auc"],
+                "f0_5": point["f0_5"],
+                "precision": point["precision"],
+                "recall": point["recall"],
+                "primary": key == "lstm_trajectory7",
+            }
+        )
+
+    return {
+        "conversations": audit["conversations"],
+        "positive_conversations": audit["positive_conversations"],
+        "negative_conversations": audit["conversations"] - audit["positive_conversations"],
+        "components": audit["components"],
+        "primary": primary,
+        "methods": methods,
+        "matched_pr_auc": matched["pr_auc"],
+        "matched_f0_5": matched["f0_5"],
+        "weighted_false_positives": weighted["fp"],
+        "weighted_false_negatives": weighted["fn"],
+        "enhanced_comparison_inconclusive": (
+            enhanced["pr_auc"]["lower"] <= 0 <= enhanced["pr_auc"]["upper"]
+            and enhanced["f0_5"]["lower"] <= 0 <= enhanced["f0_5"]["upper"]
+        ),
+        "source_hash": eval_report["canonical_payload_sha256"],
+    }
+
+
 def get_engine() -> LiveDemoEngine:
     global _engine
     if _engine is None:
@@ -48,6 +101,7 @@ def index():
     return render_template(
         "index.html",
         scenarios=SCENARIOS,
+        chapter4=build_chapter4_summary(engine.eval_report),
         endpoint=engine.endpoint,
         lstm_metrics=lstm_metrics,
         keyword_term_count=len(engine.keyword_terms),
@@ -62,6 +116,12 @@ def index():
 @app.route("/api/scenarios", methods=["GET"])
 def api_get_scenarios():
     return jsonify(SCENARIOS)
+
+
+@app.route("/api/results", methods=["GET"])
+def api_get_results():
+    """Return the Chapter IV summary without rerunning final-test inference."""
+    return jsonify(build_chapter4_summary(get_engine().eval_report))
 
 
 @app.route("/api/score", methods=["POST"])
@@ -100,7 +160,7 @@ def api_health():
         "model": "Primary Trajectory LSTM (7-d)",
         "l1_backbone": "DistilBERT (Author-Proxy Fine-Tuned)",
         "endpoint": get_engine().endpoint,
-        "version": "2026.09.02-simple-demo"
+        "version": "2026.09.03-chapter4-demo"
     })
 
 
