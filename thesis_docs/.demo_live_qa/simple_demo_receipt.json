@@ -1,0 +1,81 @@
+{
+  "completed_at": "2026-09-02T19:50:22+08:00",
+  "scope": "Simplify and verify the local frozen-model conversation demonstration",
+  "interface": {
+    "title": "Conversation Model Demo",
+    "design": "Lightweight two-column thesis prototype with chat on the left and progressive model explanation on the right",
+    "visible_pipeline": "DistilBERT -> 7 features -> LSTM score",
+    "comparison_methods_collapsed": true,
+    "below_threshold_safety_caveat_visible": true
+  },
+  "frozen_model_verification": {
+    "passed": true,
+    "prefixes_scored": 20,
+    "lstm_threshold": 0.9688298106193542,
+    "scenarios": [
+      {
+        "id": "private_meeting_pressure",
+        "turns": 6,
+        "final_lstm_score": 0.9942,
+        "final_flagged": true,
+        "first_flag_turn": 2
+      },
+      {
+        "id": "routine_project_chat",
+        "turns": 6,
+        "final_lstm_score": 0.0086,
+        "final_flagged": false,
+        "first_flag_turn": null
+      },
+      {
+        "id": "concerning_but_below",
+        "turns": 8,
+        "final_lstm_score": 0.0006,
+        "final_flagged": false,
+        "first_flag_turn": null
+      }
+    ]
+  },
+  "api_verification": {
+    "health": "healthy",
+    "version": "2026.09.02-simple-demo",
+    "scenario_count": 3,
+    "manual_message_turns": 1,
+    "manual_message_lstm_score": 0.5427,
+    "empty_history_status": 400,
+    "page_status": 200,
+    "javascript_status": 200
+  },
+  "browser_interaction_verification": {
+    "passed": true,
+    "in_app_browser_available": false,
+    "fallback": "Installed Microsoft Edge headless via DevTools Protocol",
+    "checks": {
+      "initial_page_loaded": true,
+      "flagged_example_autoplay": true,
+      "routine_example_autoplay": true,
+      "add_next_message": true,
+      "limitation_example_autoplay": true,
+      "manual_entry": true,
+      "clear_and_reset": true
+    }
+  },
+  "visual_qa": {
+    "passes": 1,
+    "result": "No clipping, overlap, or unreadable content observed at 1440 by 1050",
+    "screenshot": "simple_demo_flagged.png",
+    "screenshot_sha256": "15FC4A0B8BCAD43D5BEDA84D8A7D640686C223E5167F3FE2E13A92D9FF3EFD80"
+  },
+  "automated_checks": {
+    "javascript_syntax": "passed",
+    "pytest": "100 passed",
+    "git_diff_check": "passed"
+  },
+  "experiment_boundary": {
+    "model_retrained": false,
+    "threshold_retuned": false,
+    "final_holdout_rescored": false,
+    "model_or_result_artifact_changed": false
+  },
+  "commit_created_at_receipt_time": false
+}

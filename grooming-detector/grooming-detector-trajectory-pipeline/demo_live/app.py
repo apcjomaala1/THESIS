@@ -1,6 +1,4 @@
-"""
-Flask Web Application for the Interactive Thesis Demonstration Lab.
-"""
+"""Flask application for the local frozen-model demonstration."""
 
 from __future__ import annotations
 
@@ -102,13 +100,13 @@ def api_health():
         "model": "Primary Trajectory LSTM (7-d)",
         "l1_backbone": "DistilBERT (Author-Proxy Fine-Tuned)",
         "endpoint": get_engine().endpoint,
-        "version": "2026.08.24-frozen-demo"
+        "version": "2026.09.02-simple-demo"
     })
 
 
 def main():
     print("=" * 70)
-    print("  PAN12 Conversation Endpoint - Live Research Demonstration")
+    print("  WASD Conversation Model Demo")
     print("=" * 70)
     get_engine()
     print("\n* Web server running at: http://127.0.0.1:5000")

@@ -3,363 +3,165 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PAN12 Conversation Trajectory Benchmark - Model Inspection Workbench</title>
+  <title>Conversation Model Demo</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
-  <div class="workbench-layout">
-    <!-- Top Navigation & Benchmark Metadata -->
-    <header class="top-nav">
-      <div class="nav-brand">
-        <div class="brand-title-group">
-          <h1 class="brand-title">PAN12 CONVERSATION TRAJECTORY BENCHMARK</h1>
-          <p class="brand-subtitle">Model Inspection & Trajectory Diagnostics Workbench</p>
-        </div>
-        <span class="system-tag">FROZEN PIPELINE · DISTILBERT + 7-D LSTM</span>
+<body data-lstm-threshold="{{ lstm_threshold }}">
+  <main class="page-shell">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">WASD thesis prototype</p>
+        <h1>Conversation Model Demo</h1>
+        <p class="subtitle">Type a message or run an example to see the frozen model process a conversation turn by turn.</p>
       </div>
-
-      <div class="nav-metrics">
-        <div class="metric-block">
-          <span class="metric-label">TEST SPLIT</span>
-          <span class="metric-value">N=1,862</span>
-        </div>
-        <div class="metric-block">
-          <span class="metric-label">PR-AUC</span>
-          <span class="metric-value">{{ '%.4f' % lstm_metrics.get('pr_auc', 0.9153) }}</span>
-        </div>
-        <div class="metric-block">
-          <span class="metric-label">PRECISION</span>
-          <span class="metric-value">{{ '%.1f%%' % (lstm_metrics.get('precision', 0.8511) * 100) }}</span>
-        </div>
-        <div class="metric-block">
-          <span class="metric-label">RECALL</span>
-          <span class="metric-value">{{ '%.1f%%' % (lstm_metrics.get('recall', 0.9091) * 100) }}</span>
-        </div>
-        <div class="metric-block">
-          <span class="metric-label">F0.5 SCORE</span>
-          <span class="metric-value">{{ '%.4f' % lstm_metrics.get('f0_5', 0.8621) }}</span>
-        </div>
-        <div class="metric-block metric-highlight">
-          <span class="metric-label">THRESHOLD &tau;</span>
-          <span class="metric-value">{{ '%.4f' % lstm_threshold }}</span>
-        </div>
+      <div class="pipeline" aria-label="Model pipeline">
+        <span>DistilBERT</span><b aria-hidden="true">&#8594;</b>
+        <span>7 features</span><b aria-hidden="true">&#8594;</b>
+        <span>LSTM score</span>
       </div>
     </header>
 
-    <!-- Research Context & Interpretation Disclaimer -->
-    <div class="research-disclaimer">
-      <div class="disclaimer-tag">RESEARCH SPECIFICATION</div>
-      <div class="disclaimer-content">
-        <strong>Endpoint:</strong> {{ endpoint }}.
-        <span>Signals reflect author-proxy weak supervision and trajectory evolution, not message-level ground-truth or human intent determinations. Prefix curves are exploratory evaluations. Direct identifiers are redacted before tokenization.</span>
-      </div>
-    </div>
+    <p class="demo-note">
+      Local research demonstration using synthetic chats. Scores support human review and are not message-level ground truth or automatic decisions.
+    </p>
 
-    <!-- Main 2-Column Inspection Grid -->
-    <main class="workbench-grid">
-      <!-- Left Column: Interactive Dialogue Inspector -->
-      <section class="dialogue-panel">
-        <!-- Scenario Selector Tabs -->
-        <div class="panel-section scenario-selector">
-          <div class="section-label">Preset Synthetic Scenarios</div>
-          <div class="scenario-tabs" id="scenario-chips">
-            {% for sc in scenarios %}
-            <button type="button" class="scenario-tab {{ 'tab-active' if loop.first else '' }}" data-id="{{ sc.id }}">
-              {{ sc.title }}
-            </button>
+    <div class="demo-grid">
+      <section class="panel chat-panel" aria-labelledby="conversation-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="step-label">Step 1</p>
+            <h2 id="conversation-heading">Build a conversation</h2>
+          </div>
+          <button type="button" class="button button-quiet" id="btn-reset">Clear</button>
+        </div>
+
+        <div class="example-picker">
+          <label for="scenario-select">Example chat</label>
+          <select id="scenario-select">
+            {% for scenario in scenarios %}
+            <option value="{{ scenario.id }}">{{ scenario.title }}</option>
             {% endfor %}
-            <button type="button" class="scenario-tab tab-custom" data-id="custom">
-              Custom Transcript Input
-            </button>
+            <option value="custom">Manual conversation</option>
+          </select>
+          <div class="example-buttons">
+            <button type="button" class="button button-primary" id="btn-autoplay">Run full chat</button>
+            <button type="button" class="button" id="btn-step">Add next message</button>
           </div>
         </div>
 
-        <!-- Scenario Meta & Execution Controls -->
-        <div class="scenario-meta" id="scenario-info">
-          <div class="meta-header">
-            <h2 class="meta-title" id="info-title">{{ scenarios[0].title }}</h2>
-            <span class="meta-badge {{ scenarios[0].badge_class }}" id="info-badge">{{ scenarios[0].badge }}</span>
+        <p class="scenario-note" id="scenario-note">{{ scenarios[0].short_note }}</p>
+
+        <div class="chat-window" id="chat-window" aria-live="polite">
+          <div class="empty-state" id="chat-empty">
+            Choose an example above, or switch to Manual conversation and type your own messages.
           </div>
-          <p class="meta-description" id="info-desc">{{ scenarios[0].description }}</p>
-          <div class="control-actions">
-            <button type="button" id="btn-autoplay" class="btn btn-primary btn-sm">Auto-Play Scenario</button>
-            <button type="button" id="btn-step" class="btn btn-secondary btn-sm">Step Next Turn</button>
-            <button type="button" id="btn-reset" class="btn btn-outline btn-sm">Reset Transcript</button>
-          </div>
+          <div class="message-list" id="messages-list"></div>
         </div>
 
-        <!-- Transcript Stream -->
-        <div class="transcript-viewport" id="chat-window">
-          <div class="transcript-placeholder" id="chat-empty">
-            <div class="placeholder-title">No Active Conversation Turns</div>
-            <p class="placeholder-text">Select a synthetic scenario above or compose turns below to inspect turn-by-turn Layer 1 author-proxy outputs and Layer 2 LSTM trajectory features.</p>
-          </div>
-          <div class="transcript-list" id="messages-list"></div>
-        </div>
-
-        <!-- Composer Form -->
-        <form class="transcript-composer" id="composer-form">
-          <div class="composer-toolbar">
-            <span class="toolbar-label">Active Speaker:</span>
-            <div class="speaker-switch" id="btn-toggle-speaker" role="button" tabindex="0" title="Click or press Tab to switch speaker">
-              <span class="speaker-pill pill-a active" id="current-speaker-avatar">A</span>
-              <span class="speaker-name" id="current-speaker-label">Speaker A (Initiator)</span>
-              <span class="speaker-hint">[Press Tab to toggle]</span>
-            </div>
-          </div>
-
-          <div class="composer-input-group">
-            <input type="text" id="msg-input" class="composer-input" placeholder="Enter message text for the selected speaker..." autocomplete="off" maxlength="800" />
-            <button type="submit" id="btn-send" class="btn btn-primary">
-              Submit Turn
-            </button>
-          </div>
-          <div class="composer-footnote">
-            Local CPU inference. Messages are evaluated under the frozen 3-turn context window.
-          </div>
+        <form class="composer" id="composer-form">
+          <label class="sr-only" for="speaker-select">Speaker</label>
+          <select id="speaker-select" aria-label="Speaker">
+            <option value="user_A">Speaker A</option>
+            <option value="user_B">Speaker B</option>
+          </select>
+          <label class="sr-only" for="msg-input">Message</label>
+          <input id="msg-input" type="text" maxlength="800" autocomplete="off" placeholder="Type a message..." />
+          <button class="button button-primary" id="btn-send" type="submit">Send</button>
         </form>
+        <p class="input-note" id="activity-text" aria-live="polite">Ready. Messages are scored locally on this computer.</p>
       </section>
 
-      <!-- Right Column: Real-Time Diagnostics & Features -->
-      <aside class="diagnostics-panel">
-        <!-- 1. Classification Endpoint Decision Meter -->
-        <section class="diagnostic-card decision-card">
-          <div class="card-header">
-            <h2 class="card-title">Primary Trajectory LSTM Decision Status</h2>
-            <span class="header-tag">Decision &tau; = {{ '%.4f' % lstm_threshold }}</span>
+      <aside class="results-column" aria-labelledby="result-heading">
+        <section class="panel result-panel" id="result-panel">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="step-label">Step 2</p>
+              <h2 id="result-heading">See the model result</h2>
+            </div>
+            <span class="status-chip status-waiting" id="status-chip">Waiting</span>
           </div>
 
-          <div class="decision-grid">
-            <div class="score-display">
-              <span class="score-number" id="gauge-pct">0.0000</span>
-              <span class="score-caption">Current-Prefix Score</span>
+          <div class="score-row">
+            <div>
+              <span class="score-label">LSTM conversation score</span>
+              <strong class="score-value" id="lstm-score">--</strong>
             </div>
-
-            <div class="decision-details">
-              <div class="decision-status-row">
-                <div class="status-badge badge-neutral" id="status-badge">
-                  <span class="status-indicator"></span>
-                  <span id="status-text">AWAITING INPUT</span>
-                </div>
-                <div class="prefix-crossing-tag" id="prefix-crossing" style="display: none;">
-                  Threshold First Crossed at Turn #<span id="flag-turn-num">--</span>
-                </div>
-              </div>
-
-              <!-- Linear Score Meter -->
-              <div class="linear-meter-wrapper">
-                <div class="meter-bar-track">
-                  <div class="meter-bar-fill" id="gauge-fill" style="width: 0%;"></div>
-                  <div class="meter-threshold-marker" style="left: {{ '%.2f' % (lstm_threshold * 100) }}%;" title="Threshold &tau; = {{ '%.4f' % lstm_threshold }}">
-                    <span class="marker-label">&tau;</span>
-                  </div>
-                </div>
-                <div class="meter-scale-labels">
-                  <span>0.00</span>
-                  <span>0.25</span>
-                  <span>0.50</span>
-                  <span>0.75</span>
-                  <span class="scale-thresh-label">&tau; = {{ '%.4f' % lstm_threshold }}</span>
-                  <span>1.00</span>
-                </div>
-              </div>
-
-              <p class="decision-narrative" id="decision-desc">
-                Awaiting initial turn. Prefix scores are evaluated sequentially against the frozen decision boundary.
-              </p>
+            <div class="threshold-copy">
+              <span>Frozen threshold</span>
+              <strong>{{ '%.4f' % lstm_threshold }}</strong>
             </div>
+          </div>
+
+          <div class="score-track" aria-hidden="true">
+            <div class="score-fill" id="score-fill"></div>
+            <div class="threshold-line" style="left: {{ '%.2f' % (lstm_threshold * 100) }}%;"></div>
+          </div>
+          <p class="decision-text" id="decision-text">Add a message to run DistilBERT and the LSTM.</p>
+          <p class="safety-note">Below threshold does not mean safe. A reviewer keeps decision authority.</p>
+        </section>
+
+        <section class="panel trajectory-panel">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="step-label">Step 3</p>
+              <h2>Watch the score change</h2>
+            </div>
+            <span class="tiny-label">one point per turn</span>
+          </div>
+          <div class="chart-wrap">
+            <svg id="trajectory-svg" viewBox="0 0 520 150" role="img" aria-label="LSTM conversation score by turn">
+              <line x1="16" y1="126" x2="504" y2="126" class="chart-axis" />
+              <line x1="16" y1="16" x2="504" y2="16" class="chart-guide" />
+              <line x1="16" y1="71" x2="504" y2="71" class="chart-guide" />
+              <line id="chart-threshold" x1="16" x2="504" class="chart-threshold" />
+              <path id="path-lstm" class="chart-line" d="" />
+              <g id="chart-points"></g>
+            </svg>
           </div>
         </section>
 
-        <!-- 2. Trajectory Timeline Chart -->
-        <section class="diagnostic-card chart-card">
-          <div class="card-header">
-            <h2 class="card-title">Exploratory Current-Prefix Score Trajectory</h2>
-            <div class="chart-legend">
-              <span class="legend-entry"><span class="legend-line line-lstm"></span> LSTM Score</span>
-              <span class="legend-entry"><span class="legend-line line-l1"></span> Author Proxy</span>
-              <span class="legend-entry"><span class="legend-line line-topic"></span> Topic Dist (&times;0.5)</span>
-              <span class="legend-entry"><span class="legend-line line-thresh"></span> &tau; = {{ '%.4f' % lstm_threshold }}</span>
+        <section class="panel latest-panel">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="step-label">Step 4</p>
+              <h2>Inspect the latest turn</h2>
             </div>
+            <span class="tiny-label" id="latest-turn-label">no turn yet</span>
           </div>
 
-          <div class="chart-container">
-            <div class="chart-y-axis">
-              <span>1.00</span>
-              <span>0.75</span>
-              <span>0.50</span>
-              <span>0.25</span>
-              <span>0.00</span>
-            </div>
-            <div class="chart-canvas-wrapper">
-              <svg class="trajectory-svg" id="trajectory-svg" preserveAspectRatio="none" viewBox="0 0 500 160">
-                <!-- Grid Lines -->
-                <line x1="0" y1="15" x2="500" y2="15" class="grid-line" />
-                <line x1="0" y1="50" x2="500" y2="50" class="grid-line" />
-                <line x1="0" y1="85" x2="500" y2="85" class="grid-line" />
-                <line x1="0" y1="120" x2="500" y2="120" class="grid-line" />
-                <line x1="0" y1="145" x2="500" y2="145" class="grid-line" />
+          <dl class="feature-list">
+            <div><dt>Peak proxy</dt><dd id="val-peak">--</dd></div>
+            <div><dt>Current proxy</dt><dd id="val-current">--</dd></div>
+            <div><dt>Spike count</dt><dd id="val-spikes">--</dd></div>
+            <div><dt>Spike then drop</dt><dd id="val-drop">--</dd></div>
+            <div><dt>Rate of change</dt><dd id="val-rate">--</dd></div>
+            <div><dt>Topic distance</dt><dd id="val-topic">--</dd></div>
+            <div><dt>Turn imbalance</dt><dd id="val-imbalance">--</dd></div>
+          </dl>
 
-                <!-- Frozen Decision Threshold Reference Line -->
-                <line x1="0" y1="19" x2="500" y2="19" class="thresh-line" />
-
-                <!-- Dynamic Data Paths -->
-                <path id="path-topic" class="data-path path-topic" d="" />
-                <path id="path-l1" class="data-path path-l1" d="" />
-                <path id="path-lstm" class="data-path path-lstm" d="" />
-                <g id="chart-points"></g>
-              </svg>
-            </div>
-          </div>
-        </section>
-
-        <!-- 3. Frozen 7-Signal Feature Vector -->
-        <section class="diagnostic-card features-card">
-          <div class="card-header">
-            <h2 class="card-title">Frozen 7-Signal Feature Vector</h2>
-            <span class="header-tag">Auditable Trajectory Inputs</span>
+          <div class="context-block">
+            <span>DistilBERT context (current + up to 2 prior turns)</span>
+            <p id="context-box">No context yet.</p>
           </div>
 
-          <div class="features-table">
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">1. Peak Author-Proxy Score (<span class="math">s<sub>max</sub></span>)</span>
-                <span class="feat-desc">Maximum Layer 1 score observed in prefix</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-blue" id="bar-peak" style="width: 0%;"></div></div>
-                <span class="feat-val" id="val-peak">0.0000</span>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">2. Current Author-Proxy Score (<span class="math">s<sub>t</sub></span>)</span>
-                <span class="feat-desc">Context-conditioned Layer 1 output</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-blue" id="bar-curr" style="width: 0%;"></div></div>
-                <span class="feat-val" id="val-curr">0.0000</span>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">3. Cumulative Spikes (>{{ '%.4f' % spike_threshold }})</span>
-                <span class="feat-desc">Count of proxy scores exceeding spike threshold</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-amber" id="bar-spikes" style="width: 0%;"></div></div>
-                <span class="feat-val" id="val-spikes">0</span>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">4. Spike-Then-Drop Pattern</span>
-                <span class="feat-desc">Boolean flag for post-spike decrease (&ge;{{ '%.2f' % drop_threshold }})</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-slate" id="bar-drop" style="width: 0%;"></div></div>
-                <span class="feat-val" id="val-drop">False</span>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">5. Score Rate of Change (&Delta;s)</span>
-                <span class="feat-desc">Adjacent turn score delta (<span class="math">s<sub>t</sub> - s<sub>t-1</sub></span>)</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-blue" id="bar-rate" style="width: 50%;"></div></div>
-                <span class="feat-val" id="val-rate">0.0000</span>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">6. Topic Distance (<span class="math">d<sub>topic</sub></span>)</span>
-                <span class="feat-desc">Cosine distance from benign centroid (0–2 scale)</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-amber" id="bar-topic" style="width: 0%;"></div></div>
-                <span class="feat-val" id="val-topic">0.0000</span>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-info">
-                <span class="feat-name">7. Turn-Taking Imbalance (<span class="math">I<sub>turn</sub></span>)</span>
-                <span class="feat-desc">Turn count asymmetry ratio between speakers</span>
-              </div>
-              <div class="feature-meter">
-                <div class="meter-track"><div class="meter-fill fill-blue" id="bar-imbalance" style="width: 0%;"></div></div>
-                <span class="feat-val" id="val-imbalance">0.0000</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 4. Multi-Model Comparator Benchmark -->
-        <section class="diagnostic-card comparators-card">
-          <div class="card-header">
-            <h2 class="card-title">Multi-Model Prefix Evaluation Matrix</h2>
-            <span class="header-tag">Author-Disjoint Benchmark</span>
-          </div>
-
-          <table class="benchmark-table">
-            <thead>
-              <tr>
-                <th>Model Architecture</th>
-                <th>Input Dim</th>
-                <th>Prefix Score</th>
-                <th>Classification Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="row-primary">
-                <td><strong>Primary Trajectory LSTM</strong></td>
-                <td class="cell-mono">7 features</td>
-                <td class="cell-mono cell-score" id="comp-lstm-score">0.0000</td>
-                <td id="comp-lstm-flag"><span class="table-badge badge-nominal">Nominal</span></td>
-              </tr>
-              <tr>
-                <td>Weighted Scorer Baseline</td>
-                <td class="cell-mono">7 features</td>
-                <td class="cell-mono cell-score" id="comp-weighted-score">0.0000</td>
-                <td id="comp-weighted-flag"><span class="table-badge badge-nominal">Nominal</span></td>
-              </tr>
-              <tr>
-                <td>Max Layer 1 Contextual Proxy</td>
-                <td class="cell-mono">1 score</td>
-                <td class="cell-mono cell-score" id="comp-raw-score">0.0000</td>
-                <td id="comp-raw-flag"><span class="table-badge badge-nominal">Nominal</span></td>
-              </tr>
-              <tr>
-                <td>Frozen Keyword Baseline</td>
-                <td class="cell-mono">{{ keyword_term_count }} terms</td>
-                <td class="cell-mono cell-score" id="comp-keyword-score">No hit</td>
-                <td id="comp-keyword-flag"><span class="table-badge badge-nominal">Nominal</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
-        <!-- 5. DistilBERT Context Window Audit -->
-        <section class="diagnostic-card inspector-card">
-          <div class="card-header">
-            <h2 class="card-title">Layer 1 DistilBERT Context Window Inspector</h2>
-            <span class="header-tag">3-Turn History Window</span>
-          </div>
-
-          <div class="context-viewer">
-            <div class="context-code" id="context-box">[Awaiting conversation messages...]</div>
-          </div>
+          <details class="comparison-details">
+            <summary>Show comparison methods</summary>
+            <dl class="comparison-list">
+              <div><dt>Weighted scorer</dt><dd id="comp-weighted">--</dd></div>
+              <div><dt>Maximum Layer 1</dt><dd id="comp-layer1">--</dd></div>
+              <div><dt>Keyword rule</dt><dd id="comp-keyword">--</dd></div>
+            </dl>
+          </details>
         </section>
       </aside>
-    </main>
-  </div>
+    </div>
 
+    <footer>
+      Frozen endpoint: {{ endpoint }}. The example chats are synthetic and are not evaluation records.
+    </footer>
+  </main>
+
+  <script id="scenario-data" type="application/json">{{ scenarios | tojson | safe }}</script>
   <script src="/static/app.js"></script>
 </body>
 </html>

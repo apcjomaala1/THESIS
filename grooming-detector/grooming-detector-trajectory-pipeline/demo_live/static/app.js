@@ -1,502 +1,278 @@
-/**
- * PAN12 Conversation Trajectory Benchmark - Frontend Controller
- */
+"use strict";
 
-document.addEventListener("DOMContentLoaded", () => {
-  // State
-  let currentSpeaker = "user_A"; // "user_A" (Speaker A) or "user_B" (Speaker B)
-  let conversationHistory = [];
-  let scenarios = [];
-  let activeScenario = null;
-  let scenarioStepIndex = 0;
-  let autoPlayTimer = null;
-  let autoPlayActive = false;
-  let firstCrossedTurn = null;
-  let conversationEpoch = 0;
-  let requestQueue = Promise.resolve();
+const scenarios = JSON.parse(document.getElementById("scenario-data").textContent);
+const scenarioMap = new Map(scenarios.map((scenario) => [scenario.id, scenario]));
+const lstmThreshold = Number(document.body.dataset.lstmThreshold);
 
-  // DOM Elements
-  const msgInput = document.getElementById("msg-input");
-  const composerForm = document.getElementById("composer-form");
-  const btnToggleSpeaker = document.getElementById("btn-toggle-speaker");
-  const currentSpeakerAvatar = document.getElementById("current-speaker-avatar");
-  const currentSpeakerLabel = document.getElementById("current-speaker-label");
-  const messagesList = document.getElementById("messages-list");
-  const chatEmpty = document.getElementById("chat-empty");
-  const chatWindow = document.getElementById("chat-window");
+const scenarioSelect = document.getElementById("scenario-select");
+const scenarioNote = document.getElementById("scenario-note");
+const runButton = document.getElementById("btn-autoplay");
+const stepButton = document.getElementById("btn-step");
+const resetButton = document.getElementById("btn-reset");
+const composerForm = document.getElementById("composer-form");
+const speakerSelect = document.getElementById("speaker-select");
+const messageInput = document.getElementById("msg-input");
+const activityText = document.getElementById("activity-text");
+const emptyState = document.getElementById("chat-empty");
+const messagesList = document.getElementById("messages-list");
 
-  // Scenario Elements
-  const scenarioChips = document.getElementById("scenario-chips");
-  const infoBadge = document.getElementById("info-badge");
-  const infoTitle = document.getElementById("info-title");
-  const infoDesc = document.getElementById("info-desc");
-  const btnAutoPlay = document.getElementById("btn-autoplay");
-  const btnStep = document.getElementById("btn-step");
-  const btnReset = document.getElementById("btn-reset");
+let activeScenario = null;
+let scenarioStepIndex = 0;
+let conversationHistory = [];
+let conversationEpoch = 0;
+let requestQueue = Promise.resolve();
+let autoplayActive = false;
+let autoplayTimer = null;
+let firstFlaggedTurn = null;
 
-  // Dashboard Elements
-  const gaugeFill = document.getElementById("gauge-fill");
-  const gaugePct = document.getElementById("gauge-pct");
-  const statusBadge = document.getElementById("status-badge");
-  const statusText = document.getElementById("status-text");
-  const decisionDesc = document.getElementById("decision-desc");
-  const prefixCrossing = document.getElementById("prefix-crossing");
-  const flagTurnNum = document.getElementById("flag-turn-num");
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-  // Signals
-  const valPeak = document.getElementById("val-peak");
-  const barPeak = document.getElementById("bar-peak");
-  const valCurr = document.getElementById("val-curr");
-  const barCurr = document.getElementById("bar-curr");
-  const valSpikes = document.getElementById("val-spikes");
-  const barSpikes = document.getElementById("bar-spikes");
-  const valDrop = document.getElementById("val-drop");
-  const barDrop = document.getElementById("bar-drop");
-  const valRate = document.getElementById("val-rate");
-  const barRate = document.getElementById("bar-rate");
-  const valTopic = document.getElementById("val-topic");
-  const barTopic = document.getElementById("bar-topic");
-  const valImbalance = document.getElementById("val-imbalance");
-  const barImbalance = document.getElementById("bar-imbalance");
+function setActivity(message, isError = false) {
+  activityText.textContent = message;
+  activityText.classList.toggle("is-error", isError);
+}
 
-  // Comparators
-  const compLstmScore = document.getElementById("comp-lstm-score");
-  const compLstmFlag = document.getElementById("comp-lstm-flag");
-  const compWeightedScore = document.getElementById("comp-weighted-score");
-  const compWeightedFlag = document.getElementById("comp-weighted-flag");
-  const compRawScore = document.getElementById("comp-raw-score");
-  const compRawFlag = document.getElementById("comp-raw-flag");
-  const compKeywordScore = document.getElementById("comp-keyword-score");
-  const compKeywordFlag = document.getElementById("comp-keyword-flag");
+function appendMessage(author, text) {
+  emptyState.hidden = true;
+  const item = document.createElement("article");
+  item.className = `message ${author === "user_A" ? "message-a" : "message-b"}`;
+  item.innerHTML = `
+    <div class="message-meta">
+      <span>${author === "user_A" ? "Speaker A" : "Speaker B"}</span>
+      <span class="message-score">Scoring...</span>
+    </div>
+    <p class="message-text">${escapeHtml(text)}</p>`;
+  messagesList.appendChild(item);
+  item.scrollIntoView({ block: "nearest" });
+  return item;
+}
 
-  // Context Box
-  const contextBox = document.getElementById("context-box");
+function updateMessage(item, turn, sanitizedText) {
+  item.querySelector(".message-text").textContent = sanitizedText;
+  item.querySelector(".message-score").textContent =
+    `Turn ${turn.turn} · L1 ${Number(turn.layer1_score).toFixed(4)} · LSTM ${Number(turn.lstm_score).toFixed(4)}`;
+  item.classList.toggle("is-flagged", Boolean(turn.lstm_flagged));
+}
 
-  // Trajectory Chart SVG Paths
-  const pathLstm = document.getElementById("path-lstm");
-  const pathL1 = document.getElementById("path-l1");
-  const pathTopic = document.getElementById("path-topic");
-  const chartPoints = document.getElementById("chart-points");
+function submitTurn(text, author) {
+  const epoch = conversationEpoch;
+  const task = requestQueue.then(() => submitTurnNow(text, author, epoch));
+  requestQueue = task.catch(() => undefined);
+  return task;
+}
 
-  // 1. Load Scenarios from API
-  fetch("/api/scenarios")
-    .then((r) => r.json())
-    .then((data) => {
-      scenarios = data;
-      if (scenarios.length > 0) {
-        selectScenario(scenarios[0]);
-      }
-    })
-    .catch((err) => console.error("Error loading scenarios:", err));
+async function submitTurnNow(text, author, epoch) {
+  const cleanText = String(text || "").trim();
+  if (!cleanText || epoch !== conversationEpoch) return false;
 
-  // 2. Speaker Toggle Logic
-  function setSpeaker(speaker) {
-    currentSpeaker = speaker;
-    if (speaker === "user_A") {
-      currentSpeakerAvatar.className = "speaker-pill pill-a active";
-      currentSpeakerAvatar.textContent = "A";
-      currentSpeakerLabel.textContent = "Speaker A (Initiator)";
-    } else {
-      currentSpeakerAvatar.className = "speaker-pill pill-b active";
-      currentSpeakerAvatar.textContent = "B";
-      currentSpeakerLabel.textContent = "Speaker B";
-    }
-  }
+  const visibleMessage = appendMessage(author, cleanText);
+  conversationHistory.push({ author, text: cleanText });
+  setActivity("Running the frozen model...");
 
-  btnToggleSpeaker.addEventListener("click", () => {
-    setSpeaker(currentSpeaker === "user_A" ? "user_B" : "user_A");
-  });
-
-  // Global Tab key to switch speaker when focused on input
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Tab" && document.activeElement === msgInput) {
-      e.preventDefault();
-      setSpeaker(currentSpeaker === "user_A" ? "user_B" : "user_A");
-    }
-  });
-
-  // 3. Scenario Selection
-  function selectScenario(sc) {
-    stopAutoPlay();
-    activeScenario = sc;
-    scenarioStepIndex = 0;
-    resetConversation();
-
-    // Update tab states
-    document.querySelectorAll(".scenario-tab").forEach((tab) => {
-      tab.classList.toggle("tab-active", tab.dataset.id === sc.id);
+  try {
+    const response = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ history: conversationHistory }),
     });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+    if (epoch !== conversationEpoch) return false;
 
-    if (sc.id === "custom") {
-      infoBadge.textContent = "Custom Mode";
-      infoBadge.className = "meta-badge badge-neutral";
-      infoTitle.textContent = "Custom Synthetic Conversation Transcript";
-      infoDesc.textContent = "Enter messages below to inspect how the frozen Layer 1 DistilBERT author-proxy and Layer 2 LSTM respond to the chronological prefix.";
-      btnAutoPlay.style.display = "none";
-      btnStep.style.display = "none";
-    } else {
-      infoBadge.textContent = sc.badge;
-      infoBadge.className = `meta-badge ${sc.badge_class}`;
-      infoTitle.textContent = sc.title;
-      infoDesc.textContent = sc.description;
-      btnAutoPlay.style.display = "inline-flex";
-      btnStep.style.display = "inline-flex";
-    }
-  }
-
-  scenarioChips.addEventListener("click", (e) => {
-    const tab = e.target.closest(".scenario-tab");
-    if (!tab) return;
-    const id = tab.dataset.id;
-    if (id === "custom") {
-      selectScenario({ id: "custom" });
-    } else {
-      const found = scenarios.find((s) => s.id === id);
-      if (found) selectScenario(found);
-    }
-  });
-
-  // 4. Send Message & Score
-  async function submitTurnNow(text, author, epoch) {
-    if (!text || !text.trim()) return;
-    if (epoch !== conversationEpoch) return;
-
-    // Add to history
-    conversationHistory.push({ author: author, text: text.trim() });
-    const turnIndex = conversationHistory.length;
-
-    // Append to UI immediately
-    chatEmpty.style.display = "none";
-    const row = document.createElement("div");
-    row.className = `transcript-row ${author === "user_A" ? "row-speaker-a" : "row-speaker-b"}`;
-    row.id = `turn-row-${turnIndex}`;
-    row.innerHTML = `
-      <div class="turn-header">
-        <div class="turn-speaker-group">
-          <span class="speaker-tag ${author === "user_A" ? "tag-a" : "tag-b"}">
-            ${author === "user_A" ? "Speaker A" : "Speaker B"}
-          </span>
-          <span class="turn-index">Turn #${turnIndex}</span>
-        </div>
-        <span class="turn-metric" id="score-tag-${turnIndex}">Evaluating...</span>
-      </div>
-      <div class="turn-text">${escapeHtml(text)}</div>
-    `;
-    messagesList.appendChild(row);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-
-    // Alternate speaker for the next turn
-    setSpeaker(author === "user_A" ? "user_B" : "user_A");
-
-    // Call scoring API
-    try {
-      const res = await fetch("/api/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history: conversationHistory }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Scoring failed");
-      if (epoch !== conversationEpoch) return;
-      if (Array.isArray(data.sanitized_history)) {
-        conversationHistory = data.sanitized_history;
-        const sanitizedText = conversationHistory[conversationHistory.length - 1].text;
-        const visibleText = row.querySelector(".turn-text");
-        if (visibleText) visibleText.textContent = sanitizedText;
-      }
-      updateDashboard(data);
-    } catch (err) {
-      console.error("Error scoring turn:", err);
-    }
-  }
-
-  function submitTurn(text, author) {
-    const epoch = conversationEpoch;
-    const queuedRequest = requestQueue.then(() => submitTurnNow(text, author, epoch));
-    requestQueue = queuedRequest.catch((err) => {
-      console.error("Queued scoring error:", err);
-    });
-    return queuedRequest;
-  }
-
-  composerForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const text = msgInput.value;
-    msgInput.value = "";
-    submitTurn(text, currentSpeaker);
-    msgInput.focus();
-  });
-
-  // 5. Auto-Play & Stepper Logic
-  function stepNextTurn() {
-    if (!activeScenario || !activeScenario.turns) return;
-    if (scenarioStepIndex >= activeScenario.turns.length) {
-      stopAutoPlay();
-      return;
-    }
-    const turn = activeScenario.turns[scenarioStepIndex];
-    scenarioStepIndex++;
-    return submitTurn(turn.text, turn.author);
-  }
-
-  async function runAutoPlayTurn() {
-    if (!autoPlayActive) return;
-    if (!activeScenario || scenarioStepIndex >= activeScenario.turns.length) {
-      stopAutoPlay();
-      return;
-    }
-    await stepNextTurn();
-    if (!autoPlayActive) return;
-    if (scenarioStepIndex >= activeScenario.turns.length) {
-      stopAutoPlay();
-      return;
-    }
-    autoPlayTimer = setTimeout(runAutoPlayTurn, 1400);
-  }
-
-  function startAutoPlay() {
-    if (autoPlayActive) return;
-    autoPlayActive = true;
-    btnAutoPlay.textContent = "Pause Auto-Play";
-    btnAutoPlay.className = "btn btn-secondary btn-sm";
-    runAutoPlayTurn();
-  }
-
-  function stopAutoPlay() {
-    autoPlayActive = false;
-    if (autoPlayTimer) {
-      clearTimeout(autoPlayTimer);
-      autoPlayTimer = null;
-    }
-    btnAutoPlay.textContent = "Auto-Play Scenario";
-    btnAutoPlay.className = "btn btn-primary btn-sm";
-  }
-
-  btnAutoPlay.addEventListener("click", () => {
-    if (autoPlayActive) stopAutoPlay();
-    else startAutoPlay();
-  });
-
-  btnStep.addEventListener("click", () => {
-    stopAutoPlay();
-    stepNextTurn();
-  });
-
-  btnReset.addEventListener("click", () => {
-    stopAutoPlay();
-    resetConversation();
-  });
-
-  function resetConversation() {
-    conversationEpoch += 1;
-    conversationHistory = [];
-    scenarioStepIndex = 0;
-    firstCrossedTurn = null;
-    messagesList.innerHTML = "";
-    chatEmpty.style.display = "flex";
-    setSpeaker("user_A");
-    resetDashboard();
-  }
-
-  // 6. Dashboard Updates
-  function updateDashboard(data) {
+    conversationHistory = data.sanitized_history;
     const latest = data.latest_turn;
-    const decision = data.decision;
-    const curve = data.trajectory_curve;
-
-    // Update Turn Score Tag
-    const scoreTag = document.getElementById(`score-tag-${data.turns_count}`);
-    if (scoreTag) {
-      scoreTag.textContent = `L1: ${latest.layer1_score.toFixed(4)}`;
-      if (latest.proxy_spike) {
-        scoreTag.className = "turn-metric metric-spike";
-        scoreTag.textContent = `L1: ${latest.layer1_score.toFixed(4)} (Spike)`;
-      } else {
-        scoreTag.className = "turn-metric";
-      }
+    updateMessage(visibleMessage, latest, conversationHistory.at(-1).text);
+    updateResults(data);
+    setActivity(`Scored ${data.turns_count} turn${data.turns_count === 1 ? "" : "s"}.`);
+    return true;
+  } catch (error) {
+    if (epoch === conversationEpoch) {
+      conversationHistory.pop();
+      visibleMessage.remove();
+      emptyState.hidden = messagesList.children.length > 0;
+      setActivity(`Could not score that message: ${error.message}`, true);
     }
-
-    // A. Update Linear Meter & Score Readout
-    const lstmScore = decision.lstm.score;
-    gaugePct.textContent = lstmScore.toFixed(4);
-    gaugeFill.style.width = `${Math.min(100, Math.max(0, lstmScore * 100))}%`;
-
-    if (decision.lstm.flagged) {
-      gaugeFill.style.backgroundColor = "var(--status-flagged)";
-      statusBadge.className = "status-badge badge-danger-live";
-      statusText.textContent = "FLAGGED FOR REVIEW";
-      decisionDesc.textContent = `Current-prefix score (${lstmScore.toFixed(4)}) meets or exceeds the frozen decision threshold (${decision.lstm.threshold.toFixed(4)}). Route conversation for human review.`;
-
-      if (!firstCrossedTurn) {
-        firstCrossedTurn = data.turns_count;
-        prefixCrossing.style.display = "inline-block";
-        flagTurnNum.textContent = firstCrossedTurn;
-      }
-    } else {
-      gaugeFill.style.backgroundColor = "var(--accent-blue)";
-      statusBadge.className = "status-badge badge-below-live";
-      statusText.textContent = "NOMINAL (BELOW THRESHOLD)";
-      decisionDesc.textContent = `Current-prefix score (${lstmScore.toFixed(4)}) remains below the frozen decision threshold (${decision.lstm.threshold.toFixed(4)}).`;
-    }
-
-    // B. Update 7 Signals
-    const f = latest.features;
-    valPeak.textContent = f.peak_proxy_score.toFixed(4);
-    barPeak.style.width = `${Math.min(100, f.peak_proxy_score * 100)}%`;
-
-    valCurr.textContent = f.current_proxy_score.toFixed(4);
-    barCurr.style.width = `${Math.min(100, f.current_proxy_score * 100)}%`;
-
-    valSpikes.textContent = f.spike_count;
-    barSpikes.style.width = `${Math.min(100, f.spike_count * 25)}%`;
-
-    valDrop.textContent = f.spike_then_drop ? "True" : "False";
-    barDrop.style.width = f.spike_then_drop ? "100%" : "0%";
-
-    valRate.textContent = (f.rate_of_change >= 0 ? "+" : "") + f.rate_of_change.toFixed(4);
-    barRate.style.width = `${Math.max(0, Math.min(100, 50 + (f.rate_of_change * 50)))}%`;
-
-    valTopic.textContent = f.topic_distance.toFixed(4);
-    barTopic.style.width = `${Math.min(100, f.topic_distance * 50)}%`;
-
-    valImbalance.textContent = f.turn_taking_imbalance.toFixed(4);
-    barImbalance.style.width = `${Math.min(100, f.turn_taking_imbalance * 100)}%`;
-
-    // C. Update Comparators Table
-    compLstmScore.textContent = decision.lstm.score.toFixed(4);
-    compLstmFlag.innerHTML = decision.lstm.flagged
-      ? '<span class="table-badge badge-flagged">Flagged</span>'
-      : '<span class="table-badge badge-nominal">Nominal</span>';
-
-    compWeightedScore.textContent = decision.weighted.score.toFixed(4);
-    compWeightedFlag.innerHTML = decision.weighted.flagged
-      ? '<span class="table-badge badge-flagged">Flagged</span>'
-      : '<span class="table-badge badge-nominal">Nominal</span>';
-
-    compRawScore.textContent = decision.raw_layer1.score.toFixed(4);
-    compRawFlag.innerHTML = decision.raw_layer1.flagged
-      ? '<span class="table-badge badge-flagged">Flagged</span>'
-      : '<span class="table-badge badge-nominal">Nominal</span>';
-
-    const matchedTerms = decision.keyword.matched_terms || [];
-    compKeywordScore.textContent = decision.keyword.flagged
-      ? `${matchedTerms.length} hit${matchedTerms.length === 1 ? "" : "s"}`
-      : "No hit";
-    compKeywordFlag.innerHTML = decision.keyword.flagged
-      ? '<span class="table-badge badge-flagged">Flagged</span>'
-      : '<span class="table-badge badge-nominal">Nominal</span>';
-
-    // D. Update Context Box
-    contextBox.textContent = latest.context || "[No context available]";
-
-    // E. Render Trajectory Chart (SVG)
-    renderTrajectoryChart(curve);
+    return false;
   }
+}
 
-  function resetDashboard() {
-    gaugePct.textContent = "0.0000";
-    gaugeFill.style.width = "0%";
-    gaugeFill.style.backgroundColor = "var(--accent-blue)";
-    statusBadge.className = "status-badge badge-neutral";
-    statusText.textContent = "AWAITING INPUT";
-    decisionDesc.textContent = "Awaiting initial turn. Prefix scores are evaluated sequentially against the frozen decision boundary.";
-    prefixCrossing.style.display = "none";
+function firstTrueIndex(values) {
+  const index = values.findIndex(Boolean);
+  return index < 0 ? null : index + 1;
+}
 
-    valPeak.textContent = "0.0000";
-    barPeak.style.width = "0%";
-    valCurr.textContent = "0.0000";
-    barCurr.style.width = "0%";
-    valSpikes.textContent = "0";
-    barSpikes.style.width = "0%";
-    valDrop.textContent = "False";
-    barDrop.style.width = "0%";
-    valRate.textContent = "0.0000";
-    barRate.style.width = "50%";
-    valTopic.textContent = "0.0000";
-    barTopic.style.width = "0%";
-    valImbalance.textContent = "0.0000";
-    barImbalance.style.width = "0%";
+function updateResults(data) {
+  const decision = data.decision;
+  const latest = data.latest_turn;
+  const score = Number(decision.lstm.score);
+  firstFlaggedTurn = firstTrueIndex(data.trajectory_curve.lstm_flags);
 
-    compLstmScore.textContent = "0.0000";
-    compLstmFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
-    compWeightedScore.textContent = "0.0000";
-    compWeightedFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
-    compRawScore.textContent = "0.0000";
-    compRawFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
-    compKeywordScore.textContent = "No hit";
-    compKeywordFlag.innerHTML = '<span class="table-badge badge-below">Nominal</span>';
+  const statusChip = document.getElementById("status-chip");
+  statusChip.textContent = decision.lstm.flagged ? "Flagged for review" : "Below threshold";
+  statusChip.className = `status-chip ${decision.lstm.flagged ? "status-flagged" : "status-below"}`;
+  document.getElementById("lstm-score").textContent = score.toFixed(4);
+  document.getElementById("score-fill").style.width = `${Math.max(0, Math.min(100, score * 100))}%`;
+  document.getElementById("decision-text").textContent = decision.lstm.flagged
+    ? `The score crossed the frozen threshold of ${Number(decision.lstm.threshold).toFixed(4)}${firstFlaggedTurn ? ` at turn ${firstFlaggedTurn}` : ""}. Send this conversation for human review.`
+    : `The score is below the frozen threshold of ${Number(decision.lstm.threshold).toFixed(4)}. This is not a declaration that the chat is safe.`;
 
-    contextBox.textContent = "[Awaiting conversation messages...]";
+  document.getElementById("latest-turn-label").textContent = `turn ${latest.turn} · ${latest.author === "user_A" ? "Speaker A" : "Speaker B"}`;
+  const features = latest.features;
+  setValue("val-peak", features.peak_proxy_score);
+  setValue("val-current", features.current_proxy_score);
+  setValue("val-spikes", features.spike_count, 0);
+  setValue("val-drop", features.spike_then_drop ? "yes" : "no", null);
+  setValue("val-rate", features.rate_of_change);
+  setValue("val-topic", features.topic_distance);
+  setValue("val-imbalance", features.turn_taking_imbalance);
+  document.getElementById("context-box").textContent = latest.context;
 
-    pathLstm.setAttribute("d", "");
-    pathL1.setAttribute("d", "");
-    pathTopic.setAttribute("d", "");
-    chartPoints.innerHTML = "";
+  document.getElementById("comp-weighted").textContent = formatComparator(decision.weighted);
+  document.getElementById("comp-layer1").textContent = formatComparator(decision.raw_layer1);
+  const terms = decision.keyword.matched_terms || [];
+  document.getElementById("comp-keyword").textContent = decision.keyword.flagged
+    ? `matched: ${terms.join(", ")}`
+    : "no match";
+  drawTrajectory(data.trajectory_curve);
+}
+
+function setValue(id, value, digits = 4) {
+  document.getElementById(id).textContent = digits === null ? String(value) : Number(value).toFixed(digits);
+}
+
+function formatComparator(item) {
+  return `${Number(item.score).toFixed(4)} · ${item.flagged ? "flagged" : "below"}`;
+}
+
+function drawTrajectory(curve) {
+  const scores = curve.lstm_scores.map(Number);
+  const xAt = (index) => scores.length === 1 ? 260 : 16 + (488 * index) / (scores.length - 1);
+  const yAt = (score) => 126 - 110 * Math.max(0, Math.min(1, score));
+  const path = scores.map((score, index) => `${index ? "L" : "M"} ${xAt(index).toFixed(1)} ${yAt(score).toFixed(1)}`).join(" ");
+  document.getElementById("path-lstm").setAttribute("d", path);
+
+  const points = document.getElementById("chart-points");
+  points.replaceChildren();
+  scores.forEach((score, index) => {
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", xAt(index));
+    circle.setAttribute("cy", yAt(score));
+    circle.setAttribute("r", "4");
+    circle.setAttribute("class", curve.lstm_flags[index] ? "chart-point flagged" : "chart-point");
+    points.appendChild(circle);
+  });
+}
+
+function resetConversation(message = "Ready. Messages are scored locally on this computer.") {
+  stopAutoplay();
+  conversationEpoch += 1;
+  requestQueue = Promise.resolve();
+  scenarioStepIndex = 0;
+  conversationHistory = [];
+  firstFlaggedTurn = null;
+  messagesList.replaceChildren();
+  emptyState.hidden = false;
+  resetResults();
+  setActivity(message);
+}
+
+function resetResults() {
+  const statusChip = document.getElementById("status-chip");
+  statusChip.textContent = "Waiting";
+  statusChip.className = "status-chip status-waiting";
+  document.getElementById("lstm-score").textContent = "--";
+  document.getElementById("score-fill").style.width = "0%";
+  document.getElementById("decision-text").textContent = "Add a message to run DistilBERT and the LSTM.";
+  document.getElementById("latest-turn-label").textContent = "no turn yet";
+  ["val-peak", "val-current", "val-spikes", "val-drop", "val-rate", "val-topic", "val-imbalance", "comp-weighted", "comp-layer1", "comp-keyword"].forEach((id) => {
+    document.getElementById(id).textContent = "--";
+  });
+  document.getElementById("context-box").textContent = "No context yet.";
+  document.getElementById("path-lstm").setAttribute("d", "");
+  document.getElementById("chart-points").replaceChildren();
+}
+
+function selectScenario(id) {
+  activeScenario = scenarioMap.get(id) || null;
+  const manual = !activeScenario;
+  scenarioNote.textContent = manual
+    ? "Enter alternating messages below. Each submission recomputes the full conversation history."
+    : activeScenario.short_note;
+  runButton.disabled = manual;
+  stepButton.disabled = manual;
+  speakerSelect.disabled = !manual;
+  messageInput.disabled = !manual;
+  document.getElementById("btn-send").disabled = !manual;
+  resetConversation(manual ? "Manual entry is ready." : "Example loaded. Run it all at once or add one message at a time.");
+  if (manual) messageInput.focus();
+}
+
+async function stepScenarioTurn() {
+  if (!activeScenario || scenarioStepIndex >= activeScenario.turns.length) return false;
+  const turn = activeScenario.turns[scenarioStepIndex];
+  const succeeded = await submitTurn(turn.text, turn.author);
+  if (succeeded) scenarioStepIndex += 1;
+  if (scenarioStepIndex >= activeScenario.turns.length) {
+    stopAutoplay();
+    setActivity(`Example complete: ${activeScenario.turns.length} turns scored.`);
   }
+  return succeeded;
+}
 
-  // 7. Trajectory SVG Chart Renderer
-  function renderTrajectoryChart(curve) {
-    const turns = curve.turns;
-    const N = turns.length;
-    if (N === 0) return;
-
-    const width = 500;
-    const height = 160;
-    const padTop = 15;
-    const padBottom = 15;
-    const padLeft = 15;
-    const padRight = 15;
-
-    const plotW = width - padLeft - padRight;
-    const plotH = height - padTop - padBottom;
-
-    function getX(i) {
-      if (N === 1) return padLeft + plotW / 2;
-      return padLeft + (i / (N - 1)) * plotW;
-    }
-
-    function getY(val, scaleMax = 1) {
-      const normalized = Math.max(0, Math.min(1, val / scaleMax));
-      return height - padBottom - (normalized * plotH);
-    }
-
-    function buildPath(values, scaleMax = 1) {
-      let d = "";
-      values.forEach((v, i) => {
-        const x = getX(i);
-        const y = getY(v, scaleMax);
-        d += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
-      });
-      return d;
-    }
-
-    pathLstm.setAttribute("d", buildPath(curve.lstm_scores));
-    pathL1.setAttribute("d", buildPath(curve.layer1_scores));
-    pathTopic.setAttribute("d", buildPath(curve.topic_distances, 2));
-
-    // Render points on the LSTM path
-    let pointsHtml = "";
-    curve.lstm_scores.forEach((s, i) => {
-      const x = getX(i);
-      const y = getY(s);
-      const isFlagged = Boolean(curve.lstm_flags[i]);
-      pointsHtml += `
-        <circle cx="${x}" cy="${y}" r="${isFlagged ? 4 : 3}"
-                fill="${isFlagged ? '#ef4444' : '#3b82f6'}"
-                stroke="#0c1017" stroke-width="1.5">
-          <title>Turn ${i + 1}: LSTM = ${s.toFixed(4)}</title>
-        </circle>
-      `;
-    });
-    chartPoints.innerHTML = pointsHtml;
+async function runAutoplayTurn() {
+  if (!autoplayActive) return;
+  const succeeded = await stepScenarioTurn();
+  if (autoplayActive && succeeded && activeScenario && scenarioStepIndex < activeScenario.turns.length) {
+    autoplayTimer = window.setTimeout(runAutoplayTurn, 600);
+  } else {
+    stopAutoplay();
   }
+}
 
-  function escapeHtml(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+function stopAutoplay() {
+  autoplayActive = false;
+  if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
+  autoplayTimer = null;
+  runButton.textContent = "Run full chat";
+}
+
+function toggleAutoplay() {
+  if (!activeScenario) return;
+  if (autoplayActive) {
+    stopAutoplay();
+    setActivity("Example paused.");
+    return;
   }
+  if (scenarioStepIndex >= activeScenario.turns.length) resetConversation("Restarting example...");
+  autoplayActive = true;
+  runButton.textContent = "Pause";
+  runAutoplayTurn();
+}
+
+composerForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const text = messageInput.value.trim();
+  if (!text) return;
+  const author = speakerSelect.value;
+  messageInput.value = "";
+  const succeeded = await submitTurn(text, author);
+  if (succeeded) speakerSelect.value = author === "user_A" ? "user_B" : "user_A";
+  messageInput.focus();
 });
+
+scenarioSelect.addEventListener("change", () => selectScenario(scenarioSelect.value));
+runButton.addEventListener("click", toggleAutoplay);
+stepButton.addEventListener("click", stepScenarioTurn);
+resetButton.addEventListener("click", () => resetConversation());
+
+const thresholdY = 126 - 110 * Math.max(0, Math.min(1, lstmThreshold));
+document.getElementById("chart-threshold").setAttribute("y1", thresholdY);
+document.getElementById("chart-threshold").setAttribute("y2", thresholdY);
+selectScenario(scenarioSelect.value);

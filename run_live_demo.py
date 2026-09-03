@@ -1,5 +1,5 @@
 """
-Top-level launcher for the PAN12 Conversation Trajectory Lab.
+Top-level launcher for the WASD Conversation Model Demo.
 Run:
     python run_live_demo.py
 Then open http://127.0.0.1:5000 in your browser.
