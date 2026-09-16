@@ -108,11 +108,20 @@ try {
       messages: document.querySelectorAll(".message").length,
       status: document.getElementById("status-chip")?.textContent,
       score: document.getElementById("lstm-score")?.textContent,
-      activity: document.getElementById("activity-text")?.textContent
+      activity: document.getElementById("activity-text")?.textContent,
+      comparison: document.getElementById("comparison-summary")?.textContent,
+      outcomes: Array.from(document.querySelectorAll("#comparison-body tr")).map(row => row.lastElementChild.textContent),
+      chartPoints: document.querySelectorAll("#chart-points circle").length,
+      horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth
     })`);
   }
 
   await waitFor(`document.getElementById("activity-text")?.textContent.startsWith("Example loaded")`);
+  await evaluate(`(() => {
+    const select = document.getElementById("scenario-select");
+    select.value = "private_meeting_pressure";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  })()`);
   const initial = await snapshot();
 
   await evaluate(`document.getElementById("btn-autoplay").click()`);
@@ -128,6 +137,19 @@ try {
       captureBeyondViewport: true,
     });
     await writeFile(screenshot, Buffer.from(capture.data, "base64"));
+  }
+
+  const contrasts = {};
+  for (const id of ["school_project_false_alarm", "safety_lesson_false_alarm", "long_private_pressure"]) {
+    await evaluate(`(() => {
+      const select = document.getElementById("scenario-select");
+      select.value = ${JSON.stringify(id)};
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      document.getElementById("btn-autoplay").click();
+    })()`);
+    // Full-history inference is repeated at each turn; allow longer chats more time.
+    await waitFor(`document.getElementById("activity-text").textContent.startsWith("Example complete")`, id === "long_private_pressure" ? 180000 : 60000);
+    contrasts[id] = await snapshot();
   }
 
   await evaluate(`(() => {
@@ -170,15 +192,22 @@ try {
 
   const checks = {
     initial_loaded: initial.title === "Conversation Model Demo" && initial.status === "Waiting",
-    chapter4_results: initial.resultsHeading === "What the held-out test showed" && initial.resultsRows === 5 && initial.primaryResults.join("|") === "0.9153|0.8621|0.8511|0.9091" && initial.matchedFinding.includes("+0.1103 PR-AUC") && initial.matchedFinding.includes("+0.1121 F0.5"),
+    chapter4_results: initial.resultsHeading === "What the held-out test showed" && initial.resultsRows === 5 && initial.primaryResults.join("|") === "0.9153|0.8621|0.8511|0.9091|7|4" && initial.matchedFinding.includes("+0.1103 PR-AUC") && initial.matchedFinding.includes("+0.1121 F0.5"),
     flagged_example: flagged.messages === 6 && flagged.status === "Flagged for review" && flagged.score === "0.9942",
+    fn_comparison: flagged.outcomes.join("|") === "TP: caught|FN: missed|FN: missed|TP: caught",
+    long_all_baseline_miss: contrasts.long_private_pressure.messages === 40 && contrasts.long_private_pressure.chartPoints === 40 && contrasts.long_private_pressure.status === "Flagged for review" && contrasts.long_private_pressure.outcomes.join("|") === "TP: caught|FN: missed|FN: missed|FN: missed",
+    weighted_fp_comparison: contrasts.school_project_false_alarm.outcomes.join("|") === "TN: below threshold|FP: false alarm|TN: below threshold|TN: below threshold" && contrasts.school_project_false_alarm.comparison.includes("earlier prefix") && contrasts.school_project_false_alarm.chartPoints === 5,
+    keyword_fp_comparison: contrasts.safety_lesson_false_alarm.outcomes.join("|") === "TN: below threshold|TN: below threshold|TN: below threshold|FP: false alarm",
+    prefix_has_no_error_labels: limitationStep.outcomes.every(value => value === "No reference label"),
+    manual_has_no_error_labels: manual.outcomes.every(value => value === "No reference label"),
+    cleared_comparison: cleared.outcomes.every(value => value === "--"),
     routine_example: routine.messages === 6 && routine.status === "Below threshold" && routine.score === "0.0086",
     add_next_message: limitationStep.messages === 1 && limitationStep.status !== "Waiting",
     limitation_example: limitation.messages === 8 && limitation.status === "Below threshold" && limitation.score === "0.0006",
     manual_entry: manual.messages === 1 && manual.status !== "Waiting" && /^0\.\d{4}$/.test(manual.score),
     clear_button: cleared.messages === 0 && cleared.status === "Waiting" && cleared.score === "--",
   };
-  const report = { passed: Object.values(checks).every(Boolean), checks, screenshot, snapshots: { initial, flagged, routine, limitationStep, limitation, manual, cleared } };
+  const report = { passed: Object.values(checks).every(Boolean), checks, screenshot, snapshots: { initial, flagged, contrasts, routine, limitationStep, limitation, manual, cleared } };
   console.log(JSON.stringify(report, null, 2));
   if (!report.passed) process.exitCode = 1;
 } finally {

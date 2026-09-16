@@ -3,6 +3,7 @@
 **/.pytest_cache/
 **/.pytest_tmp*/
 .tmp/
+tmp/
 *.py[cod]
 **/.venv/
 **/venv/
@@ -48,6 +49,7 @@ thesis_docs/archive/recovery/Latest Convo*.md
 
 # Generated DOCX staging and render products (receipts/scripts remain visible)
 Finals Revised Paper WASD.synced.docx
+thesis_docs/.docx_conversion_qa/*.docx
 thesis_docs/.docx_conversion_qa/final_sync_qa/
 thesis_docs/.docx_conversion_qa/reference_render/
 

@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import sys
+import json
+from datetime import datetime
+from itertools import count
+from time import perf_counter
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
@@ -12,7 +16,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scoring_engine import LiveDemoEngine
-from scenarios import SCENARIOS
+from scenarios import SCENARIOS as SYNTHETIC_SCENARIOS
+from dataset_examples import load_dataset_examples
+
+SCENARIOS = load_dataset_examples() + SYNTHETIC_SCENARIOS
 from privacy import redact_text
 
 
@@ -20,6 +27,7 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # Initialize engine globally on server start
 _engine = None
+_request_numbers = count(1)
 
 
 METHOD_LABELS = (
@@ -52,6 +60,8 @@ def build_chapter4_summary(eval_report: dict) -> dict:
                 "f0_5": point["f0_5"],
                 "precision": point["precision"],
                 "recall": point["recall"],
+                "fp": point["fp"],
+                "fn": point["fn"],
                 "primary": key == "lstm_trajectory7",
             }
         )
@@ -148,7 +158,30 @@ def api_score():
         {"author": turn["author"], "text": redact_text(turn["text"].strip())}
         for turn in history
     ]
-    result = engine.score_turn(sanitized_history)
+    request_number = next(_request_numbers)
+    started = perf_counter()
+
+    def report(message: str) -> None:
+        stamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{stamp} | request {request_number}] {message}", flush=True)
+
+    latest = sanitized_history[-1]
+    print("\n" + "-" * 90, flush=True)
+    report(f"NEW MESSAGE | turn {len(sanitized_history)} | {latest['author']}")
+    report("Text: " + json.dumps(latest["text"], ensure_ascii=True))
+    report("Recomputing the conversation history with the frozen models on CPU.")
+    try:
+        result = engine.score_turn(sanitized_history, progress=report)
+    except Exception as error:
+        report(f"FAILED: {type(error).__name__}: {error}")
+        raise
+    for key, label in (("lstm", "Primary LSTM"), ("weighted", "Weighted scorer"), ("raw_layer1", "Maximum Layer 1")):
+        decision = result["decision"][key]
+        status = "FLAGGED" if decision["flagged"] else "below threshold"
+        report(f"{label}: {decision['score']:.4f} / {decision['threshold']:.4f} -> {status}")
+    keyword = result["decision"]["keyword"]
+    report("Keyword rule: " + ("FLAGGED | " + ", ".join(keyword["matched_terms"]) if keyword["flagged"] else "no matches"))
+    report(f"DONE | {len(sanitized_history)} turns | {perf_counter() - started:.2f}s")
     result["sanitized_history"] = sanitized_history
     return jsonify(result)
 

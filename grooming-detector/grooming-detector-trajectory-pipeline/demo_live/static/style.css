@@ -295,7 +295,7 @@ h2 {
 
 .example-picker {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px 10px;
   padding: 12px;
   border: 1px solid var(--line);
@@ -755,3 +755,19 @@ footer {
     width: 94%;
   }
 }
+
+/* Visible, accessible method comparisons for the synthetic illustrations. */
+.comparison-panel { padding: 18px; }
+.comparison-panel h2 { margin: 4px 0 10px; }
+#comparison-summary { font-size: 0.88rem; line-height: 1.5; }
+.comparison-table-wrap { overflow-x: auto; }
+.live-comparison-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.live-comparison-table caption { text-align: left; color: var(--muted); margin-bottom: 8px; }
+.live-comparison-table th, .live-comparison-table td { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.live-comparison-table th { font-weight: 700; }
+.live-comparison-table td:nth-child(2) { font-variant-numeric: tabular-nums; }
+.outcome-correct { background: #eef8f2; }
+.outcome-error { background: #fff1e9; }
+.comparison-footnote, .scenario-target { font-size: 0.76rem; line-height: 1.5; color: var(--muted); }
+.scenario-target { padding: 0 18px; }
+.results-column { min-width: 0; }

@@ -12,7 +12,7 @@
       <div>
         <p class="eyebrow">WASD thesis prototype</p>
         <h1>Conversation Model Demo</h1>
-        <p class="subtitle">See the held-out Chapter IV results, then try the frozen model on a synthetic conversation.</p>
+        <p class="subtitle">See the held-out Chapter IV results, then compare the frozen models on PAN12 validation conversations or synthetic examples.</p>
       </div>
       <div class="pipeline" aria-label="Model pipeline">
         <span>DistilBERT</span><b aria-hidden="true">&#8594;</b>
@@ -52,7 +52,7 @@
         <table class="results-table">
           <caption>Held-out point estimates reported in Chapter IV</caption>
           <thead>
-            <tr><th>Method</th><th>PR-AUC</th><th>F0.5</th><th>Precision</th><th>Recall</th></tr>
+            <tr><th>Method</th><th>PR-AUC</th><th>F0.5</th><th>Precision</th><th>Recall</th><th>FP</th><th>FN</th></tr>
           </thead>
           <tbody>
             {% for method in chapter4.methods %}
@@ -62,6 +62,7 @@
               <td>{{ '%.4f' % method.f0_5 }}</td>
               <td>{{ '%.4f' % method.precision }}</td>
               <td>{{ '%.4f' % method.recall }}</td>
+              <td>{{ method.fp }}</td><td>{{ method.fn }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -71,7 +72,7 @@
     </section>
 
     <p class="demo-note">
-      The live section below uses newly written synthetic chats to show how the frozen model produces those conversation-level decisions. It does not replay or expose final-test records.
+      PAN12 examples are original validation conversations selected from saved predictions to show where the LSTM succeeds and baselines fail. They use the dataset's conversation-level author labels. Synthetic examples use authored intent labels. The held-out report above remains the source for measured overall improvement.
     </p>
 
     <div class="demo-grid">
@@ -99,6 +100,7 @@
         </div>
 
         <p class="scenario-note" id="scenario-note">{{ scenarios[0].short_note }}</p>
+        <p class="scenario-target" id="scenario-target"></p>
 
         <div class="chat-window" id="chat-window" aria-live="polite">
           <div class="empty-state" id="chat-empty">
@@ -149,6 +151,20 @@
           <p class="safety-note">Below threshold does not mean safe. A reviewer keeps decision authority.</p>
         </section>
 
+        <section class="panel comparison-panel" aria-labelledby="comparison-heading">
+          <p class="step-label">Live comparison</p>
+          <h2 id="comparison-heading">Where the methods disagree</h2>
+          <p id="comparison-summary" aria-live="polite">Run the full chat to compare the final decisions.</p>
+          <div class="comparison-table-wrap">
+            <table class="live-comparison-table">
+              <caption>Each method uses its own frozen threshold</caption>
+              <thead><tr><th>Method</th><th>Score / cutoff</th><th>Decision</th><th>Outcome vs reference</th></tr></thead>
+              <tbody id="comparison-body"></tbody>
+            </table>
+          </div>
+          <p class="comparison-footnote">TP = positive detected; FN = positive missed; FP = negative flagged; TN = negative below threshold. PAN12 examples use the recorded author-derived conversation label; synthetic examples use authored intent. Outcomes appear after the full chat. Manual input has no reference label.</p>
+        </section>
+
         <section class="panel trajectory-panel">
           <div class="panel-heading compact-heading">
             <div>
@@ -192,21 +208,12 @@
             <span>DistilBERT context (current + up to 2 prior turns)</span>
             <p id="context-box">No context yet.</p>
           </div>
-
-          <details class="comparison-details">
-            <summary>Show comparison methods</summary>
-            <dl class="comparison-list">
-              <div><dt>Weighted scorer</dt><dd id="comp-weighted">--</dd></div>
-              <div><dt>Maximum Layer 1</dt><dd id="comp-layer1">--</dd></div>
-              <div><dt>Keyword rule</dt><dd id="comp-keyword">--</dd></div>
-            </dl>
-          </details>
         </section>
       </aside>
     </div>
 
     <footer>
-      Frozen endpoint: {{ endpoint }}. The example chats are synthetic and are not evaluation records.
+      Frozen endpoint: {{ endpoint }}. PAN12 validation examples and synthetic illustrations are identified in the scenario notes. Saved selection results are separate from live model outputs.
     </footer>
   </main>
 

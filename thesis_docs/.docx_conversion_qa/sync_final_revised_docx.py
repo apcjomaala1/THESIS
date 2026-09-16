@@ -621,7 +621,9 @@ def validate_output(
         [len(table.rows), len(table.columns)]
         for table in document.tables
     ]
-    if len(table_shapes) != 3 or table_shapes[1:] != [[8, 2], [4, 3]]:
+    if len(table_shapes) != 4 or table_shapes[1:] != [
+        [5, 3], [8, 2], [4, 3]
+    ]:
         raise SyncError(f'Unexpected table structure: {table_shapes}')
     numbered = count_numbered_paragraphs(document)
     visible_markers = count_visible_list_markers(document)
@@ -742,12 +744,16 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             set(numbering_map.values()),
         )
         content_tables = output_doc.tables[1:]
-        if len(content_tables) != 2:
+        if len(content_tables) != 3:
             raise SyncError(
-                f'Expected two content tables; found {len(content_tables)}'
+                f'Expected three content tables; found {len(content_tables)}'
             )
-        set_content_table_geometry(content_tables[0], [6624, 2736])
-        set_content_table_geometry(content_tables[1], [2592, 4896, 1872])
+        # Chapter II OGDM-to-feature mapping, Chapter III environment table,
+        # and Chapter III model-input table. All widths total the preserved
+        # 6.5-inch text block (9,360 DXA).
+        set_content_table_geometry(content_tables[0], [2950, 3000, 3410])
+        set_content_table_geometry(content_tables[1], [6624, 2736])
+        set_content_table_geometry(content_tables[2], [2592, 4896, 1872])
 
         output.parent.mkdir(parents=True, exist_ok=True)
         output_doc.save(output)

@@ -1,0 +1,421 @@
+{
+  "frozen_models_changed": false,
+  "method": "PowerPoint COM fallback: skill dependency loader and artifact-tool unavailable",
+  "source_sha256": "EB0F97D9E4C0060774DB4D07149F2B01F50CBF7475A4656CE29BAD9148BC6CA8",
+  "text_fit_warnings": [],
+  "output_sha256": "8AA570A20855E238BC72D983E6C003C623AE85D993AED59ABB87F09E22A161FF",
+  "source": "C:\\Projects\\THESIS\\WASD - Thesis 2 - final revised.pptx",
+  "slides": 39,
+  "speaker_script": "C:\\Projects\\THESIS\\thesis_docs\\PRESENTATION_SPEAKER_SCRIPT.md",
+  "output": "C:\\Projects\\THESIS\\WASD - Thesis 2 - panel revised.pptx",
+  "date": "2026-09-16",
+  "inventory": [
+    {
+      "slide": 1,
+      "title": "CONVERSATION TRAJECTORY LAB",
+      "part": "ppt/slides/slide1.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 1
+    },
+    {
+      "slide": 2,
+      "title": "Meet Our Team",
+      "part": "ppt/slides/slide2.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 2
+    },
+    {
+      "slide": 3,
+      "title": "Introduction",
+      "part": "ppt/slides/slide3.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 3
+    },
+    {
+      "slide": 4,
+      "title": "Template asset",
+      "part": "ppt/slides/slide4.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 4
+    },
+    {
+      "slide": 5,
+      "title": "Statement of the Problem",
+      "part": "ppt/slides/slide5.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 5
+    },
+    {
+      "slide": 6,
+      "title": "Research Questions",
+      "part": "ppt/slides/slide6.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 6
+    },
+    {
+      "slide": 7,
+      "title": "Objectives of the Study",
+      "part": "ppt/slides/slide7.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 7
+    },
+    {
+      "slide": 8,
+      "title": "Research Alignment: Existing Methods",
+      "part": "ppt/slides/slide8.xml",
+      "hidden": false,
+      "tables": 1,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 8
+    },
+    {
+      "slide": 9,
+      "title": "Research Alignment: Module and Improvement",
+      "part": "ppt/slides/slide9.xml",
+      "hidden": false,
+      "tables": 1,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 9
+    },
+    {
+      "slide": 10,
+      "title": "What the Study Built",
+      "part": "ppt/slides/slide10.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 10
+    },
+    {
+      "slide": 11,
+      "title": "Dataset and Evaluation Scope",
+      "part": "ppt/slides/slide11.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 11
+    },
+    {
+      "slide": 12,
+      "title": "Why the Study Matters",
+      "part": "ppt/slides/slide12.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 12
+    },
+    {
+      "slide": 13,
+      "title": "Review of Related Literature",
+      "part": "ppt/slides/slide13.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 13
+    },
+    {
+      "slide": 14,
+      "title": "Why Context and Sequence Matter",
+      "part": "ppt/slides/slide14.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 14
+    },
+    {
+      "slide": 15,
+      "title": "Theory and Dataset Selection",
+      "part": "ppt/slides/slide15.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 15
+    },
+    {
+      "slide": 16,
+      "title": "How OGDM Informs the Features",
+      "part": "ppt/slides/slide17.xml",
+      "hidden": false,
+      "tables": 1,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 17
+    },
+    {
+      "slide": 17,
+      "title": "Methodology",
+      "part": "ppt/slides/slide16.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 16
+    },
+    {
+      "slide": 18,
+      "title": "AI Model Architecture",
+      "part": "ppt/slides/slide18.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 18
+    },
+    {
+      "slide": 19,
+      "title": "Data Preparation and Controls",
+      "part": "ppt/slides/slide19.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 19
+    },
+    {
+      "slide": 20,
+      "title": "Why Authors Stay in One Partition",
+      "part": "ppt/slides/slide21.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 21
+    },
+    {
+      "slide": 21,
+      "title": "Models Compared Fairly",
+      "part": "ppt/slides/slide20.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 20
+    },
+    {
+      "slide": 22,
+      "title": "Evaluation Measures",
+      "part": "ppt/slides/slide22.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 22
+    },
+    {
+      "slide": 23,
+      "title": "Why We Use F0.5",
+      "part": "ppt/slides/slide24.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 24
+    },
+    {
+      "slide": 24,
+      "title": "Results and Conclusions",
+      "part": "ppt/slides/slide23.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 23
+    },
+    {
+      "slide": 25,
+      "title": "Frozen Experimental Setup",
+      "part": "ppt/slides/slide25.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 25
+    },
+    {
+      "slide": 26,
+      "title": "Held-Out Results",
+      "part": "ppt/slides/slide26.xml",
+      "hidden": false,
+      "tables": 1,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 26
+    },
+    {
+      "slide": 27,
+      "title": "Detection Performance Across Methods",
+      "part": "ppt/slides/slide28.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 1,
+      "notes": true,
+      "reviewed_render_index": 28
+    },
+    {
+      "slide": 28,
+      "title": "The Primary LSTM Found 40 of 44 Positives",
+      "part": "ppt/slides/slide31.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 1,
+      "notes": true,
+      "reviewed_render_index": 31
+    },
+    {
+      "slide": 29,
+      "title": "Fewer Missed Cases and False Alerts",
+      "part": "ppt/slides/slide34.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 1,
+      "notes": true,
+      "reviewed_render_index": 34
+    },
+    {
+      "slide": 30,
+      "title": "Sequence Modeling Added Value",
+      "part": "ppt/slides/slide27.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 27
+    },
+    {
+      "slide": 31,
+      "title": "The Four Missed Conversations Were Short",
+      "part": "ppt/slides/slide29.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 1,
+      "notes": true,
+      "reviewed_render_index": 29
+    },
+    {
+      "slide": 32,
+      "title": "Conclusions by Research Objective",
+      "part": "ppt/slides/slide30.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 30
+    },
+    {
+      "slide": 33,
+      "title": "Next Evaluation Steps",
+      "part": "ppt/slides/slide32.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 32
+    },
+    {
+      "slide": 34,
+      "title": "The LSTM Reduced Missed Cases",
+      "part": "ppt/slides/slide33.xml",
+      "hidden": false,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 33
+    },
+    {
+      "slide": 35,
+      "title": "Template asset",
+      "part": "ppt/slides/slide35.xml",
+      "hidden": true,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 35
+    },
+    {
+      "slide": 36,
+      "title": "PACIFIC COLLEGE",
+      "part": "ppt/slides/slide36.xml",
+      "hidden": true,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 36
+    },
+    {
+      "slide": 37,
+      "title": "Sustainable Development Goals ",
+      "part": "ppt/slides/slide37.xml",
+      "hidden": true,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 37
+    },
+    {
+      "slide": 38,
+      "title": "Template asset",
+      "part": "ppt/slides/slide38.xml",
+      "hidden": true,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 38
+    },
+    {
+      "slide": 39,
+      "title": "Template asset",
+      "part": "ppt/slides/slide39.xml",
+      "hidden": true,
+      "tables": 0,
+      "charts": 0,
+      "notes": true,
+      "reviewed_render_index": 39
+    }
+  ],
+  "source_references": [
+    "thesis_docs/Finals_Revised_Paper_WASD.md",
+    "thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md",
+    "thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md",
+    "Alignment Table.docx"
+  ],
+  "render_passes": 1,
+  "visible_slides": 34,
+  "native_charts": 4,
+  "chart_values_verified_against_chapter_4": true,
+  "speaker_script_sha256": "4AA23CF32638127C3CF18C04E11D11B9CB4F719C65CF598974DF2F10551DB520",
+  "visual_review": "Inspected all 39 PowerPoint-rendered slides once at 960 x 540. Corrected slide order and inherited numeric cell alignment afterward, with structural checks and no repeated render.",
+  "final_changes_after_visual_review": [
+    "Grouped related slides before conclusions",
+    "Restored team introduction visibility and notes",
+    "Centered inherited numeric results cells"
+  ]
+}

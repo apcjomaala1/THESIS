@@ -1,0 +1,145 @@
+{
+  "charts": [
+    {
+      "slide_part": "ppt/slides/slide28.xml",
+      "chart_part": "chartPanel1.xml",
+      "spec": {
+        "categories": [
+          "Keyword",
+          "Maximum L1",
+          "Weighted",
+          "Primary LSTM",
+          "Enhanced LSTM"
+        ],
+        "legend": true,
+        "series": [
+          {
+            "color": 9197622,
+            "values": [
+              0.4451,
+              0.5523,
+              0.805,
+              0.9153,
+              0.9483
+            ],
+            "name": "PR-AUC"
+          },
+          {
+            "color": 5666341,
+            "values": [
+              0.6888,
+              0.5529,
+              0.75,
+              0.8621,
+              0.8836
+            ],
+            "name": "F0.5"
+          }
+        ],
+        "number_format": "0.0000",
+        "maximum": 1.1
+      },
+      "workbook_verified": true
+    },
+    {
+      "slide_part": "ppt/slides/slide29.xml",
+      "chart_part": "chartPanel2.xml",
+      "spec": {
+        "categories": [
+          "Missed case 1",
+          "Missed case 2",
+          "Missed case 3",
+          "Missed case 4"
+        ],
+        "legend": false,
+        "series": [
+          {
+            "color": 1481429,
+            "values": [
+              2,
+              11,
+              13,
+              26
+            ],
+            "name": "Conversation length in turns"
+          }
+        ],
+        "number_format": "0",
+        "maximum": 40
+      },
+      "workbook_verified": true
+    },
+    {
+      "slide_part": "ppt/slides/slide31.xml",
+      "chart_part": "chartPanel3.xml",
+      "spec": {
+        "categories": [
+          "Keyword",
+          "Maximum L1",
+          "Weighted",
+          "Primary LSTM",
+          "Enhanced LSTM"
+        ],
+        "legend": false,
+        "series": [
+          {
+            "color": 5666341,
+            "values": [
+              0.6136,
+              0.5227,
+              0.8182,
+              0.9091,
+              0.9318
+            ],
+            "name": "Recall"
+          }
+        ],
+        "number_format": "0.0%",
+        "maximum": 1.1
+      },
+      "workbook_verified": true
+    },
+    {
+      "slide_part": "ppt/slides/slide34.xml",
+      "chart_part": "chartPanel4.xml",
+      "spec": {
+        "categories": [
+          "Keyword",
+          "Maximum L1",
+          "Weighted",
+          "Primary LSTM",
+          "Enhanced LSTM"
+        ],
+        "legend": true,
+        "series": [
+          {
+            "color": 1481429,
+            "values": [
+              17,
+              21,
+              8,
+              4,
+              3
+            ],
+            "name": "Missed positives (FN)"
+          },
+          {
+            "color": 9197622,
+            "values": [
+              11,
+              18,
+              13,
+              7,
+              6
+            ],
+            "name": "False alerts (FP)"
+          }
+        ],
+        "number_format": "0",
+        "maximum": 25
+      },
+      "workbook_verified": true
+    }
+  ],
+  "output_sha256": "ff34d19b6567dda9ac1f96dcfc314365d0b9a09498753df06651237fd51c9c52"
+}

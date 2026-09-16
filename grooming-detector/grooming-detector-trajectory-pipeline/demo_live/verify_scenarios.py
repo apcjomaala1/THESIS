@@ -21,8 +21,14 @@ def verify() -> dict:
 
     for scenario in SCENARIOS:
         final_result = None
+        scored_prefix_flags = []
         for prefix_length in range(1, len(scenario["turns"]) + 1):
             final_result = engine.score_turn(scenario["turns"][:prefix_length])
+            scored_prefix_flags.append(bool(final_result["decision"]["lstm"]["flagged"]))
+            if scenario["id"] == "long_private_pressure":
+                for method in scenario["comparison_methods"]:
+                    if final_result["decision"][method]["flagged"]:
+                        failures.append(f"{scenario['id']}: {method} flagged prefix {prefix_length}")
             if final_result.get("turns_count") != prefix_length:
                 failures.append(
                     f"{scenario['id']}: prefix {prefix_length} did not score completely"
@@ -30,6 +36,8 @@ def verify() -> dict:
 
         assert final_result is not None
         flags = final_result["trajectory_curve"]["lstm_flags"]
+        if scored_prefix_flags != flags:
+            failures.append(f"{scenario['id']}: independently scored prefixes differ from trajectory")
         first_flag = next((index + 1 for index, flag in enumerate(flags) if flag), None)
         actual_flag = bool(final_result["decision"]["lstm"]["flagged"])
         expected_flag = scenario["expected_lstm_flagged"]
@@ -44,6 +52,24 @@ def verify() -> dict:
                 f"{scenario['id']}: expected first flag {expected_first}, got {first_flag}"
             )
 
+        actual_flags = {
+            method: bool(decision["flagged"])
+            for method, decision in final_result["decision"].items()
+        }
+        for method, expected in scenario["expected_flags"].items():
+            if actual_flags.get(method) != expected:
+                failures.append(
+                    f"{scenario['id']}: {method} expected flagged={expected}, "
+                    f"got {actual_flags.get(method)}"
+                )
+        if scenario["comparison_methods"]:
+            target = scenario["intended_review"]
+            if actual_flags["lstm"] != target:
+                failures.append(f"{scenario['id']}: LSTM does not match authored intent")
+            for method in scenario["comparison_methods"]:
+                if actual_flags[method] == target:
+                    failures.append(f"{scenario['id']}: no intended contrast with {method}")
+
         rows.append(
             {
                 "id": scenario["id"],
@@ -52,6 +78,8 @@ def verify() -> dict:
                 "lstm_threshold": final_result["decision"]["lstm"]["threshold"],
                 "final_flagged": actual_flag,
                 "first_flag_turn": first_flag,
+                "method_flags": actual_flags,
+                "decisions": final_result["decision"],
             }
         )
 

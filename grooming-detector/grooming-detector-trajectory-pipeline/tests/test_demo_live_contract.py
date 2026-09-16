@@ -61,9 +61,12 @@ def test_files_have_clean_text_encoding():
 
 
 def test_demo_scenarios_document_verified_expected_behavior():
-    assert len(SCENARIOS) == 3
+    assert len(SCENARIOS) == 6
     assert {scenario["id"] for scenario in SCENARIOS} == {
         "private_meeting_pressure",
+        "long_private_pressure",
+        "school_project_false_alarm",
+        "safety_lesson_false_alarm",
         "routine_project_chat",
         "concerning_but_below",
     }
@@ -71,3 +74,24 @@ def test_demo_scenarios_document_verified_expected_behavior():
         assert isinstance(scenario["expected_lstm_flagged"], bool)
         assert "expected_first_flag_turn" in scenario
         assert len(scenario["turns"]) >= 2
+
+
+def test_comparison_examples_have_explicit_reference_intent_and_baseline_contracts():
+    for scenario in SCENARIOS:
+        assert isinstance(scenario["intended_review"], bool)
+        assert set(scenario["expected_flags"]) == {"lstm", "weighted", "raw_layer1", "keyword"}
+        for baseline in scenario["comparison_methods"]:
+            assert scenario["expected_flags"]["lstm"] == scenario["intended_review"]
+            assert scenario["expected_flags"][baseline] != scenario["intended_review"]
+    school = next(s for s in SCENARIOS if s["id"] == "school_project_false_alarm")
+    assert school["expected_first_flag_turn"] == 3
+    assert "briefly flag turn 3" in school["short_note"]
+
+
+def test_long_example_covers_all_three_baselines():
+    scenario = next(s for s in SCENARIOS if s["id"] == "long_private_pressure")
+    assert len(scenario["turns"]) == 40
+    assert set(scenario["comparison_methods"]) == {"weighted", "raw_layer1", "keyword"}
+    assert scenario["expected_flags"] == {
+        "lstm": True, "weighted": False, "raw_layer1": False, "keyword": False
+    }

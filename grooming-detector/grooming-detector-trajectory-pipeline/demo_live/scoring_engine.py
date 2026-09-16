@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # Ensure PyTorch avoids heavy CUDA DLL allocations when running CPU inference
 os.environ["CUDA_MODULE_LOADING"] = "LAZY"
@@ -152,10 +152,12 @@ class LiveDemoEngine:
         print("=" * 60)
 
     def score_turn(
-        self, conversation_history: list[dict[str, Any]]
+        self, conversation_history: list[dict[str, Any]],
+        progress: Callable[[str], None] | None = None,
     ) -> dict[str, Any]:
         """Score the current conversation prefix with the frozen pipeline."""
         turn_count = len(conversation_history)
+        report = progress if progress is not None else lambda message: None
         if turn_count == 0:
             return {"error": "Empty conversation"}
 
@@ -169,6 +171,7 @@ class LiveDemoEngine:
         embeddings: list[np.ndarray] = []
         contexts: list[str] = []
 
+        report(f"[1/3] Running DistilBERT and base embeddings for all {turn_count} messages...")
         with torch.inference_mode():
             for index in range(turn_count):
                 first = max(0, index - self.context_turns)
@@ -210,10 +213,15 @@ class LiveDemoEngine:
                 embeddings.append(
                     embedding.float().cpu().numpy()[0].astype(np.float32)
                 )
+                report(
+                    f"  Message {index + 1:>2}/{turn_count}: Layer 1 = {proxy_scores[-1]:.4f}; "
+                    f"context {first + 1}-{index + 1}; embedding ready"
+                )
 
         score_array = np.asarray(proxy_scores, dtype=np.float32)
         embedding_array = np.asarray(embeddings, dtype=np.float32)
 
+        report("[2/3] Computing the seven trajectory features...")
         features = compute_sequence_features(
             score_array,
             embedding_array,
@@ -223,6 +231,10 @@ class LiveDemoEngine:
             self.drop_threshold,
         )
 
+        report("  Latest features: " + ", ".join(
+            f"{name}={float(value):.4f}" for name, value in zip(FEATURE_NAMES, features[-1])
+        ))
+        report(f"[3/3] Running the LSTM over the {turn_count}-turn feature sequence...")
         values = torch.from_numpy(features).unsqueeze(0).to(self.device)
         lengths = torch.tensor([turn_count], dtype=torch.long, device=self.device)
         with torch.inference_mode():

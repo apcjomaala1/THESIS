@@ -83,6 +83,8 @@ This study seeks to answer the following questions:
 
 For quantitative evaluation, the study tests these questions through a common conversation-level task and four controlled comparison methods: a training-derived keyword rule, maximum Layer 1 proxy aggregation, a validation-fitted weighted trajectory scorer, and LSTM-based sequence models. This design directly measures whether contextual and behavioral trajectory modeling improves recall, false-negative reduction, and precision-recall performance over the comparison methods.
 
+Accordingly, the system's operative output is a conversation-level priority for moderator review. Turn-level values are intermediate signals used to model the developing interaction; the evaluated decision does not assign an offender identity to a user or label a particular message as the onset of grooming. This distinction keeps the research questions, model output, and reported results aligned to one measurable task.
+
 ## 1.3 Objectives of the Study
 
 __General Objective:__ Develop an AI-powered moderation module that enhances existing chat moderation systems by incorporating behavioral pattern analysis and contextual understanding to detect grooming-related interactions in chat environments.
@@ -106,11 +108,11 @@ The study compares the proposed seven-feature LSTM with a training-derived keywo
 
 ### 1.4.2 Limitations of the Study
 
-PAN12 does not provide exhaustive grooming labels for every training message. The author-derived Layer 1 target is therefore a weak proxy: a turn written by a listed author is positive for the training target even when its isolated wording is ordinary. The primary experiment consequently evaluates conversation-level predator-author presence and does not claim validated grooming-message classification, grooming-stage recognition, or true grooming-onset detection.
+PAN12 provides verified predator-author membership rather than exhaustive grooming labels for every training message. The study therefore uses author membership as Layer 1 supervision and evaluates the resulting architecture through the consistent conversation-level endpoint. A turn written by a listed author is positive for the Layer 1 training target even when its isolated wording is ordinary; message-level grooming classification, stage recognition, and onset localization require separately reviewed annotations.
 
-The completed evaluation uses one selected corpus; locally generated synthetic conversations and other unreviewed candidate datasets are excluded. Generalization to contemporary gaming slang, newly developed obfuscation strategies, Filipino or Taglish communication, and external platforms requires dedicated external evaluation. No independent English-language filter was applied.
+The completed evaluation uses one established historical benchmark; locally generated synthetic conversations and other unreviewed candidate datasets are excluded. The controlled experiment establishes the architecture's performance under the selected dataset conditions. Dedicated external evaluation on representative contemporary communication, including current slang, newly developed obfuscation strategies, Filipino or Taglish communication, and other platform environments, is needed to measure transfer. No independent English-language filter was applied.
 
-The prototype operates through controlled offline sequential replay and was not tested with real users or integrated into a live platform. Production latency, throughput, scalability, moderator outcomes, fairness, privacy performance, and autonomous enforcement remain outside the completed evaluation. Its present role is an experimentally evaluated moderation module and a basis for future human-review integration.
+The completed study evaluates model effectiveness through controlled offline sequential replay rather than live-platform integration. Operational evaluation is the next stage and should measure end-to-end latency, throughput, scalability, moderator outcomes, fairness, and privacy performance on representative traffic. The module is designed to prioritize human review, not to perform autonomous enforcement.
 
 The system builds upon pretrained language models and a dyadic conversation design. Its performance is therefore influenced by the limitations of those models, the age and composition of the selected corpus, class imbalance, and the extent to which the selected trajectory features represent behavior in other environments.
 
@@ -232,7 +234,16 @@ The principal theoretical framework adopted in this study is the Online Grooming
 
 OGDM provides a strong theoretical reason to examine interaction trajectories. Its processes may emerge gradually, recur, overlap, or change direction across multiple turns. Consequently, a moderation model that retains conversational history and models changes over time is better aligned with the discourse structure of grooming than a system limited to isolated keywords.
 
-The study translates this theoretical orientation into computationally inspectable trajectory signals. Proxy-score level and change represent the accumulation and fluctuation of contextual evidence; spike and spike-then-drop features represent abrupt increases and subsequent retreat; semantic distance from a training-derived benign centroid represents movement away from ordinary conversational content; and cumulative turn-taking imbalance represents asymmetry in participation. These features are theoretically informed behavioral indicators rather than direct annotations of OGDM processes; stage-specific conclusions would require independently reviewed discourse-stage labels.
+The study translates this theoretical orientation into computationally inspectable trajectory signals. Proxy-score level and change represent the accumulation and fluctuation of contextual evidence; spike and spike-then-drop features represent abrupt increases and subsequent retreat; semantic distance from a training-derived benign centroid represents movement away from ordinary conversational content; and cumulative turn-taking imbalance represents asymmetry in participation.
+
+| OGDM-informed conversational property | Operational indicators | Role in the trajectory model |
+|---|---|---|
+| Accumulation and persistence of contextual evidence | Peak proxy score, current proxy score, and spike count | Represent whether concerning contextual evidence appears and persists across turns |
+| Escalation, boundary testing, and retreat | Rate of change and spike-then-drop | Represent abrupt changes and subsequent reduction in the proxy trajectory |
+| Movement away from ordinary conversational content | Topic distance from the training-derived benign centroid | Represent semantic deviation from the benign training reference |
+| Interaction structure within the dyad | Cumulative turn-taking imbalance | Represent sustained asymmetry in participation |
+
+This mapping provides the theoretical motivation for each feature family. The features operationalize cross-turn properties for model testing; they are not direct annotations of OGDM stages, which would require independently reviewed discourse-stage labels.
 
 OGDM guides why cross-turn dynamics are modeled, which forms of progression are considered relevant, and why a recurrent architecture is appropriate. The empirical experiment tests whether the resulting sequence representation improves conversation-level detection compared with static aggregation. The theory informs feature design and architectural hypotheses, while the selected dataset provides the controlled evaluation.
 
@@ -320,6 +331,8 @@ Text normalization is deliberately conservative: character encoding and whitespa
 
 The dataset is partitioned before negative sampling, context caching, centroid construction, model fitting, or threshold selection. Conversations are represented as vertices in a graph; any conversations sharing an author are connected. Every resulting connected component is assigned wholly to one partition, creating zero conversation overlap and zero author overlap across training, validation, and final test data.
 
+This design prevents the same participant's recurring language and interaction patterns from appearing in both development and evaluation data. The final test therefore measures transfer to author-connected groups that were unseen during training and validation, rather than recognition of participants already encountered by the model.
+
 The locked manifest assigns 13,031 conversations to training, 1,827 to validation, and 1,862 to the final test; an additional 1,847 conversations are excluded from the primary experiment. The corresponding positive-conversation counts are 319, 49, 44, and 42. Partition assignment uses connected-component membership, partition size, and class balance rather than model scores or text-derived features. The manifest records zero conversation, author, and connected-component overlap across all groups together with the random seed, source-data hash, and manifest hash.
 
 The training partition is used for parameter estimation. After partitioning, negative Layer 1 training rows were downsampled to three negatives per positive row; validation and final-test distributions remained untouched. The validation partition was used for checkpoint selection, hyperparameter selection, comparator fitting, and threshold selection. The locked final test was evaluated once after code, checkpoints, thresholds, feature definitions, and reporting rules were frozen.
@@ -399,7 +412,9 @@ F_{0.5}=\frac{1.25PR}{0.25P+R}.
 
 PR-AUC is emphasized alongside thresholded metrics because positive conversations are rare. Validation PR-AUC selects checkpoints, while validation F0.5 selects operating thresholds; no threshold is retuned on the final test. Ninety-five-percent confidence intervals and paired method-difference intervals are estimated by bootstrap resampling connected-author components so that conversations linked by an author remain grouped.
 
-Prefix-level scores and first-threshold-crossing turns are summarized as exploratory sequence behavior. Onset accuracy is outside the present analysis because the selected dataset does not provide exhaustive first-grooming-turn annotations.
+F0.5 is used for operating-threshold selection because the module feeds a finite human-review queue: false positives consume reviewer capacity and can create alert fatigue, so precision receives greater weight at the selected operating point. In the F0.5 formulation, the beta-squared term gives precision four times the weighting of recall. Recall and false-negative count remain separately reported safety outcomes and directly evaluate the study's false-negative-reduction objective; the threshold is not described as recall-optimized.
+
+Prefix-level scores and first-threshold-crossing turns show how the model's conversation priority develops as evidence accumulates. They do not constitute onset labels. A separate onset study would require expert-reviewed first-onset annotations and time-to-detection evaluation.
 
 ## 3.6 Ethical Considerations
 

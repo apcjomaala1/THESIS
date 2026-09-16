@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "completed_local_date": "2026-09-15",
+  "source": "C:\\Projects\\THESIS\\thesis_docs\\Finals_Revised_Paper_WASD.md",
+  "output": "C:\\Projects\\THESIS\\Finals Revised Paper WASD.docx",
+  "source_sha256": "DC631F1885E91009AB4DA8D047168F525E415240ECCDFBCED940E9E16DF56127",
+  "output_sha256": "D5FDF004C562AA0B134124149C764D6015021C5B3E3C6A3E79A221A142D2C60C",
+  "scope": "Synchronized the authoritative Chapters I-III Markdown into its established Word counterpart.",
+  "preserved": [
+    "existing cover and author table",
+    "original title",
+    "research questions",
+    "adviser-locked objectives",
+    "references and hyperlinks",
+    "chapter page-break anchors",
+    "Letter portrait page geometry with one-inch margins"
+  ],
+  "structural_qa": {
+    "paragraphs": 213,
+    "heading_counts": {
+      "Heading 1": 4,
+      "Heading 2": 15,
+      "Heading 3": 20
+    },
+    "table_shapes": [[2, 2], [5, 3], [8, 2], [4, 3]],
+    "sections": 1,
+    "comments": 0,
+    "tracked_insertions": 0,
+    "tracked_deletions": 0,
+    "fields": 0
+  },
+  "visual_qa": {
+    "passes": 1,
+    "pages_inspected": 22,
+    "clipping_observed": false,
+    "overlap_observed": false,
+    "notes": "The OGDM mapping table repeats its header across a conventional page break. No iterative render-fix-render loop was performed."
+  },
+  "rendering": {
+    "docx_to_pdf": "LibreOffice through the packaged document renderer",
+    "page_rasterization": "PyMuPDF fallback because system Poppler was unavailable"
+  },
+  "excluded_from_this_sync": "The separate complete Chapters I-V Word manuscript was not modified.",
+  "model_or_result_changes": false
+}

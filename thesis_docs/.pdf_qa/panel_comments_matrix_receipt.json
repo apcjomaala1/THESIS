@@ -1,0 +1,25 @@
+{
+  "artifact": "output/pdf/WASD_Final_Panel_Comments_Matrix.pdf",
+  "artifact_sha256": "E1F2AE4F6F5203C69CC769F4E06B8977EA0A3D8FD8FF99DFA42960170807F928",
+  "artifact_size_bytes": 70267,
+  "source": "thesis_docs/PANEL_COMMENTS_MATRIX.md",
+  "source_sha256": "17BE5CB82D1355D18B47ADDB9F008351EEA6CDC4EC5B11809559BAE8D6EECFA1",
+  "generator": "thesis_docs/.pdf_qa/generate_panel_comments_matrix_pdf.py",
+  "generator_sha256": "378A6A3A4311A96F7C36F126B6661EB3E7686800522B4C767A66F0CC7EED8CB9",
+  "generated_on": "2026-09-15",
+  "format": "A4 landscape PDF",
+  "page_count": 3,
+  "comment_rows": 15,
+  "checks": {
+    "pdf_reopened_with_pypdf": true,
+    "all_comment_ids_1_to_15_extracted": true,
+    "repeated_table_header_present": true,
+    "core_defense_statement_present": true,
+    "frozen_result_0_8621_present": true,
+    "rendered_with_pymupdf": true,
+    "visual_pages_inspected": 3,
+    "clipping_or_overlap_found": false,
+    "render_iterations": 1
+  },
+  "scope": "PDF export only; source manuscript, objectives, model artifacts, thresholds, and results were not changed."
+}

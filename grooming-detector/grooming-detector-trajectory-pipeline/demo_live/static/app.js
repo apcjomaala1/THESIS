@@ -134,12 +134,7 @@ function updateResults(data) {
   setValue("val-imbalance", features.turn_taking_imbalance);
   document.getElementById("context-box").textContent = latest.context;
 
-  document.getElementById("comp-weighted").textContent = formatComparator(decision.weighted);
-  document.getElementById("comp-layer1").textContent = formatComparator(decision.raw_layer1);
-  const terms = decision.keyword.matched_terms || [];
-  document.getElementById("comp-keyword").textContent = decision.keyword.flagged
-    ? `matched: ${terms.join(", ")}`
-    : "no match";
+  updateComparison(data);
   drawTrajectory(data.trajectory_curve);
 }
 
@@ -147,8 +142,70 @@ function setValue(id, value, digits = 4) {
   document.getElementById(id).textContent = digits === null ? String(value) : Number(value).toFixed(digits);
 }
 
-function formatComparator(item) {
-  return `${Number(item.score).toFixed(4)} · ${item.flagged ? "flagged" : "below"}`;
+const comparisonMethods = [
+  ["lstm", "Primary LSTM"],
+  ["weighted", "Weighted scorer"],
+  ["raw_layer1", "Maximum Layer 1"],
+  ["keyword", "Keyword rule"],
+];
+
+function updateComparison(data) {
+  const complete = Boolean(data && activeScenario &&
+    data.sanitized_history.length === activeScenario.turns.length &&
+    data.sanitized_history.every((turn, i) =>
+      turn.author === activeScenario.turns[i].author && turn.text === activeScenario.turns[i].text));
+  const datasetExample = activeScenario?.source?.kind === "pan12_validation";
+  const referenceLabel = datasetExample ? Boolean(activeScenario.source.reference_label) : activeScenario?.intended_review;
+  const target = complete ? referenceLabel : null;
+  const body = document.getElementById("comparison-body");
+  body.replaceChildren();
+  for (const [key, label] of comparisonMethods) {
+    const item = data?.decision[key];
+    const row = document.createElement("tr");
+    const correct = target !== null && item && item.flagged === target;
+    if (target !== null && item) row.className = correct ? "outcome-correct" : "outcome-error";
+    const title = document.createElement("th");
+    title.scope = "row";
+    title.textContent = label;
+    row.appendChild(title);
+    const score = !item ? "--" : key === "keyword"
+      ? (item.matched_terms.length ? `Match: ${item.matched_terms.join(", ")}` : "No term matched")
+      : `${Number(item.score).toFixed(4)} / ${Number(item.threshold).toFixed(4)}`;
+    const outcome = target === null ? (data ? "No reference label" : "--")
+      : target ? (item.flagged ? "TP: caught" : "FN: missed")
+      : (item.flagged ? "FP: false alarm" : "TN: below threshold");
+    for (const text of [score, !item ? "Waiting" : item.flagged ? "Flagged" : "Below threshold", outcome]) {
+      const cell = document.createElement("td");
+      cell.textContent = text;
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  }
+  let summary = "Run the full chat to compare the final decisions.";
+  if (data && !activeScenario) {
+    summary = "Manual input: decisions can be compared, but FP/FN cannot be assigned without a reference label.";
+  } else if (data && !complete) {
+    summary = `Prefix ${data.turns_count} of ${activeScenario.turns.length}: decisions may change. FP/FN labels appear after the full chat.`;
+  } else if (complete) {
+    const lstm = data.decision.lstm;
+    const corrected = comparisonMethods.filter(([key]) => key !== "lstm" &&
+      lstm.flagged === target && data.decision[key].flagged !== target).map(([, label]) => label);
+    const positiveDescription = datasetExample ? "dataset-positive conversation" : "intended review case";
+    const negativeDescription = datasetExample ? "dataset-negative conversation" : "benign example";
+    if (corrected.length) {
+      summary = target
+        ? `Miss caught: the LSTM flags this ${positiveDescription}; ${corrected.join(" and ")} ${corrected.length === 1 ? "misses" : "miss"} it.`
+        : `False alarm avoided at the end: the LSTM is below threshold for this ${negativeDescription}; ${corrected.join(" and ")} ${corrected.length === 1 ? "flags" : "flag"} it.`;
+    } else if (lstm.flagged !== target) {
+      summary = target ? `Limitation: the LSTM misses this ${positiveDescription}.` : `Limitation: the LSTM flags this ${negativeDescription}.`;
+    } else {
+      summary = "The methods agree on this example; it does not demonstrate an advantage.";
+    }
+    if (!target && data.trajectory_curve.lstm_flags.some(Boolean)) {
+      summary += " The LSTM also flagged an earlier prefix; this is a final-conversation correction.";
+    }
+  }
+  document.getElementById("comparison-summary").textContent = summary;
 }
 
 function drawTrajectory(curve) {
@@ -191,12 +248,13 @@ function resetResults() {
   document.getElementById("score-fill").style.width = "0%";
   document.getElementById("decision-text").textContent = "Add a message to run DistilBERT and the LSTM.";
   document.getElementById("latest-turn-label").textContent = "no turn yet";
-  ["val-peak", "val-current", "val-spikes", "val-drop", "val-rate", "val-topic", "val-imbalance", "comp-weighted", "comp-layer1", "comp-keyword"].forEach((id) => {
+  ["val-peak", "val-current", "val-spikes", "val-drop", "val-rate", "val-topic", "val-imbalance"].forEach((id) => {
     document.getElementById(id).textContent = "--";
   });
   document.getElementById("context-box").textContent = "No context yet.";
   document.getElementById("path-lstm").setAttribute("d", "");
   document.getElementById("chart-points").replaceChildren();
+  updateComparison(null);
 }
 
 function selectScenario(id) {
@@ -210,6 +268,12 @@ function selectScenario(id) {
   speakerSelect.disabled = !manual;
   messageInput.disabled = !manual;
   document.getElementById("btn-send").disabled = !manual;
+  const datasetExample = activeScenario?.source?.kind === "pan12_validation";
+  document.getElementById("scenario-target").textContent = manual
+    ? "Manual conversation: no reference label; correctness cannot be assigned."
+    : datasetExample
+      ? `Source: PAN12 validation | ${activeScenario.source.conversation_id} | Reference label ${activeScenario.source.reference_label}: ${activeScenario.source.reference_label ? "contains a listed predator author" : "contains no listed predator author"}. This is a conversation-level label, not a label for each message.`
+      : `Authored intent: ${activeScenario.intended_review ? "requires review" : "benign context"}. Synthetic illustration, not an evaluation record.`;
   resetConversation(manual ? "Manual entry is ready." : "Example loaded. Run it all at once or add one message at a time.");
   if (manual) messageInput.focus();
 }

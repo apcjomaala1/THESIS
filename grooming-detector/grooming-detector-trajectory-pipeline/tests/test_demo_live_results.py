@@ -71,6 +71,9 @@ def test_chapter4_summary_preserves_primary_and_matched_results():
     assert summary["matched_f0_5"]["point_difference"] == 0.1121
     assert summary["enhanced_comparison_inconclusive"] is True
     assert len(summary["methods"]) == 5
+    methods = {row["key"]: row for row in summary["methods"]}
+    assert (methods["weighted"]["fp"], methods["weighted"]["fn"]) == (13, 8)
+    assert (methods["lstm_trajectory7"]["fp"], methods["lstm_trajectory7"]["fn"]) == (7, 4)
 
 
 def test_results_api_reads_frozen_report_without_scoring(monkeypatch):
