@@ -23,6 +23,11 @@ def test_chapter4_summary_reads_recorded_f2_results():
     methods = {row["key"]: row for row in summary["methods"]}
     assert (methods["weighted"]["fp"], methods["weighted"]["fn"]) == (24, 6)
     assert (methods["lstm_enhanced775"]["fp"], methods["lstm_enhanced775"]["fn"]) == (41, 0)
+    assert methods["lstm_trajectory7"]["label"] == "Trajectory-Feature LSTM"
+    assert methods["lstm_enhanced775"]["label"] == "Embedding-and-Feature LSTM"
+    assert methods["lstm_trajectory7"]["is_lstm"] is True
+    assert methods["lstm_enhanced775"]["is_lstm"] is True
+    assert summary["embedding_model"]["tp"] == 44
 
 
 def test_results_api_reads_receipt_without_scoring(monkeypatch):

@@ -57,7 +57,7 @@ function appendMessage(author, text) {
 function updateMessage(item, turn, sanitizedText) {
   item.querySelector(".message-text").textContent = sanitizedText;
   item.querySelector(".message-score").textContent =
-    `Turn ${turn.turn} · L1 ${Number(turn.layer1_score).toFixed(4)} · Primary ${Number(turn.lstm_score).toFixed(4)} · Enhanced ${Number(turn.enhanced_lstm_score).toFixed(4)}`;
+    `Turn ${turn.turn} · L1 ${Number(turn.layer1_score).toFixed(4)} · Trajectory-Feature ${Number(turn.lstm_score).toFixed(4)} · Embedding-and-Feature ${Number(turn.enhanced_lstm_score).toFixed(4)}`;
   item.classList.toggle("is-flagged", Boolean(turn.lstm_flagged));
 }
 
@@ -115,14 +115,15 @@ function updateResults(data) {
   firstFlaggedTurn = firstTrueIndex(data.trajectory_curve.lstm_flags);
 
   const statusChip = document.getElementById("status-chip");
-  statusChip.textContent = decision.lstm.flagged ? "Flagged for review" : "Below threshold";
-  statusChip.className = `status-chip ${decision.lstm.flagged ? "status-flagged" : "status-below"}`;
+  const flaggedCount = Number(decision.lstm.flagged) + Number(decision.enhanced_lstm.flagged);
+  statusChip.textContent = flaggedCount ? `${flaggedCount} of 2 models flagged` : "Both below cutoff";
+  statusChip.className = `status-chip ${flaggedCount ? "status-flagged" : "status-below"}`;
   document.getElementById("lstm-score").textContent = score.toFixed(4);
   document.getElementById("enhanced-lstm-score").textContent = Number(decision.enhanced_lstm.score).toFixed(4);
   document.getElementById("score-fill").style.width = `${Math.max(0, Math.min(100, score * 100))}%`;
-  document.getElementById("decision-text").textContent = decision.lstm.flagged
-    ? `The primary score crossed its F2 cutoff of ${Number(decision.lstm.threshold).toFixed(4)}${firstFlaggedTurn ? ` at turn ${firstFlaggedTurn}` : ""}. Send this conversation for human review.`
-    : `The primary score is below its F2 cutoff of ${Number(decision.lstm.threshold).toFixed(4)}. Check the enhanced model's decision below; neither result declares the chat safe.`;
+  document.getElementById("embedding-score-fill").style.width = `${Math.max(0, Math.min(100, Number(decision.enhanced_lstm.score) * 100))}%`;
+  document.getElementById("decision-text").textContent =
+    `Trajectory-Feature LSTM: ${decision.lstm.flagged ? "flagged" : "below cutoff"}. Embedding-and-Feature LSTM: ${decision.enhanced_lstm.flagged ? "flagged" : "below cutoff"}. Prefix decisions are exploratory, not grooming-onset labels.`;
 
   document.getElementById("latest-turn-label").textContent = `turn ${latest.turn} · ${latest.author === "user_A" ? "Speaker A" : "Speaker B"}`;
   const features = latest.features;
@@ -144,8 +145,8 @@ function setValue(id, value, digits = 4) {
 }
 
 const comparisonMethods = [
-  ["lstm", "Primary LSTM"],
-  ["enhanced_lstm", "Enhanced LSTM"],
+  ["lstm", "Trajectory-Feature LSTM"],
+  ["enhanced_lstm", "Embedding-and-Feature LSTM"],
   ["weighted", "Weighted scorer"],
   ["raw_layer1", "Maximum Layer 1"],
   ["keyword", "Keyword rule"],
@@ -189,22 +190,11 @@ function updateComparison(data) {
   } else if (data && !complete) {
     summary = `Prefix ${data.turns_count} of ${activeScenario.turns.length}: decisions may change. FP/FN labels appear after the full chat.`;
   } else if (complete) {
-    const lstm = data.decision.lstm;
-    const corrected = comparisonMethods.filter(([key]) => key !== "lstm" &&
-      lstm.flagged === target && data.decision[key].flagged !== target).map(([, label]) => label);
-    const positiveDescription = datasetExample ? "dataset-positive conversation" : "intended review case";
-    const negativeDescription = datasetExample ? "dataset-negative conversation" : "benign example";
-    if (corrected.length) {
-      summary = target
-        ? `Miss caught: the LSTM flags this ${positiveDescription}; ${corrected.join(" and ")} ${corrected.length === 1 ? "misses" : "miss"} it.`
-        : `False alarm avoided at the end: the LSTM is below threshold for this ${negativeDescription}; ${corrected.join(" and ")} ${corrected.length === 1 ? "flags" : "flag"} it.`;
-    } else if (lstm.flagged !== target) {
-      summary = target ? `Limitation: the LSTM misses this ${positiveDescription}.` : `Limitation: the LSTM flags this ${negativeDescription}.`;
-    } else {
-      summary = "The methods agree on this example; it does not demonstrate an advantage.";
-    }
-    if (!target && data.trajectory_curve.lstm_flags.some(Boolean)) {
-      summary += " The LSTM also flagged an earlier prefix; this is a final-conversation correction.";
+    const matching = comparisonMethods.filter(([key]) => data.decision[key].flagged === target).map(([, label]) => label);
+    const disagreeing = comparisonMethods.filter(([key]) => data.decision[key].flagged !== target).map(([, label]) => label);
+    summary = `Matches the ${datasetExample ? "dataset reference" : "authored intent"}: ${matching.join(", ") || "none"}. Disagrees: ${disagreeing.join(", ") || "none"}.`;
+    if (!target && (data.trajectory_curve.lstm_flags.some(Boolean) || data.trajectory_curve.enhanced_lstm_flags.some(Boolean))) {
+      summary += " At least one LSTM flagged an earlier prefix; the table shows final-conversation decisions.";
     }
   }
   document.getElementById("comparison-summary").textContent = summary;
@@ -252,6 +242,7 @@ function resetResults() {
   document.getElementById("lstm-score").textContent = "--";
   document.getElementById("enhanced-lstm-score").textContent = "--";
   document.getElementById("score-fill").style.width = "0%";
+  document.getElementById("embedding-score-fill").style.width = "0%";
   document.getElementById("decision-text").textContent = "Add a message to run DistilBERT and the LSTM.";
   document.getElementById("latest-turn-label").textContent = "no turn yet";
   ["val-peak", "val-current", "val-spikes", "val-drop", "val-rate", "val-topic", "val-imbalance"].forEach((id) => {

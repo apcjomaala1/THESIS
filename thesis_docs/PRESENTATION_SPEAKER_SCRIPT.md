@@ -80,7 +80,7 @@ Sources: Alignment Table.docx, rows 1-2; thesis_docs/CHAPTER_IV_RESULTS_AND_DISC
 
 ## Slide 9: Research Alignment: Module and Improvement
 
-The second half connects development and evaluation. For Objective 2, we built the complete two-layer pipeline and review interface. For Objective 3, the primary LSTM identified 41 of 44 positive conversations under the F2 policy, giving 93.18 percent recall. Its three misses were half the weighted scorer's six and 82.4 percent fewer than the keyword rule's seventeen. The F2 cutoffs came from validation and were applied to preserved test scores after the original evaluation. These are measured comparisons against implemented methods, not an operational comparison with user reports.
+The second half connects development and evaluation. For Objective 2, we built the complete two-layer pipeline and review interface. For Objective 3, the Trajectory-Feature LSTM identified 41 of 44 positive conversations under the F2 policy, giving 93.18 percent recall. Its three misses were half the weighted scorer's six and 82.4 percent fewer than the keyword rule's seventeen. The F2 cutoffs came from validation and were applied to preserved test scores after the original evaluation. These are measured comparisons against implemented methods, not an operational comparison with user reports.
 
 
 
@@ -88,7 +88,7 @@ Sources: Alignment Table.docx, rows 3-4; thesis_docs/CHAPTER_IV_RESULTS_AND_DISC
 
 ## Slide 10: What the Study Built
 
-The system has two learned layers. DistilBERT processes the current turn with up to two preceding turns. We then track seven features across the conversation. The primary LSTM combines that sequence into a conversation score; an enhanced LSTM also receives text embeddings. The practical output is a priority for human review. The moderator interprets the content and decides what action is appropriate.
+The system has two learned layers. DistilBERT processes the current turn with up to two preceding turns. We then track seven features across the conversation. The Trajectory-Feature LSTM combines that sequence into a conversation score; an Embedding-and-Feature LSTM also receives text embeddings. The practical output is a priority for human review. The moderator interprets the content and decides what action is appropriate.
 
 
 
@@ -152,7 +152,7 @@ Sources: thesis_docs/Finals_Revised_Paper_WASD.md, Chapter III
 
 ## Slide 18: AI Model Architecture
 
-Read the diagram from left to right. The current turn and up to two preceding turns enter the fine-tuned DistilBERT classifier. Its output is an author-derived contextual proxy score. A separate fixed base encoder represents the current turn for topic-distance calculation against the benign training reference. The pipeline combines those signals with speaker-turn information into seven features. The LSTM processes the ordered feature sequence and outputs a conversation score. A final F2 cutoff selected on validation determines which conversations receive a flag for human review. The primary LSTM has seven inputs per turn. The enhanced experiment additionally feeds 768 embedding values into its recurrent model.
+Read the diagram from left to right. Both variants start with contextual DistilBERT scoring and a fixed encoder for the current turn. The Trajectory-Feature LSTM directly receives seven behavioral features. The Embedding-and-Feature LSTM receives those features plus the 768 text-embedding values. Each learns a chronological sequence and uses its own validation-selected F2 cutoff to flag conversations for review.
 
 
 
@@ -176,7 +176,7 @@ Sources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 3.3.3 and 3.5.2; the
 
 ## Slide 21: Models Compared Fairly
 
-The central comparison uses the same seven trajectory features. The weighted scorer combines them statically, while the LSTM learns a recurrent sequence model. This evaluates the selected aggregation methods with matched inputs. Keyword matching and maximum Layer 1 aggregation provide additional baselines. We report the enhanced LSTM separately because it also receives 768 embedding values. Feature-removal and ordering ablations would be needed to isolate individual design contributions.
+The central comparison uses the same seven trajectory features. The weighted scorer combines them statically, while the LSTM learns a recurrent sequence model. This evaluates the selected aggregation methods with matched inputs. Keyword matching and maximum Layer 1 aggregation provide additional baselines. We report the Embedding-and-Feature LSTM separately because it also receives 768 embedding values. Feature-removal and ordering ablations would be needed to isolate individual design contributions.
 
 
 
@@ -192,7 +192,7 @@ Sources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 3.5.2; thesis_docs/CH
 
 ## Slide 23: Why We Use F2
 
-GroomShield is a screening module, so the final decision policy emphasizes finding positive conversations that might otherwise be missed. We choose each method's cutoff by maximizing F2 on validation, giving more weight to recall while still accounting for precision. On the preserved test scores, the primary LSTM found 41 of 44 positives with 21 false alerts; the enhanced model found all 44 with 41 false alerts. F2 changes the final decisions, not the trained weights. Because this policy came after the original F0.5 test evaluation, it is a revised-policy analysis, not a new untouched test.
+GroomShield is a screening module, so the final decision policy emphasizes finding positive conversations that might otherwise be missed. We choose each method's cutoff by maximizing F2 on validation, giving more weight to recall while still accounting for precision. On the preserved test scores, the Trajectory-Feature LSTM found 41 of 44 positives with 21 false alerts; the embedding-and-feature model found all 44 with 41 false alerts. F2 changes the final decisions, not the trained weights. Because this policy came after the original F0.5 test evaluation, it is a revised-policy analysis, not a new untouched test.
 
 
 
@@ -216,7 +216,7 @@ Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.1
 
 ## Slide 26: Held-Out Results
 
-This table shows all five methods under their validation-selected F2 cutoffs. The primary LSTM reached PR-AUC 0.9153, F2 0.8613, precision 0.6613, and recall 0.9318. It found 41 of 44 positives with 21 false alerts. The enhanced LSTM found all 44 with 41 false alerts and F2 0.8429. The matched architecture comparison is with the weighted scorer, which uses the same seven inputs. Paired intervals do not establish an F2 or PR-AUC difference between the two LSTMs.
+This table shows all five methods under their validation-selected F2 cutoffs. The Trajectory-Feature LSTM reached PR-AUC 0.9153, F2 0.8613, precision 0.6613, and recall 0.9318. It found 41 of 44 positives with 21 false alerts. The Embedding-and-Feature LSTM found all 44 with 41 false alerts and F2 0.8429. The matched architecture comparison is with the weighted scorer, which uses the same seven inputs. Paired intervals do not establish an F2 or PR-AUC difference between the two LSTMs.
 
 
 
@@ -224,15 +224,15 @@ Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2
 
 ## Slide 27: Detection Performance Across Methods
 
-The blue bars show PR-AUC and the green bars show F2. The primary LSTM has the highest F2 point estimate, while enhanced has the highest PR-AUC point estimate. The primary-versus-weighted comparison isolates aggregation with the same seven inputs. The enhanced model also receives embeddings. These bars show point estimates; the manuscript reports paired intervals for the comparisons.
+The blue bars show PR-AUC and the green bars show F2. The Trajectory-Feature LSTM has the highest F2 point estimate, while the Embedding-and-Feature LSTM has the highest PR-AUC point estimate. Comparing the trajectory-feature model with weighted scoring isolates aggregation with the same seven inputs. The embedding-and-feature model also receives embeddings. These bars show point estimates; the manuscript reports paired intervals for the comparisons.
 
 
 
 Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2
 
-## Slide 28: The Primary LSTM Found 41 of 44 Positives
+## Slide 28: Detection Coverage: 41 and 44 of 44
 
-Recall asks how many positive conversations we found. The primary LSTM found 41 of 44, compared with 27 for the keyword rule, 39 for maximum Layer 1, and 38 for the weighted scorer. The enhanced LSTM found all 44. That additional coverage came with 41 false alerts versus 21 for primary. These are final-conversation decisions, not onset-detection measurements.
+Recall asks how many positive conversations we found. The Trajectory-Feature LSTM found 41 of 44, compared with 27 for the keyword rule, 39 for maximum Layer 1, and 38 for the weighted scorer. The Embedding-and-Feature LSTM found all 44. That additional coverage came with 41 false alerts versus 21 for the trajectory-feature model. These are final-conversation decisions, not onset-detection measurements.
 
 
 
@@ -240,7 +240,7 @@ Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2
 
 ## Slide 29: Missed Positives and False Alerts
 
-Lower bars are better in both groups, but the recall-oriented cutoff changes the tradeoff. The primary LSTM reduced weighted scoring's six misses to three and its 24 false alerts to 21. Keyword matching missed 17. Maximum Layer 1 missed five but created 78 false alerts. The enhanced model missed none of the 44 positives and created 41 false alerts. Every count represents conversations, not messages.
+Lower bars are better in both groups, but the recall-oriented cutoff changes the tradeoff. The Trajectory-Feature LSTM reduced weighted scoring's six misses to three and its 24 false alerts to 21. Keyword matching missed 17. Maximum Layer 1 missed five but created 78 false alerts. The embedding-and-feature model missed none of the 44 positives and created 41 false alerts. Every count represents conversations, not messages.
 
 
 
@@ -248,7 +248,7 @@ Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1 and Sectio
 
 ## Slide 30: Sequence Modeling Added Value
 
-We compared the primary LSTM with the weighted scorer in the same 2,000 bootstrap resamples of author-connected groups. The PR-AUC difference was +0.1103 and the F2 difference +0.0630. Both paired 95 percent intervals were above zero. This supports the selected recurrent aggregator over the static combination of the same seven inputs. The separate recall-difference interval includes zero, so we do not claim an independently established recall advantage over weighted scoring.
+We compared the Trajectory-Feature LSTM with the weighted scorer in the same 2,000 bootstrap resamples of author-connected groups. The PR-AUC difference was +0.1103 and the F2 difference +0.0630. Both paired 95 percent intervals were above zero. This supports the selected recurrent aggregator over the static combination of the same seven inputs. The separate recall-difference interval includes zero, so we do not claim an independently established recall advantage over weighted scoring.
 
 
 
@@ -256,7 +256,7 @@ Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Table 4.2 and Section
 
 ## Slide 31: The Three Missed Conversations Were Short
 
-The three positives missed by the primary LSTM were 2, 11, and 26 turns long. Each was shorter than the 36-turn first quartile of correctly detected positives, whose median length was 61 turns. This directs attention to short-history testing. Conversation length alone does not prove why a case was missed, and no grooming-onset annotations were used. A later study can test fixed prefixes and, with independent annotations, time from onset.
+The three positives missed by the Trajectory-Feature LSTM were 2, 11, and 26 turns long. Each was shorter than the 36-turn first quartile of correctly detected positives, whose median length was 61 turns. This directs attention to short-history testing. Conversation length alone does not prove why a case was missed, and no grooming-onset annotations were used. A later study can test fixed prefixes and, with independent annotations, time from onset.
 
 
 
@@ -264,13 +264,13 @@ Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.6
 
 ## Slide 32: Local Turn-by-Turn Latency
 
-We tested both selected LSTMs through the local HTTP demo, not just the recurrent layers. Each request included redaction, DistilBERT scoring, feature computation, the chosen LSTM, and the JSON response. We used the same synthetic chat at 1, 4, 8, and 16 turns, with 40 timed requests at each length for each model after warm-up. Across the equal-length mix, the primary LSTM had a 267 ms median, 709 ms p95, 830 ms p99, and 3.39 sequential requests per second. Enhanced had 246 ms, 718 ms, 1,058 ms, and 3.32 requests per second. Longer chats took longer because the current demo recomputes all previous turns. This establishes local CPU behavior, not a production real-time guarantee.
+We tested both selected LSTMs through the local HTTP demo, not just the recurrent layers. Each request included redaction, DistilBERT scoring, feature computation, the chosen LSTM, and the JSON response. We used the same synthetic chat at 1, 4, 8, and 16 turns, with 40 timed requests at each length for each model after warm-up. Across the equal-length mix, the Trajectory-Feature LSTM had a 267 ms median, 709 ms p95, 830 ms p99, and 3.39 sequential requests per second. The Embedding-and-Feature LSTM had 246 ms, 718 ms, 1,058 ms, and 3.32 requests per second. Longer chats took longer because the current demo recomputes all previous turns. This establishes local CPU behavior, not a production real-time guarantee.
 
 Sources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Table 4.4; thesis_docs/.benchmark_evidence/latency_2026-09-27.json
 
 ## Slide 33: Conclusions by Research Objective
 
-These conclusions answer the approved objectives. First, the controlled comparison showed the limitations and false-alert costs of the tested static methods. Second, we built the complete contextual and behavioral module with a working review interface. Third, the primary LSTM found 41 positives and missed three, half as many misses as weighted scoring. Together, the architecture and results support the general objective of enhancing conversation-level chat moderation with human review.
+These conclusions answer the approved objectives. First, the controlled comparison showed the limitations and false-alert costs of the tested static methods. Second, we built the complete contextual and behavioral module with a working review interface. Third, the Trajectory-Feature LSTM found 41 positives and missed three, half as many misses as weighted scoring. Together, the architecture and results support the general objective of enhancing conversation-level chat moderation with human review.
 
 
 
@@ -286,7 +286,7 @@ Sources: thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md, Secti
 
 ## Slide 35: GroomShield Reduced Missed Positives
 
-Our main result is that the primary trajectory LSTM improved conversation detection over the tested static approaches, using the same seven inputs as the weighted comparator. It identified 41 of 44 positives with three misses and 21 false alerts. The enhanced model found all 44 with a greater false-alert cost. Thank you. We welcome your questions about the architecture, data partitions, F2 policy, latency, and results.
+GroomShield provides two tested sequence variants. The Trajectory-Feature LSTM found 41 of 44 positives with 21 false alerts and improved F2 over static use of the same inputs. The Embedding-and-Feature LSTM found all 44 with 41 false alerts. Both can support conversation review, with different measured coverage and precision. Thank you. We welcome your questions about the architecture, data partitions, F2 policy, latency, and results.
 
 
 

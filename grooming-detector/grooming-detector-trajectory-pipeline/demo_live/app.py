@@ -34,8 +34,8 @@ METHOD_LABELS = (
     ("keyword", "Keyword rule"),
     ("raw_layer1", "Maximum Layer 1"),
     ("weighted", "Weighted scorer"),
-    ("lstm_trajectory7", "Primary LSTM"),
-    ("lstm_enhanced775", "Enhanced LSTM"),
+    ("lstm_trajectory7", "Trajectory-Feature LSTM"),
+    ("lstm_enhanced775", "Embedding-and-Feature LSTM"),
 )
 
 
@@ -61,7 +61,7 @@ def build_chapter4_summary(eval_report: dict, f2_report: dict) -> dict:
                 "recall": point["recall"],
                 "fp": point["fp"],
                 "fn": point["fn"],
-                "primary": key == "lstm_trajectory7",
+                "is_lstm": key in {"lstm_trajectory7", "lstm_enhanced775"},
             }
         )
 
@@ -71,6 +71,7 @@ def build_chapter4_summary(eval_report: dict, f2_report: dict) -> dict:
         "negative_conversations": audit["conversations"] - audit["positive_conversations"],
         "components": audit["components"],
         "primary": primary,
+        "embedding_model": metrics["lstm_enhanced775"]["test"],
         "methods": methods,
         "matched_pr_auc": matched["pr_auc"],
         "matched_f2": matched["f2"],
@@ -181,7 +182,7 @@ def api_score():
     except Exception as error:
         report(f"FAILED: {type(error).__name__}: {error}")
         raise
-    for key, label in (("lstm", "Primary LSTM"), ("enhanced_lstm", "Enhanced LSTM"), ("weighted", "Weighted scorer"), ("raw_layer1", "Maximum Layer 1")):
+    for key, label in (("lstm", "Trajectory-Feature LSTM"), ("enhanced_lstm", "Embedding-and-Feature LSTM"), ("weighted", "Weighted scorer"), ("raw_layer1", "Maximum Layer 1")):
         if key not in result["decision"]:
             continue
         decision = result["decision"][key]
@@ -198,10 +199,10 @@ def api_score():
 def api_health():
     return jsonify({
         "status": "healthy",
-        "model": "Primary (7-d) and enhanced (775-d) trajectory LSTMs",
+        "model": "Trajectory-Feature LSTM (7 inputs) and Embedding-and-Feature LSTM (775 inputs)",
         "l1_backbone": "DistilBERT (Author-Proxy Fine-Tuned)",
         "endpoint": get_engine().endpoint,
-        "version": "2026.09.27-f2-dual-lstm-demo"
+        "version": "2026.09.28-descriptive-lstm-variants"
     })
 
 

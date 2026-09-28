@@ -52,7 +52,7 @@ Andrei Luis M. Torres
 
 # Abstract
 
-Keyword-based chat moderation can miss grooming-related interactions whose meaning emerges through conversational context and behavioral progression. This study develops GroomShield, a two-layer artificial intelligence module designed to improve detection coverage and reduce false negatives. A context-conditioned DistilBERT classifier produces turn-level author-derived proxy scores, while a Long Short-Term Memory (LSTM) network processes seven chronological features describing score patterns, semantic movement, and speaker participation. The PAN-2012 Sexual Predator Identification corpus was selected for evaluation, with positive conversations defined by the presence of an officially identified predator author. Connected-author partitioning separates participants across training, validation, and test sets. The primary LSTM is compared with a keyword rule, maximum classifier-score aggregation, and a weighted scorer using the same features; an enhanced LSTM additionally incorporates text embeddings. The revised operating policy selects thresholds using validation F2 and applies them to previously evaluated test scores. Across 1,862 test conversations containing 44 positives, the primary LSTM achieved 93.18% recall, 66.13% precision, and 0.8613 F2, missing three positives compared with six for the weighted scorer, five for maximum classifier-score aggregation, and 17 for the keyword rule. Paired component-bootstrap intervals supported its F2 and PR-AUC advantages over the weighted scorer. The enhanced LSTM detected all 44 positives at 51.76% precision and 0.8429 F2. These findings demonstrate the contribution of contextual and behavioral sequence modeling to recall-oriented conversation detection, providing a foundation for AI-assisted moderation that complements existing safeguards and human review.
+Keyword-based chat moderation can miss grooming-related interactions whose meaning emerges through conversational context and behavioral progression. This study develops GroomShield, a two-layer artificial intelligence module designed to improve detection coverage and reduce false negatives. A context-conditioned DistilBERT classifier produces turn-level author-derived proxy scores, while a Long Short-Term Memory (LSTM) network processes seven chronological features describing score patterns, semantic movement, and speaker participation. The PAN-2012 Sexual Predator Identification corpus was selected for evaluation, with positive conversations defined by the presence of an officially identified predator author. Connected-author partitioning separates participants across training, validation, and test sets. The Trajectory-Feature LSTM is compared with a keyword rule, maximum classifier-score aggregation, and a weighted scorer using the same features; an Embedding-and-Feature LSTM additionally incorporates text embeddings. The revised operating policy selects thresholds using validation F2 and applies them to previously evaluated test scores. Across 1,862 test conversations containing 44 positives, the Trajectory-Feature LSTM achieved 93.18% recall, 66.13% precision, and 0.8613 F2, missing three positives compared with six for the weighted scorer, five for maximum classifier-score aggregation, and 17 for the keyword rule. Paired component-bootstrap intervals supported its F2 and PR-AUC advantages over the weighted scorer. The Embedding-and-Feature LSTM detected all 44 positives at 51.76% precision and 0.8429 F2. These findings demonstrate the contribution of contextual and behavioral sequence modeling to recall-oriented conversation detection, providing a foundation for AI-assisted moderation that complements existing safeguards and human review.
 
 **Keywords:** online grooming detection; chat moderation; conversational context; behavioral pattern analysis; natural language processing; long short-term memory networks.
 
@@ -110,7 +110,7 @@ The completed architecture contains two learned layers. Layer 1 uses a context-c
 
 The evaluation dataset consists of eligible dyadic conversations from the PAN12 training corpus. After the required validity and conversation-structure checks, the candidate pool contains 18,567 conversations and 218,114 turns. The official predator-author list supplies the supervision used by the experiment: Layer 1 learns from current-author membership, while Layer 2 learns the corresponding conversation-level outcome.
 
-The study compares the proposed seven-feature LSTM with a training-derived keyword rule, maximum Layer 1 proxy aggregation, and a validation-fitted weighted trajectory scorer. A secondary LSTM supplemented with 768-dimensional base DistilBERT embeddings is evaluated separately. All methods use identical author-disjoint conversation partitions. F2 is the principal final-cutoff selection criterion, supported by recall, false-negative counts, precision, PR-AUC, and paired performance differences.
+The study evaluates two DistilBERT-based sequence variants: the Trajectory-Feature LSTM, which receives seven behavioral features, and the Embedding-and-Feature LSTM, which receives those features together with 768-dimensional text embeddings. Both are compared with a training-derived keyword rule, maximum Layer 1 proxy aggregation, and a validation-fitted weighted trajectory scorer. All methods use identical author-disjoint conversation partitions. F2 is the principal final-cutoff selection criterion, supported by recall, false-negative counts, precision, PR-AUC, and paired performance differences.
 
 ### 1.4.2 Limitations of the Study
 
@@ -130,7 +130,7 @@ This section explains the academic, practical, societal, and future-research val
 
 This research contributes to computer science, artificial intelligence, cybersecurity, and online-safety research by demonstrating how contextual natural language processing can be integrated with behavioral trajectory analysis in a complete moderation architecture. Rather than reducing an interaction to isolated keywords or a single message score, the proposed system represents how evidence evolves across an ordered conversation.
 
-The study contributes a two-layer design consisting of a context-conditioned DistilBERT classifier, seven interpretable trajectory features, and recurrent LSTM aggregation. The matched comparison between the seven-feature LSTM and a weighted scorer receiving the same information provides direct empirical evidence that learned sequence modeling adds predictive value beyond static feature combination. The primary LSTM's improvements in recall and false-negative reduction also address the study's central safety-oriented performance objective.
+The study contributes a two-layer design consisting of a context-conditioned DistilBERT classifier, seven interpretable trajectory features, and recurrent LSTM aggregation. The matched comparison between the seven-feature LSTM and a weighted scorer receiving the same information provides direct empirical evidence that learned sequence modeling adds predictive value beyond static feature combination. The Trajectory-Feature LSTM's improvements in recall and false-negative reduction also address the study's central safety-oriented performance objective.
 
 The research additionally contributes a reproducible evaluation framework for conversational data: connected-author partitioning, training-only construction of derived resources, validation-based checkpoint and threshold selection, preserved test-score artifacts, and component-grouped uncertainty estimation. These controls distinguish model learning from operating-threshold analysis and support repeatable comparison of the same methods.
 
@@ -273,7 +273,7 @@ The proposed system has two learned layers. Layer 1 fine-tunes DistilBERT using 
 
 Model development and detection evaluation use chronological offline replay of dataset conversations. A separate local HTTP benchmark measures warmed per-turn latency and throughput on synthetic conversations; it does not test platform integration, live users, or autonomous moderation. The output is intended as decision support for human review. A below-threshold result is not a determination that a conversation or participant is safe.
 
-The experiment tests whether an LSTM using the same seven trajectory inputs as the weighted scorer improves the approved conversation-level endpoint. A larger LSTM that additionally receives a 768-dimensional base DistilBERT embedding is evaluated separately as an enhanced-input model so that an input-capacity difference is not misreported as an architectural advantage. No superiority result is assumed in advance.
+The experiment tests whether an LSTM using the same seven trajectory inputs as the weighted scorer improves the approved conversation-level endpoint. It also evaluates an Embedding-and-Feature LSTM that additionally receives a 768-dimensional base DistilBERT embedding, allowing the input-representation comparison to be distinguished from the matched-input aggregation comparison. No superiority result is assumed in advance.
 
 ## 3.2 Relevant Technology
 
@@ -287,7 +287,7 @@ The study utilizes the Hugging Face Transformers library together with the PyTor
 
 ### 3.2.3 DistilBERT
 
-DistilBERT serves as the text encoder and Layer 1 sequence classifier. It is a lightweight transformer-based model derived from BERT that retains contextual language representations while reducing computational requirements. In the revised experiment, the fine-tuned classifier estimates the author-derived training target for the current turn under preceding conversational context, producing the trajectory signal used by Layer 2. A separate, unchanged `distilbert-base-uncased` encoder supplies the 768-dimensional embedding used by topic-distance computation and the enhanced-input LSTM.
+DistilBERT serves as the text encoder and Layer 1 sequence classifier. It is a lightweight transformer-based model derived from BERT that retains contextual language representations while reducing computational requirements. In the revised experiment, the fine-tuned classifier estimates the author-derived training target for the current turn under preceding conversational context, producing the trajectory signal used by Layer 2. A separate, unchanged `distilbert-base-uncased` encoder supplies the 768-dimensional embedding used by topic-distance computation and the Embedding-and-Feature LSTM.
 
 ### 3.2.4 Development Environment
 
@@ -364,8 +364,8 @@ The centroid source conversation IDs and embedding-model digest are recorded, an
 | Input | Definition | Models receiving it |
 |---|---|---|
 | Layer 1 proxy score | Context-conditioned estimate of the author-derived target \(Z_t\) | Raw Layer 1 baseline and trajectory-feature construction |
-| Seven trajectory features | Peak, current, spike count, spike-then-drop, rate of change, topic distance, and turn imbalance | Weighted scorer and primary matched-input LSTM |
-| Base DistilBERT embedding | 768-dimensional contextual text representation, separate from the Layer 1 proxy | Secondary enhanced-input LSTM only |
+| Seven trajectory features | Peak, current, spike count, spike-then-drop, rate of change, topic distance, and turn imbalance | Weighted scorer and Trajectory-Feature LSTM |
+| Base DistilBERT embedding | 768-dimensional contextual text representation, separate from the Layer 1 proxy | Embedding-and-Feature LSTM |
 
 *Table 3.2. Inputs used by the comparison methods.*
 
@@ -381,9 +381,9 @@ The positive-class softmax output is denoted \(R_t\). It estimates the contextua
 
 ### 3.4.2 LSTM-Based Trajectory Scoring Model
 
-The primary Layer 2 model is an LSTM that receives the chronological sequence of the same seven features supplied to the weighted scorer. Padding masks ensure that padded turns do not affect hidden-state computation. A secondary enhanced-input LSTM concatenates the 768-dimensional base DistilBERT embedding with the seven trajectory features, producing a 775-dimensional turn vector; its result is reported separately and is not used to claim a matched-input architectural advantage.
+Both LSTM variants use the same upstream contextual DistilBERT classifier and fixed base encoder. The Trajectory-Feature LSTM receives the chronological sequence of seven behavioral features also supplied to the weighted scorer. The Embedding-and-Feature LSTM directly receives the 768-dimensional base DistilBERT embedding concatenated with those seven features, producing a 775-dimensional turn vector. Padding masks ensure that padded turns do not affect hidden-state computation. The weighted-scorer comparison uses matched seven-feature inputs; the comparison between LSTMs evaluates different input representations.
 
-The selected primary model is a unidirectional, single-layer LSTM with hidden dimension 128 and dropout 0.20, trained with batch size 32, Adam learning rate 0.001, weight decay 0.0001, gradient clipping at 1.0, a maximum of 20 epochs, and early-stopping patience of four validation evaluations. The selected enhanced model uses the same hidden dimension, layer count, dropout, batch size, and stopping rule with learning rate 0.0005. Both completed searches used seed 42 and validation PR-AUC with validation F0.5 as the first tie-break criterion. These checkpoints are retained; F2 changes their final conversation cutoffs, not the training loss, learned weights, or checkpoint selection.
+The selected Trajectory-Feature LSTM is a unidirectional, single-layer LSTM with hidden dimension 128 and dropout 0.20, trained with batch size 32, Adam learning rate 0.001, weight decay 0.0001, gradient clipping at 1.0, a maximum of 20 epochs, and early-stopping patience of four validation evaluations. The selected Embedding-and-Feature LSTM uses the same hidden dimension, layer count, dropout, batch size, and stopping rule with learning rate 0.0005. Both completed searches used seed 42 and validation PR-AUC with validation F0.5 as the first tie-break criterion. These checkpoints are retained; F2 changes their final conversation cutoffs, not the training loss, learned weights, or checkpoint selection.
 
 Layer 2 is trained only against the valid conversation label \(Y_c\). `BCEWithLogitsLoss` is applied to the output at the final valid turn using a positive-class weight of 39.8495, computed solely from the 12,712 negative and 319 positive training conversations. No turn-level loss or cumulative `is_suspicious` target is used. Validation selects the LSTM checkpoint and its conversation flagging threshold. Intermediate prefix scores demonstrate sequence processing, and the first threshold crossing is summarized as an exploratory prefix statistic.
 
@@ -394,7 +394,7 @@ Four comparisons are evaluated on the same conversation endpoint and locked part
 1. **Aggregated raw Layer 1:** the maximum \(R_t\) in a conversation, using its independently selected validation threshold.
 2. **Weighted trajectory scorer:** a validation-fitted combination of the seven trajectory features, with its own validation-selected weights and threshold.
 3. **Keyword rule:** a fixed lexicon derived only from the revised training partition; a conversation is positive when any turn matches the rule. Lexicon construction and matching rules are frozen before final testing.
-4. **Enhanced-input LSTM:** the 775-input LSTM reported separately from the primary matched seven-feature LSTM.
+4. **Embedding-and-Feature LSTM:** the 775-input LSTM reported separately from the Trajectory-Feature LSTM.
 
 The principal architecture comparison is the seven-feature LSTM versus the seven-feature weighted scorer. The F2 analysis holds learned parameters, weighted-scorer coefficients, keyword resources, and feature definitions fixed and selects each scored method's final cutoff independently on validation data. It compares fixed models under an F2 operating policy, not a new F2-directed hyperparameter search or weighted-scorer refit. The raw Layer 1 baseline uses its actual positive-class score directly and is not passed through the weighted scorer or another sigmoid.
 
@@ -422,8 +422,8 @@ The selected conversation cutoffs are:
 
 | Method | Validation-selected F2 cutoff |
 |---|---:|
-| Primary LSTM | 0.275535285 |
-| Enhanced LSTM | 0.000971102 |
+| Trajectory-Feature LSTM | 0.275535285 |
+| Embedding-and-Feature LSTM | 0.000971102 |
 | Maximum Layer 1 | 0.961438656 |
 | Weighted scorer | 0.696637128 |
 | Keyword rule | 1.000000000 |
@@ -461,7 +461,7 @@ Prefix-level scores show how the conversation score develops as evidence accumul
 
 ### 3.5.4 Local Per-Turn Latency Benchmark
 
-To test the panel's operational-performance question separately from detection accuracy, the two selected LSTM checkpoints are benchmarked through the local `/api/score` HTTP endpoint on CPU. Each timed request submits the complete conversation prefix and selects either the primary or enhanced LSTM. The current prototype recomputes contextual DistilBERT scores, base-encoder embeddings, seven trajectory features, and the selected LSTM output for that prefix; therefore the timing includes the complete model path, server-side redaction, request handling, JSON serialization, and localhost transport. The two variants use the same upstream processing, and the only model-path difference is the LSTM input and checkpoint. Models are loaded before timing.
+To test the panel's operational-performance question separately from detection accuracy, the two selected LSTM checkpoints are benchmarked through the local `/api/score` HTTP endpoint on CPU. Each timed request submits the complete conversation prefix and selects either the Trajectory-Feature or Embedding-and-Feature LSTM. The current prototype recomputes contextual DistilBERT scores, base-encoder embeddings, seven trajectory features, and the selected LSTM output for that prefix; therefore the timing includes the complete model path, server-side redaction, request handling, JSON serialization, and localhost transport. The two variants use the same upstream processing, and the only model-path difference is the LSTM input and checkpoint. Models are loaded before timing.
 
 The fixed, unlabeled synthetic workload contains 1-, 4-, 8-, and 16-turn prefixes of the same chat. After three warm-up requests per model and prefix length, 40 requests are timed for each of the eight model-length combinations (160 per model). The order of cases is randomized with seed 42, at concurrency one. Elapsed client-side round-trip time is summarized by median, 95th percentile, and 99th percentile. Sequential throughput is completed requests divided by the cumulative duration of those timed requests. An equally weighted mixture of the four prefix lengths is reported in addition to length-specific values. The machine is an 11th-generation Intel Core i5-11400H with 12 logical processors, six PyTorch intra-operation threads, Windows 11, and CPU inference. This benchmark does not use PAN12 test conversations, change thresholds, or retrain models; it tests this local prototype, not production traffic, network conditions, parallel load, or moderator response time.
 

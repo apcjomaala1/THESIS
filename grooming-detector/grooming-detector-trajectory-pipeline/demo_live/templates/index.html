@@ -12,11 +12,11 @@
       <div>
         <p class="eyebrow">WASD thesis prototype</p>
         <h1>GroomShield Model Demo</h1>
-        <p class="subtitle">Compare the primary and enhanced LSTMs against three baselines, then try a conversation turn by turn.</p>
+        <p class="subtitle">Compare two DistilBERT-based LSTM variants: seven trajectory features, or text embeddings plus those features.</p>
       </div>
       <div class="pipeline" aria-label="Model pipeline">
         <span>DistilBERT</span><b aria-hidden="true">&#8594;</b>
-        <span>7 features</span><b aria-hidden="true">&#8594;</b>
+        <span>Features / features + embeddings</span><b aria-hidden="true">&#8594;</b>
         <span>Two LSTM scores</span>
       </div>
     </header>
@@ -34,18 +34,26 @@
         </div>
       </div>
 
-      <div class="result-facts" aria-label="Primary LSTM results">
+      <h3>Trajectory-Feature LSTM <small>(7 inputs)</small></h3>
+      <div class="result-facts" aria-label="Trajectory-Feature LSTM results">
         <div><span>PR-AUC</span><strong>{{ '%.4f' % chapter4.primary.pr_auc }}</strong></div>
         <div><span>F2</span><strong>{{ '%.4f' % chapter4.primary.f2 }}</strong></div>
         <div><span>Positive conversations found</span><strong>{{ chapter4.primary.tp }} of {{ chapter4.positive_conversations }}</strong></div>
         <div><span>Final-test errors</span><strong>{{ chapter4.primary.fp }} FP · {{ chapter4.primary.fn }} FN</strong></div>
+      </div>
+      <h3>Embedding-and-Feature LSTM <small>(775 inputs)</small></h3>
+      <div class="result-facts" aria-label="Embedding-and-Feature LSTM results">
+        <div><span>PR-AUC</span><strong>{{ '%.4f' % chapter4.embedding_model.pr_auc }}</strong></div>
+        <div><span>F2</span><strong>{{ '%.4f' % chapter4.embedding_model.f2 }}</strong></div>
+        <div><span>Positive conversations found</span><strong>{{ chapter4.embedding_model.tp }} of {{ chapter4.positive_conversations }}</strong></div>
+        <div><span>Final-test errors</span><strong>{{ chapter4.embedding_model.fp }} FP · {{ chapter4.embedding_model.fn }} FN</strong></div>
       </div>
 
       <div class="matched-result">
         <strong>Key finding:</strong> with the same seven features, the LSTM improved over the weighted scorer by
         <strong>{{ '%+.4f' % chapter4.matched_pr_auc.point_difference }} PR-AUC</strong>
         and <strong>{{ '%+.4f' % chapter4.matched_f2.point_difference }} F2</strong>.
-        Both 95% paired intervals are above zero. The primary LSTM has {{ chapter4.primary.fn }} missed positives and {{ chapter4.primary.fp }} false alerts; the weighted scorer has {{ chapter4.weighted_false_negatives }} and {{ chapter4.weighted_false_positives }}.
+        Both 95% paired intervals are above zero. The Trajectory-Feature LSTM has {{ chapter4.primary.fn }} missed positives and {{ chapter4.primary.fp }} false alerts; the weighted scorer has {{ chapter4.weighted_false_negatives }} and {{ chapter4.weighted_false_positives }}.
       </div>
 
       <div class="results-table-wrap">
@@ -56,8 +64,8 @@
           </thead>
           <tbody>
             {% for method in chapter4.methods %}
-            <tr{% if method.primary %} class="primary-method"{% endif %}>
-              <th scope="row">{{ method.label }}{% if method.primary %} <span>primary</span>{% endif %}</th>
+            <tr{% if method.is_lstm %} class="lstm-method"{% endif %}>
+              <th scope="row">{{ method.label }}</th>
               <td>{{ '%.4f' % method.pr_auc }}</td>
               <td>{{ '%.4f' % method.f2 }}</td>
               <td>{{ '%.4f' % method.precision }}</td>
@@ -68,7 +76,7 @@
           </tbody>
         </table>
       </div>
-      <p class="results-footnote">The enhanced LSTM detected all 44 positives, with 41 false alerts. Its F2 and PR-AUC differences from the primary LSTM were inconclusive; the primary matched-input comparison tests recurrent aggregation directly.</p>
+      <p class="results-footnote">The Embedding-and-Feature LSTM detected all 44 positives, with 41 false alerts. The Trajectory-Feature LSTM had fewer false alerts and a higher F2 point estimate. Their paired F2 and PR-AUC differences were inconclusive.</p>
     </section>
 
     <p class="demo-note">
@@ -134,7 +142,7 @@
 
           <div class="score-row">
             <div>
-              <span class="score-label">Primary LSTM score</span>
+              <span class="score-label">Trajectory-Feature LSTM score</span>
               <strong class="score-value" id="lstm-score">--</strong>
             </div>
             <div class="threshold-copy">
@@ -142,15 +150,19 @@
               <strong>{{ '%.4f' % lstm_threshold }}</strong>
             </div>
           </div>
-          <div class="score-row enhanced-score-row">
-            <div><span class="score-label">Enhanced LSTM score</span><strong class="score-value" id="enhanced-lstm-score">--</strong></div>
-            <div class="threshold-copy"><span>F2 cutoff</span><strong>{{ '%.4f' % enhanced_lstm_threshold }}</strong></div>
-          </div>
-
           <div class="score-track" aria-hidden="true">
             <div class="score-fill" id="score-fill"></div>
             <div class="threshold-line" style="left: {{ '%.2f' % (lstm_threshold * 100) }}%;"></div>
           </div>
+          <div class="score-row enhanced-score-row">
+            <div><span class="score-label">Embedding-and-Feature LSTM score</span><strong class="score-value" id="enhanced-lstm-score">--</strong></div>
+            <div class="threshold-copy"><span>F2 cutoff</span><strong>{{ '%.4f' % enhanced_lstm_threshold }}</strong></div>
+          </div>
+          <div class="score-track" aria-hidden="true">
+            <div class="score-fill embedding-score-fill" id="embedding-score-fill"></div>
+            <div class="threshold-line" style="left: {{ '%.2f' % (enhanced_lstm_threshold * 100) }}%;"></div>
+          </div>
+
           <p class="decision-text" id="decision-text">Add a message to run DistilBERT and the LSTM.</p>
           <p class="safety-note">Below threshold does not mean safe. A reviewer keeps decision authority.</p>
         </section>
@@ -178,7 +190,7 @@
             <span class="tiny-label">one point per turn</span>
           </div>
           <div class="chart-wrap">
-            <svg id="trajectory-svg" viewBox="0 0 520 150" role="img" aria-label="Primary and enhanced LSTM conversation scores by turn">
+            <svg id="trajectory-svg" viewBox="0 0 520 150" role="img" aria-label="Trajectory-Feature and Embedding-and-Feature LSTM scores by turn">
               <line x1="16" y1="126" x2="504" y2="126" class="chart-axis" />
               <line x1="16" y1="16" x2="504" y2="16" class="chart-guide" />
               <line x1="16" y1="71" x2="504" y2="71" class="chart-guide" />
@@ -188,7 +200,7 @@
               <g id="chart-points"></g>
             </svg>
           </div>
-          <p class="chart-legend">Blue: primary LSTM &nbsp; Purple: enhanced LSTM. Each uses a different F2 cutoff.</p>
+          <p class="chart-legend">Blue: Trajectory-Feature LSTM &nbsp; Purple: Embedding-and-Feature LSTM. Each uses its own F2 cutoff.</p>
         </section>
 
         <section class="panel latest-panel">

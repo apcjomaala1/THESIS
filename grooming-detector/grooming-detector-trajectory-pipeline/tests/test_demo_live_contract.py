@@ -54,6 +54,18 @@ def test_every_bound_id_exists_in_template():
     assert bound_ids <= template_ids
 
 
+def test_model_labels_describe_inputs_without_a_preferred_variant():
+    for label in ("Trajectory-Feature LSTM", "Embedding-and-Feature LSTM"):
+        assert label in TEMPLATE
+        assert label in SCRIPT
+    for old_label in ("Primary LSTM", "Enhanced LSTM", "primary-method"):
+        assert old_label not in TEMPLATE
+        assert old_label not in SCRIPT
+    assert 'id="embedding-score-fill"' in TEMPLATE
+    assert "chapter4.embedding_model" in TEMPLATE
+    assert "Both below cutoff" in SCRIPT
+
+
 def test_files_have_clean_text_encoding():
     for marker in ("Ã", "Â", "â€“", "â€”"):
         assert marker not in SCRIPT

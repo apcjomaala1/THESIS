@@ -233,20 +233,10 @@ h2 {
   background: #eceae2;
 }
 
-.results-table .primary-method th,
-.results-table .primary-method td {
+.results-table .lstm-method th,
+.results-table .lstm-method td {
   background: var(--blue-soft);
   font-weight: 700;
-}
-
-.primary-method th span {
-  margin-left: 4px;
-  padding: 2px 5px;
-  border-radius: 999px;
-  background: var(--blue);
-  color: #ffffff;
-  font-size: 0.62rem;
-  text-transform: uppercase;
 }
 
 .results-footnote {
@@ -512,7 +502,7 @@ summary:focus-visible {
 
 .enhanced-score-row .score-value {
   color: #684c91;
-  font-size: 1.9rem;
+  font-size: 2.35rem;
 }
 
 .score-label,
@@ -611,6 +601,10 @@ summary:focus-visible {
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.embedding-score-fill {
+  background: #684c91;
 }
 
 .chart-line-enhanced {

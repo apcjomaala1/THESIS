@@ -179,7 +179,7 @@ class LiveDemoEngine:
         if turn_count == 0:
             return {"error": "Empty conversation"}
         if not models or set(models) - {"lstm", "enhanced_lstm"}:
-            raise ValueError("models must contain primary and/or enhanced LSTM")
+            raise ValueError("models must select the Trajectory-Feature and/or Embedding-and-Feature LSTM")
 
         texts = [turn["text"].strip() for turn in conversation_history]
         authors = [turn["author"] for turn in conversation_history]
