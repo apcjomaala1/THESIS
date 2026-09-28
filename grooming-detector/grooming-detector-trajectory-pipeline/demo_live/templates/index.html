@@ -6,18 +6,18 @@
   <title>Conversation Model Demo</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body data-lstm-threshold="{{ lstm_threshold }}">
+<body data-lstm-threshold="{{ lstm_threshold }}" data-enhanced-threshold="{{ enhanced_lstm_threshold }}">
   <main class="page-shell">
     <header class="page-header">
       <div>
         <p class="eyebrow">WASD thesis prototype</p>
-        <h1>Conversation Model Demo</h1>
-        <p class="subtitle">See the held-out Chapter IV results, then compare the frozen models on PAN12 validation conversations or synthetic examples.</p>
+        <h1>GroomShield Model Demo</h1>
+        <p class="subtitle">Compare the primary and enhanced LSTMs against three baselines, then try a conversation turn by turn.</p>
       </div>
       <div class="pipeline" aria-label="Model pipeline">
         <span>DistilBERT</span><b aria-hidden="true">&#8594;</b>
         <span>7 features</span><b aria-hidden="true">&#8594;</b>
-        <span>LSTM score</span>
+        <span>Two LSTM scores</span>
       </div>
     </header>
 
@@ -26,7 +26,7 @@
         <div>
           <p class="eyebrow">Chapter IV results</p>
           <h2 id="chapter4-heading">What the held-out test showed</h2>
-          <p>Frozen final-test results on {{ '{:,}'.format(chapter4.conversations) }} unseen-author conversations. These values are read from the accepted evaluation report; opening this demo does not rerun the final test.</p>
+          <p>F2-selected cutoffs on saved scores from {{ '{:,}'.format(chapter4.conversations) }} unseen-author conversations. Cutoffs came from validation; the original test was evaluated earlier under F0.5. Opening this demo does not rerun the test.</p>
         </div>
         <div class="sample-count">
           <strong>{{ '{:,}'.format(chapter4.conversations) }}</strong>
@@ -36,7 +36,7 @@
 
       <div class="result-facts" aria-label="Primary LSTM results">
         <div><span>PR-AUC</span><strong>{{ '%.4f' % chapter4.primary.pr_auc }}</strong></div>
-        <div><span>F0.5</span><strong>{{ '%.4f' % chapter4.primary.f0_5 }}</strong></div>
+        <div><span>F2</span><strong>{{ '%.4f' % chapter4.primary.f2 }}</strong></div>
         <div><span>Positive conversations found</span><strong>{{ chapter4.primary.tp }} of {{ chapter4.positive_conversations }}</strong></div>
         <div><span>Final-test errors</span><strong>{{ chapter4.primary.fp }} FP · {{ chapter4.primary.fn }} FN</strong></div>
       </div>
@@ -44,22 +44,22 @@
       <div class="matched-result">
         <strong>Key finding:</strong> with the same seven features, the LSTM improved over the weighted scorer by
         <strong>{{ '%+.4f' % chapter4.matched_pr_auc.point_difference }} PR-AUC</strong>
-        and <strong>{{ '%+.4f' % chapter4.matched_f0_5.point_difference }} F0.5</strong>.
-        Both 95% paired intervals remained above zero. False positives fell from {{ chapter4.weighted_false_positives }} to {{ chapter4.primary.fp }}, and false negatives from {{ chapter4.weighted_false_negatives }} to {{ chapter4.primary.fn }}.
+        and <strong>{{ '%+.4f' % chapter4.matched_f2.point_difference }} F2</strong>.
+        Both 95% paired intervals are above zero. The primary LSTM has {{ chapter4.primary.fn }} missed positives and {{ chapter4.primary.fp }} false alerts; the weighted scorer has {{ chapter4.weighted_false_negatives }} and {{ chapter4.weighted_false_positives }}.
       </div>
 
       <div class="results-table-wrap">
         <table class="results-table">
-          <caption>Held-out point estimates reported in Chapter IV</caption>
+          <caption>Revised F2-policy point estimates reported in Chapter IV</caption>
           <thead>
-            <tr><th>Method</th><th>PR-AUC</th><th>F0.5</th><th>Precision</th><th>Recall</th><th>FP</th><th>FN</th></tr>
+            <tr><th>Method</th><th>PR-AUC</th><th>F2</th><th>Precision</th><th>Recall</th><th>FP</th><th>FN</th></tr>
           </thead>
           <tbody>
             {% for method in chapter4.methods %}
             <tr{% if method.primary %} class="primary-method"{% endif %}>
               <th scope="row">{{ method.label }}{% if method.primary %} <span>primary</span>{% endif %}</th>
               <td>{{ '%.4f' % method.pr_auc }}</td>
-              <td>{{ '%.4f' % method.f0_5 }}</td>
+              <td>{{ '%.4f' % method.f2 }}</td>
               <td>{{ '%.4f' % method.precision }}</td>
               <td>{{ '%.4f' % method.recall }}</td>
               <td>{{ method.fp }}</td><td>{{ method.fn }}</td>
@@ -68,11 +68,11 @@
           </tbody>
         </table>
       </div>
-      <p class="results-footnote">The enhanced LSTM uses 768 additional embedding inputs. Its higher point estimate did not establish a supported difference from the smaller primary LSTM; the primary matched-input comparison tests recurrent aggregation directly.</p>
+      <p class="results-footnote">The enhanced LSTM detected all 44 positives, with 41 false alerts. Its F2 and PR-AUC differences from the primary LSTM were inconclusive; the primary matched-input comparison tests recurrent aggregation directly.</p>
     </section>
 
     <p class="demo-note">
-      PAN12 examples are original validation conversations selected from saved predictions to show where the LSTM succeeds and baselines fail. They use the dataset's conversation-level author labels. Synthetic examples use authored intent labels. The held-out report above remains the source for measured overall improvement.
+      PAN12 examples are original validation conversations with conversation-level author labels. Synthetic examples have authored intent labels. Live prefix decisions illustrate model behavior; the Chapter IV report above supplies the measured overall comparison.
     </p>
 
     <div class="demo-grid">
@@ -134,13 +134,17 @@
 
           <div class="score-row">
             <div>
-              <span class="score-label">LSTM conversation score</span>
+              <span class="score-label">Primary LSTM score</span>
               <strong class="score-value" id="lstm-score">--</strong>
             </div>
             <div class="threshold-copy">
-              <span>Frozen threshold</span>
+              <span>F2 cutoff</span>
               <strong>{{ '%.4f' % lstm_threshold }}</strong>
             </div>
+          </div>
+          <div class="score-row enhanced-score-row">
+            <div><span class="score-label">Enhanced LSTM score</span><strong class="score-value" id="enhanced-lstm-score">--</strong></div>
+            <div class="threshold-copy"><span>F2 cutoff</span><strong>{{ '%.4f' % enhanced_lstm_threshold }}</strong></div>
           </div>
 
           <div class="score-track" aria-hidden="true">
@@ -157,7 +161,7 @@
           <p id="comparison-summary" aria-live="polite">Run the full chat to compare the final decisions.</p>
           <div class="comparison-table-wrap">
             <table class="live-comparison-table">
-              <caption>Each method uses its own frozen threshold</caption>
+              <caption>Each method uses its validation-selected F2 cutoff</caption>
               <thead><tr><th>Method</th><th>Score / cutoff</th><th>Decision</th><th>Outcome vs reference</th></tr></thead>
               <tbody id="comparison-body"></tbody>
             </table>
@@ -174,15 +178,17 @@
             <span class="tiny-label">one point per turn</span>
           </div>
           <div class="chart-wrap">
-            <svg id="trajectory-svg" viewBox="0 0 520 150" role="img" aria-label="LSTM conversation score by turn">
+            <svg id="trajectory-svg" viewBox="0 0 520 150" role="img" aria-label="Primary and enhanced LSTM conversation scores by turn">
               <line x1="16" y1="126" x2="504" y2="126" class="chart-axis" />
               <line x1="16" y1="16" x2="504" y2="16" class="chart-guide" />
               <line x1="16" y1="71" x2="504" y2="71" class="chart-guide" />
               <line id="chart-threshold" x1="16" x2="504" class="chart-threshold" />
               <path id="path-lstm" class="chart-line" d="" />
+              <path id="path-enhanced-lstm" class="chart-line chart-line-enhanced" d="" />
               <g id="chart-points"></g>
             </svg>
           </div>
+          <p class="chart-legend">Blue: primary LSTM &nbsp; Purple: enhanced LSTM. Each uses a different F2 cutoff.</p>
         </section>
 
         <section class="panel latest-panel">
@@ -213,7 +219,7 @@
     </div>
 
     <footer>
-      Frozen endpoint: {{ endpoint }}. PAN12 validation examples and synthetic illustrations are identified in the scenario notes. Saved selection results are separate from live model outputs.
+      Endpoint: {{ endpoint }}. PAN12 validation examples and synthetic illustrations are identified in the scenario notes. Prefix scores are exploratory; the reported evaluation uses final-conversation scores.
     </footer>
   </main>
 

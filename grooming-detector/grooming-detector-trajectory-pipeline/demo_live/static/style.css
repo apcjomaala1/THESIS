@@ -505,6 +505,16 @@ summary:focus-visible {
   margin-bottom: 10px;
 }
 
+.enhanced-score-row {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.enhanced-score-row .score-value {
+  color: #684c91;
+  font-size: 1.9rem;
+}
+
 .score-label,
 .threshold-copy span {
   display: block;
@@ -601,6 +611,17 @@ summary:focus-visible {
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.chart-line-enhanced {
+  stroke: #684c91;
+  stroke-width: 2.5;
+}
+
+.chart-legend {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
 }
 
 .feature-list,

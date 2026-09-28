@@ -1,0 +1,37 @@
+{
+  "updated_utc": "2026-09-19T18:41:09.116491+00:00",
+  "title": "GroomShield: Detecting Grooming-Related Interactions in Chat Conversations Using DistilBERT and LSTM-Based Behavioral Sequence Modeling",
+  "abstract_words": 232,
+  "objectives_preserved": true,
+  "research_questions_preserved": true,
+  "chapter_2_preserved": true,
+  "references_preserved": true,
+  "rendering_performed": false,
+  "source_receipt": ".threshold_analysis/f2_test_reanalysis.json",
+  "files": {
+    "Finals_Revised_Paper_WASD.md": {
+      "before_sha256": "dc631f1885e91009ab4da8d047168f525e415240eccdfbced940e9e16df56127",
+      "after_sha256": "ec74d0f3c23ffa450bb05bedc403fa0ba1fdea54e49328bcb50ae86bcffd554e"
+    },
+    "CHAPTER_IV_RESULTS_AND_DISCUSSION.md": {
+      "before_sha256": "9cc6a66bfb34026ccdeaf93edb509c803bc33c21b3af0b3d957eb84236d0b229",
+      "after_sha256": "cbb054b92402edbb6a656d2b5ea08a8e022a4e8dd8b9a14bdedd6f24512a981f"
+    },
+    "CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md": {
+      "before_sha256": "34b825c0415c78abcaa63d57f78ee419dadc32a72e5c04e191ae0946f97c68d1",
+      "after_sha256": "7b1c001f0903e697c5791925d59007bd5faa2a59ea1edeef5e4b8ef1133961ea"
+    },
+    "ABSTRACT_F2.md": {
+      "before_sha256": "d7b66b69fe008f6623e99af261676e4851d388fbadda9714c5219fed809713c2",
+      "after_sha256": "f4f06d617eff1849d7a76ceb00b80e4e8a7e50203849afe6b05f2ee5b21ddb33"
+    },
+    "README.md": {
+      "before_sha256": "24fe8ac5aeedbbff569b3afe659a143014fa4d822ba5f3caa5855ec102745480",
+      "after_sha256": "5d9ec3c5775d00115cbe09e8368e0fb5d1639ac0e50a65327aba777314933018"
+    },
+    "THESIS_RECOVERY_NEXT_STEPS.md": {
+      "before_sha256": "17118692fe64a1ee85d8ed572de33dcade64d7926a76dcb7815ab573f5e5c0dd",
+      "after_sha256": "1722638de1a1c19cd2e508814bb1fdb58624a739fe5c3bdafaa8210e6c629bd7"
+    }
+  }
+}

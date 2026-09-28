@@ -1,4 +1,4 @@
-__*AI-Based Detection of Grooming-Related Interactions in Chat Conversations Using Contextual and Behavioral Analysis*__
+__*GroomShield: Detecting Grooming-Related Interactions in Chat Conversations Using DistilBERT and LSTM-Based Behavioral Sequence Modeling*__
 
  
 
@@ -50,6 +50,12 @@ Andrei Luis M. Torres
 
  
 
+# Abstract
+
+Keyword-based chat moderation can miss grooming-related interactions whose meaning emerges through conversational context and behavioral progression. This study develops GroomShield, a two-layer artificial intelligence module designed to improve detection coverage and reduce false negatives. A context-conditioned DistilBERT classifier produces turn-level author-derived proxy scores, while a Long Short-Term Memory (LSTM) network processes seven chronological features describing score patterns, semantic movement, and speaker participation. The PAN-2012 Sexual Predator Identification corpus was selected for evaluation, with positive conversations defined by the presence of an officially identified predator author. Connected-author partitioning separates participants across training, validation, and test sets. The primary LSTM is compared with a keyword rule, maximum classifier-score aggregation, and a weighted scorer using the same features; an enhanced LSTM additionally incorporates text embeddings. The revised operating policy selects thresholds using validation F2 and applies them to previously evaluated test scores. Across 1,862 test conversations containing 44 positives, the primary LSTM achieved 93.18% recall, 66.13% precision, and 0.8613 F2, missing three positives compared with six for the weighted scorer, five for maximum classifier-score aggregation, and 17 for the keyword rule. Paired component-bootstrap intervals supported its F2 and PR-AUC advantages over the weighted scorer. The enhanced LSTM detected all 44 positives at 51.76% precision and 0.8429 F2. These findings demonstrate the contribution of contextual and behavioral sequence modeling to recall-oriented conversation detection, providing a foundation for AI-assisted moderation that complements existing safeguards and human review.
+
+**Keywords:** online grooming detection; chat moderation; conversational context; behavioral pattern analysis; natural language processing; long short-term memory networks.
+
 # I. Introduction
 
 ## 1.1 Background of the Study
@@ -62,7 +68,7 @@ A central challenge is therefore the number of harmful or concerning interaction
 
 Advances in machine learning and natural language processing provide a practical basis for moving beyond isolated-message filtering [9], [10]. Transformer models can represent a message in relation to its preceding context, while sequence models can learn how scores and behavioral indicators change over time. Together, these techniques support a moderation architecture that analyzes both what is being communicated and how the interaction develops.
 
-This study develops an AI-powered moderation module that combines contextual language analysis with behavioral trajectory modeling. Layer 1 uses DistilBERT to evaluate the current turn together with up to two preceding turns. Layer 2 uses an LSTM to aggregate a chronological sequence of seven trajectory features reflecting score level and change, semantic movement, and speaker-turn structure. The module is designed to complement keyword filters and reporting mechanisms by prioritizing conversations that warrant human review.
+This study develops GroomShield, an AI-powered moderation module that combines contextual language analysis with behavioral sequence modeling. Layer 1 uses DistilBERT to evaluate the current turn together with up to two preceding turns. Layer 2 uses an LSTM to aggregate a chronological sequence of seven trajectory features reflecting score level and change, semantic movement, and speaker-turn structure. GroomShield complements keyword filters and reporting mechanisms by identifying conversations that warrant human review, with recall and false-negative reduction as its central performance priorities.
 
 To evaluate the proposed architecture, the study selected the PAN-2012 Sexual Predator Identification corpus because its scale, chronological conversations, persistent speaker identifiers, and official predator-author list support contextual and behavioral sequence analysis [13]. The dataset provides a reproducible basis for comparing the complete two-layer module with keyword, static-score, and recurrent alternatives.
 
@@ -104,7 +110,7 @@ The completed architecture contains two learned layers. Layer 1 uses a context-c
 
 The evaluation dataset consists of eligible dyadic conversations from the PAN12 training corpus. After the required validity and conversation-structure checks, the candidate pool contains 18,567 conversations and 218,114 turns. The official predator-author list supplies the supervision used by the experiment: Layer 1 learns from current-author membership, while Layer 2 learns the corresponding conversation-level outcome.
 
-The study compares the proposed seven-feature LSTM with a training-derived keyword rule, maximum Layer 1 proxy aggregation, and a validation-fitted weighted trajectory scorer. A secondary LSTM supplemented with 768-dimensional base DistilBERT embeddings is evaluated separately. All methods are tested on identical author-disjoint conversation partitions, with particular attention to recall, false negatives, PR-AUC, F0.5, and paired performance differences.
+The study compares the proposed seven-feature LSTM with a training-derived keyword rule, maximum Layer 1 proxy aggregation, and a validation-fitted weighted trajectory scorer. A secondary LSTM supplemented with 768-dimensional base DistilBERT embeddings is evaluated separately. All methods use identical author-disjoint conversation partitions. F2 is the principal final-cutoff selection criterion, supported by recall, false-negative counts, precision, PR-AUC, and paired performance differences.
 
 ### 1.4.2 Limitations of the Study
 
@@ -112,7 +118,7 @@ PAN12 provides verified predator-author membership rather than exhaustive groomi
 
 The completed evaluation uses one established historical benchmark; locally generated synthetic conversations and other unreviewed candidate datasets are excluded. The controlled experiment establishes the architecture's performance under the selected dataset conditions. Dedicated external evaluation on representative contemporary communication, including current slang, newly developed obfuscation strategies, Filipino or Taglish communication, and other platform environments, is needed to measure transfer. No independent English-language filter was applied.
 
-The completed study evaluates model effectiveness through controlled offline sequential replay rather than live-platform integration. Operational evaluation is the next stage and should measure end-to-end latency, throughput, scalability, moderator outcomes, fairness, and privacy performance on representative traffic. The module is designed to prioritize human review, not to perform autonomous enforcement.
+The completed study evaluates detection effectiveness through controlled offline sequential replay rather than live-platform integration. A separate local CPU benchmark measures per-turn HTTP latency and sequential throughput for both LSTM variants on synthetic chats. Representative-platform evaluation remains the next stage for concurrency, scalability, moderator outcomes, fairness, and privacy performance. The module is designed to prioritize human review, not to perform autonomous enforcement.
 
 The system builds upon pretrained language models and a dyadic conversation design. Its performance is therefore influenced by the limitations of those models, the age and composition of the selected corpus, class imbalance, and the extent to which the selected trajectory features represent behavior in other environments.
 
@@ -126,13 +132,13 @@ This research contributes to computer science, artificial intelligence, cybersec
 
 The study contributes a two-layer design consisting of a context-conditioned DistilBERT classifier, seven interpretable trajectory features, and recurrent LSTM aggregation. The matched comparison between the seven-feature LSTM and a weighted scorer receiving the same information provides direct empirical evidence that learned sequence modeling adds predictive value beyond static feature combination. The primary LSTM's improvements in recall and false-negative reduction also address the study's central safety-oriented performance objective.
 
-The research additionally contributes a reproducible evaluation framework for conversational data: connected-author partitioning, training-only construction of derived resources, validation-only model and threshold selection, a locked final test, and component-grouped uncertainty estimation. These controls strengthen the reliability of the reported findings and provide a foundation for future studies of contextual and behavioral moderation.
+The research additionally contributes a reproducible evaluation framework for conversational data: connected-author partitioning, training-only construction of derived resources, validation-based checkpoint and threshold selection, preserved test-score artifacts, and component-grouped uncertainty estimation. These controls distinguish model learning from operating-threshold analysis and support repeatable comparison of the same methods.
 
 ### 1.5.2 Industry and Practical Applications
 
 For chat platforms, gaming communities, social networks, and collaborative systems, the research demonstrates a practical architecture for augmenting existing moderation workflows. The module combines contextual language processing with an auditable sequence representation, allowing its trajectory features and conversation scores to be inspected rather than functioning only as an opaque end-to-end decision.
 
-The approach is particularly relevant to human-review workflows in which limited moderation resources must be directed toward conversations most likely to require attention. Its modular design allows keyword rules, contextual classifiers, trajectory models, and human escalation policies to operate as complementary safeguards rather than mutually exclusive alternatives.
+The approach is particularly relevant to moderation workflows seeking broader detection coverage, including conversations not identified by keyword filters or reports. Keyword rules, contextual classifiers, sequence models, and human escalation policies operate as complementary safeguards. F2 aligns the conversation-level decision rule with the study's priority of reducing missed positive conversations; precision and false-positive counts document the accompanying tradeoff.
 
 The completed prototype establishes technical feasibility in controlled offline evaluation. Adaptation to a specific platform would still require representative local data, calibration, privacy and fairness assessment, performance engineering, and evaluation with actual moderators; these are deployment requirements rather than limitations on the architectural contribution demonstrated here.
 
@@ -167,6 +173,10 @@ Chat Moderation System - An automated or semi-automated system designed to monit
 Contextual Analysis - The examination of messages or interactions within their broader communicative context, considering surrounding messages, conversation history, and conversational intent rather than analyzing content in isolation.
 
 Conversation-Level Endpoint - The primary measurable outcome used in the experiment: whether a dyadic PAN12 conversation contains at least one author included in the official predator-author list.
+
+F2 Score - A precision-recall summary that places greater weight on recall. Validation F2 selects the final conversation cutoffs, aligning the operating policy with false-negative reduction.
+
+GroomShield - The proposed conversation-analysis module combining context-conditioned DistilBERT scoring with LSTM-based behavioral sequence modeling.
 
 Grooming - A manipulative process in which a malicious user gradually builds trust with a target, typically a minor, to lower the target's defenses and facilitate exploitation or abuse.
 
@@ -257,11 +267,11 @@ Together, OGDM, contextual NLP, behavioral analysis, and recurrent sequence lear
 
 ## 3.1 Research Design
 
-This study uses a developmental and experimental research design [15] to build and evaluate an offline conversation-analysis prototype. The research centers on the proposed two-layer contextual and behavioral trajectory architecture. PAN12 was selected as an appropriate evaluation corpus, with the measurable outcome operationalized as **conversation-level identification of conversations containing at least one author on the dataset's official predator list**. This outcome is applied consistently across model development, comparison, and held-out testing.
+This study uses a developmental and experimental research design [15] to build and evaluate GroomShield, an offline conversation-analysis prototype. The research centers on the two-layer contextual and behavioral sequence architecture. PAN12 was selected as an appropriate evaluation corpus, with the measurable outcome operationalized as **conversation-level identification of conversations containing at least one author on the dataset's official predator list**. This outcome is applied consistently across model development and evaluation.
 
 The proposed system has two learned layers. Layer 1 fine-tunes DistilBERT using the official predator-author list as weak supervision. For each current turn, it processes that turn together with the two preceding turns and produces a **predator-author proxy score**. Layer 2 uses the chronological sequence of features constructed from proxy-score dynamics, base-encoder topic distance, and cumulative turn structure to estimate whether the conversation contains a listed predator. The LSTM is the sequence model, while a weighted scorer, an aggregated raw Layer 1 score, and a keyword rule serve as comparison methods.
 
-All model development and evaluation are conducted through chronological offline replay of dataset conversations. The study does not evaluate deployment latency, platform integration, live users, or autonomous moderation. The output is intended as decision support for human review. A below-threshold result is not a determination that a conversation or participant is safe.
+Model development and detection evaluation use chronological offline replay of dataset conversations. A separate local HTTP benchmark measures warmed per-turn latency and throughput on synthetic conversations; it does not test platform integration, live users, or autonomous moderation. The output is intended as decision support for human review. A below-threshold result is not a determination that a conversation or participant is safe.
 
 The experiment tests whether an LSTM using the same seven trajectory inputs as the weighted scorer improves the approved conversation-level endpoint. A larger LSTM that additionally receives a 768-dimensional base DistilBERT embedding is evaluated separately as an enhanced-input model so that an input-capacity difference is not misreported as an architectural advantage. No superiority result is assumed in advance.
 
@@ -335,7 +345,7 @@ This design prevents the same participant's recurring language and interaction p
 
 The locked manifest assigns 13,031 conversations to training, 1,827 to validation, and 1,862 to the final test; an additional 1,847 conversations are excluded from the primary experiment. The corresponding positive-conversation counts are 319, 49, 44, and 42. Partition assignment uses connected-component membership, partition size, and class balance rather than model scores or text-derived features. The manifest records zero conversation, author, and connected-component overlap across all groups together with the random seed, source-data hash, and manifest hash.
 
-The training partition is used for parameter estimation. After partitioning, negative Layer 1 training rows were downsampled to three negatives per positive row; validation and final-test distributions remained untouched. The validation partition was used for checkpoint selection, hyperparameter selection, comparator fitting, and threshold selection. The locked final test was evaluated once after code, checkpoints, thresholds, feature definitions, and reporting rules were frozen.
+The training partition is used for parameter estimation. After partitioning, negative Layer 1 training rows were downsampled to three negatives per positive row; validation and test distributions remained untouched. Validation supplies checkpoint selection, hyperparameter selection, comparator fitting, and threshold selection. The original test evaluation produced preserved conversation scores; the revised F2 policy is evaluated from those same scores using validation-selected cutoffs, as described in Section 3.5.2.
 
 ### 3.3.4 Feature Engineering
 
@@ -365,7 +375,7 @@ The centroid source conversation IDs and embedding-model digest are recorded, an
 
 Layer 1 uses `distilbert-base-uncased` with a two-class sequence-classification head. Its input is the current turn plus up to two preceding turns defined in Section 3.3.2, and its target is the current author's official predator-list membership \(Z_t\). The training loss is two-class cross-entropy. Negative-row downsampling is confined to the training partition; validation and final test rows retain their natural class distribution.
 
-Optimization uses fused AdamW on an NVIDIA RTX 3060 Ti, BF16 mixed precision, TF32, gradient clipping at 1.0, and random seed 42. The completed run uses five epochs, learning rate \(2\times10^{-5}\), weight decay 0.01, warm-up ratio 0.10, three sampled training negatives per positive row, physical training batch size 8, validation batch size 16, gradient accumulation 1, and early-stopping patience of two epoch evaluations. The checkpoint is selected using validation PR-AUC, and its operating threshold is selected separately on validation data using F0.5. The selected checkpoint, tokenizer, configuration, metrics history, and row manifest are saved together.
+Optimization uses fused AdamW on an NVIDIA RTX 3060 Ti, BF16 mixed precision, TF32, gradient clipping at 1.0, and random seed 42. The completed run uses five epochs, learning rate \(2\times10^{-5}\), weight decay 0.01, warm-up ratio 0.10, three sampled training negatives per positive row, physical training batch size 8, validation batch size 16, gradient accumulation 1, and early-stopping patience of two epoch evaluations. The checkpoint was selected using validation PR-AUC, and its original diagnostic binary threshold was selected using F0.5. Layer 2 consumes the continuous positive-class score, not this diagnostic binary decision; the Layer 1 checkpoint and diagnostic threshold remain unchanged. The selected checkpoint, tokenizer, configuration, metrics history, and row manifest are saved together.
 
 The positive-class softmax output is denoted \(R_t\). It estimates the contextualized author-derived training target and serves as the trajectory signal used for feature construction and conversation-level sequence modeling.
 
@@ -373,7 +383,7 @@ The positive-class softmax output is denoted \(R_t\). It estimates the contextua
 
 The primary Layer 2 model is an LSTM that receives the chronological sequence of the same seven features supplied to the weighted scorer. Padding masks ensure that padded turns do not affect hidden-state computation. A secondary enhanced-input LSTM concatenates the 768-dimensional base DistilBERT embedding with the seven trajectory features, producing a 775-dimensional turn vector; its result is reported separately and is not used to claim a matched-input architectural advantage.
 
-The selected primary model is a unidirectional, single-layer LSTM with hidden dimension 128 and dropout 0.20, trained with batch size 32, Adam learning rate 0.001, weight decay 0.0001, gradient clipping at 1.0, a maximum of 20 epochs, and early-stopping patience of four validation evaluations. The selected enhanced model uses the same hidden dimension, layer count, dropout, batch size, and stopping rule with learning rate 0.0005. Both searches use seed 42 and select by validation PR-AUC with validation F0.5 as the first tie-break criterion.
+The selected primary model is a unidirectional, single-layer LSTM with hidden dimension 128 and dropout 0.20, trained with batch size 32, Adam learning rate 0.001, weight decay 0.0001, gradient clipping at 1.0, a maximum of 20 epochs, and early-stopping patience of four validation evaluations. The selected enhanced model uses the same hidden dimension, layer count, dropout, batch size, and stopping rule with learning rate 0.0005. Both completed searches used seed 42 and validation PR-AUC with validation F0.5 as the first tie-break criterion. These checkpoints are retained; F2 changes their final conversation cutoffs, not the training loss, learned weights, or checkpoint selection.
 
 Layer 2 is trained only against the valid conversation label \(Y_c\). `BCEWithLogitsLoss` is applied to the output at the final valid turn using a positive-class weight of 39.8495, computed solely from the 12,712 negative and 319 positive training conversations. No turn-level loss or cumulative `is_suspicious` target is used. Validation selects the LSTM checkpoint and its conversation flagging threshold. Intermediate prefix scores demonstrate sequence processing, and the first threshold crossing is summarized as an exploratory prefix statistic.
 
@@ -386,35 +396,74 @@ Four comparisons are evaluated on the same conversation endpoint and locked part
 3. **Keyword rule:** a fixed lexicon derived only from the revised training partition; a conversation is positive when any turn matches the rule. Lexicon construction and matching rules are frozen before final testing.
 4. **Enhanced-input LSTM:** the 775-input LSTM reported separately from the primary matched seven-feature LSTM.
 
-The principal architecture comparison is the seven-feature LSTM versus the seven-feature weighted scorer. Every learned comparator is tuned independently on validation data. The raw Layer 1 baseline uses its actual positive-class score directly and is not passed through the weighted scorer or another sigmoid.
+The principal architecture comparison is the seven-feature LSTM versus the seven-feature weighted scorer. The F2 analysis holds learned parameters, weighted-scorer coefficients, keyword resources, and feature definitions fixed and selects each scored method's final cutoff independently on validation data. It compares fixed models under an F2 operating policy, not a new F2-directed hyperparameter search or weighted-scorer refit. The raw Layer 1 baseline uses its actual positive-class score directly and is not passed through the weighted scorer or another sigmoid.
 
 ## 3.5 Evaluation/Validation
 
-### 3.5.1 Validation and Final-Test Protocol
+### 3.5.1 Threshold Selection
 
-All development decisions are made from the training and validation partitions. Layer 1 checkpoint selection, negative-sampling configuration, LSTM configuration, weighted-scorer weights, keyword lexicon, feature thresholds, and every classification threshold are frozen before the new final holdout is scored. The final evaluation script verifies the data and configuration hashes, evaluates every method on identical conversation IDs, and writes predictions and metrics without modifying the saved configuration.
-
-The reported result is generated only by this frozen evaluation path. Every method is evaluated on the same ordered conversation IDs, and the final report retains the outcome regardless of which model performs best.
-
-### 3.5.2 Metrics and Comparative Analysis
-
-The unit of primary evaluation is the conversation, with \(Y_c\) as ground truth. For each method, the report includes the numbers of true positives, false positives, true negatives, and false negatives, together with precision, recall, specificity, F1, F0.5, PR-AUC, and ROC-AUC. Precision, recall, F1, and F0.5 are computed as
+GroomShield separates learning a conversation score from choosing the cutoff that converts that score into a flag. The trained models and scoring functions remain fixed. For method \(m\), conversation \(c\), score \(s_m(c)\), and cutoff \(\theta_m\), the decision is
 
 \[
-\text{Precision}=\frac{TP}{TP+FP}, \qquad
-\text{Recall}=\frac{TP}{TP+FN},
+\widehat{Y}_{m,c}=\mathbf{1}[s_m(c)\geq\theta_m].
+\]
+
+A positive decision flags the conversation for human review. F2 is the selection criterion because GroomShield is a screening module intended to detect conversations that might otherwise receive no attention, rather than an autonomous enforcement system. The operating policy therefore gives greater emphasis to recall while retaining precision in the objective. F1 remains a supplementary reporting measure rather than the criterion used to choose the final cutoff.
+
+The threshold-selection procedure is:
+
+1. **Retain the fitted scoring functions.** Use the selected DistilBERT and LSTM checkpoints, weighted-scorer coefficients, keyword lexicon, and seven-feature definitions without retraining or reselection.
+2. **Use validation conversations only.** Read the saved final conversation scores for the same 1,827 validation conversations, including 49 positives, for every method. Model scores, rather than test outcomes, define the candidate cutoffs.
+3. **Evaluate candidate cutoffs.** For each method, consider every distinct score observed on validation. At each cutoff, apply the greater-than-or-equal decision rule and compute precision, recall, and F2 against the conversation labels.
+4. **Select the maximum-validation-F2 cutoff.** Resolve equal F2 values by higher recall, then higher precision, then the higher cutoff. Each method receives its own cutoff because its score distribution differs.
+5. **Apply the selected cutoff unchanged.** Use the retained full-precision value on the saved test scores through Section 3.5.2. No cutoff is chosen or adjusted using test outcomes.
+
+The selected conversation cutoffs are:
+
+| Method | Validation-selected F2 cutoff |
+|---|---:|
+| Primary LSTM | 0.275535285 |
+| Enhanced LSTM | 0.000971102 |
+| Maximum Layer 1 | 0.961438656 |
+| Weighted scorer | 0.696637128 |
+| Keyword rule | 1.000000000 |
+
+*Table 3.3. Final conversation cutoffs selected by validation F2. Displayed values are rounded to nine decimal places; calculations retain full precision.*
+
+The keyword rule produces binary scores, so its selected cutoff of 1.0 gives exactly the same decisions as the original 0.5 cutoff. These conversation cutoffs are separate from the Layer 1 diagnostic threshold and the spike/drop thresholds used to construct trajectory features; those existing thresholds remain unchanged. The numerical cutoffs are model-specific decision boundaries, not calibrated probabilities of grooming.
+
+F2 is selected because the research aims to identify positive conversations missed by keyword and static-score approaches. Its formulation assigns a coefficient of four to false negatives and one to false positives, emphasizing recall without ignoring precision. This is a recall-oriented precision-recall objective, not unconstrained recall maximization or an empirically established four-to-one operational harm ratio. False alerts remain reported, while reducing moderator workload is not the principal optimization claim.
+
+### 3.5.2 Test-Score Analysis and Verification
+
+The F2 policy was adopted after the original F0.5 test evaluation. Its cutoffs are selected exclusively from the 1,827 validation conversations and applied unchanged to the saved scores for the 1,862-conversation test partition. These F2 results are a revised-policy analysis of the previously evaluated, author-disjoint test partition, not a new untouched holdout. No test-score threshold search, retraining, checkpoint reselection, or new model inference is performed.
+
+The analysis verifies identical validation populations across methods, reproduces the original test predictions and metrics, and preserves the original evaluation artifacts. Every method is evaluated on the same test conversation IDs, and all outcomes are retained regardless of which method performs best. F2 applies to the final conversation decision; existing Layer 1 diagnostic and feature-construction thresholds remain unchanged.
+
+### 3.5.3 Metrics and Comparative Analysis
+
+The unit of evaluation is the conversation, with \(Y_c\) as ground truth. The primary reporting measures are recall, false-negative count, and F2. Precision, false-positive count, specificity, F1, PR-AUC, and ROC-AUC characterize the complete detection tradeoff. Let \(P\) and \(R\) denote precision and recall:
+
+\[
+P=\frac{TP}{TP+FP}, \qquad
+R=\frac{TP}{TP+FN},
 \]
 
 \[
 F_1=\frac{2PR}{P+R}, \qquad
-F_{0.5}=\frac{1.25PR}{0.25P+R}.
+F_2=\frac{5PR}{4P+R}
+=\frac{5TP}{5TP+4FN+FP}.
 \]
 
-PR-AUC is emphasized alongside thresholded metrics because positive conversations are rare. Validation PR-AUC selects checkpoints, while validation F0.5 selects operating thresholds; no threshold is retuned on the final test. Ninety-five-percent confidence intervals and paired method-difference intervals are estimated by bootstrap resampling connected-author components so that conversations linked by an author remain grouped.
+Validation PR-AUC selected the retained checkpoints. PR-AUC remains important because positive conversations are rare; a cutoff change does not change PR-AUC or ROC-AUC. Ninety-five-percent percentile intervals and paired method-difference intervals use 2,000 bootstrap resamples of connected-author components with seed 42. All conversations in each sampled component remain grouped, with identical draws across methods. Threshold-dependent intervals are recalculated for F2 decisions; unchanged ranking-metric intervals are retained after scores and point estimates are verified. These intervals are conditional on fixed models and selected cutoffs and do not incorporate selection uncertainty.
 
-F0.5 is used for operating-threshold selection because the module feeds a finite human-review queue: false positives consume reviewer capacity and can create alert fatigue, so precision receives greater weight at the selected operating point. In the F0.5 formulation, the beta-squared term gives precision four times the weighting of recall. Recall and false-negative count remain separately reported safety outcomes and directly evaluate the study's false-negative-reduction objective; the threshold is not described as recall-optimized.
+Prefix-level scores show how the conversation score develops as evidence accumulates. The primary result uses the final valid turn; intermediate values and first threshold crossings are not validated grooming-onset labels. A separate onset study requires expert-reviewed first-onset annotations and time-to-detection evaluation.
 
-Prefix-level scores and first-threshold-crossing turns show how the model's conversation priority develops as evidence accumulates. They do not constitute onset labels. A separate onset study would require expert-reviewed first-onset annotations and time-to-detection evaluation.
+### 3.5.4 Local Per-Turn Latency Benchmark
+
+To test the panel's operational-performance question separately from detection accuracy, the two selected LSTM checkpoints are benchmarked through the local `/api/score` HTTP endpoint on CPU. Each timed request submits the complete conversation prefix and selects either the primary or enhanced LSTM. The current prototype recomputes contextual DistilBERT scores, base-encoder embeddings, seven trajectory features, and the selected LSTM output for that prefix; therefore the timing includes the complete model path, server-side redaction, request handling, JSON serialization, and localhost transport. The two variants use the same upstream processing, and the only model-path difference is the LSTM input and checkpoint. Models are loaded before timing.
+
+The fixed, unlabeled synthetic workload contains 1-, 4-, 8-, and 16-turn prefixes of the same chat. After three warm-up requests per model and prefix length, 40 requests are timed for each of the eight model-length combinations (160 per model). The order of cases is randomized with seed 42, at concurrency one. Elapsed client-side round-trip time is summarized by median, 95th percentile, and 99th percentile. Sequential throughput is completed requests divided by the cumulative duration of those timed requests. An equally weighted mixture of the four prefix lengths is reported in addition to length-specific values. The machine is an 11th-generation Intel Core i5-11400H with 12 logical processors, six PyTorch intra-operation threads, Windows 11, and CPU inference. This benchmark does not use PAN12 test conversations, change thresholds, or retrain models; it tests this local prototype, not production traffic, network conditions, parallel load, or moderator response time.
 
 ## 3.6 Ethical Considerations
 

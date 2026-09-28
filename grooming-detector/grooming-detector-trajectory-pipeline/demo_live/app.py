@@ -1,4 +1,4 @@
-"""Flask application for the local frozen-model demonstration."""
+"""Flask application for the local F2-policy, frozen-model demonstration."""
 
 from __future__ import annotations
 
@@ -39,25 +39,24 @@ METHOD_LABELS = (
 )
 
 
-def build_chapter4_summary(eval_report: dict) -> dict:
-    """Extract display values from the already-frozen final evaluation report."""
+def build_chapter4_summary(eval_report: dict, f2_report: dict) -> dict:
+    """Display the recorded F2 reanalysis without re-running test inference."""
     audit = eval_report["audit"]
-    metrics = eval_report["metrics"]
-    primary = metrics["lstm_trajectory7"]["point_estimate"]
-    weighted = metrics["weighted"]["point_estimate"]
-    paired = eval_report["paired_component_bootstrap_differences"]
-    matched = paired["lstm_trajectory7_minus_weighted"]["differences"]
-    enhanced = paired["lstm_trajectory7_minus_lstm_enhanced775"]["differences"]
+    metrics = f2_report["results"]
+    primary = metrics["lstm_trajectory7"]["test"]
+    weighted = metrics["weighted"]["test"]
+    matched = f2_report["paired_differences"]["weighted"]
+    enhanced = f2_report["paired_differences"]["lstm_enhanced775"]
 
     methods = []
     for key, label in METHOD_LABELS:
-        point = metrics[key]["point_estimate"]
+        point = metrics[key]["test"]
         methods.append(
             {
                 "key": key,
                 "label": label,
                 "pr_auc": point["pr_auc"],
-                "f0_5": point["f0_5"],
+                "f2": point["f2"],
                 "precision": point["precision"],
                 "recall": point["recall"],
                 "fp": point["fp"],
@@ -74,14 +73,14 @@ def build_chapter4_summary(eval_report: dict) -> dict:
         "primary": primary,
         "methods": methods,
         "matched_pr_auc": matched["pr_auc"],
-        "matched_f0_5": matched["f0_5"],
+        "matched_f2": matched["f2"],
         "weighted_false_positives": weighted["fp"],
         "weighted_false_negatives": weighted["fn"],
         "enhanced_comparison_inconclusive": (
             enhanced["pr_auc"]["lower"] <= 0 <= enhanced["pr_auc"]["upper"]
-            and enhanced["f0_5"]["lower"] <= 0 <= enhanced["f0_5"]["upper"]
+            and enhanced["f2"]["lower"] <= 0 <= enhanced["f2"]["upper"]
         ),
-        "source_hash": eval_report["canonical_payload_sha256"],
+        "source_status": f2_report["status"],
     }
 
 
@@ -103,21 +102,16 @@ def prevent_caching(response):
 @app.route("/")
 def index():
     engine = get_engine()
-    lstm_metrics = (
-        engine.eval_report.get("metrics", {})
-        .get("lstm_trajectory7", {})
-        .get("point_estimate", {})
-    )
     return render_template(
         "index.html",
         scenarios=SCENARIOS,
-        chapter4=build_chapter4_summary(engine.eval_report),
+        chapter4=build_chapter4_summary(engine.eval_report, engine.f2_report),
         endpoint=engine.endpoint,
-        lstm_metrics=lstm_metrics,
         keyword_term_count=len(engine.keyword_terms),
         spike_threshold=engine.spike_threshold,
         drop_threshold=engine.drop_threshold,
         lstm_threshold=engine.lstm_threshold,
+        enhanced_lstm_threshold=engine.enhanced_lstm_threshold,
         weighted_threshold=engine.weighted_threshold,
         raw_l1_threshold=engine.raw_l1_threshold,
     )
@@ -131,7 +125,8 @@ def api_get_scenarios():
 @app.route("/api/results", methods=["GET"])
 def api_get_results():
     """Return the Chapter IV summary without rerunning final-test inference."""
-    return jsonify(build_chapter4_summary(get_engine().eval_report))
+    engine = get_engine()
+    return jsonify(build_chapter4_summary(engine.eval_report, engine.f2_report))
 
 
 @app.route("/api/score", methods=["POST"])
@@ -139,6 +134,14 @@ def api_score():
     engine = get_engine()
     payload = request.get_json(silent=True) or {}
     history = payload.get("history", [])
+    model_choice = payload.get("model", "both")
+    model_choices = {
+        "primary": ("lstm",),
+        "enhanced": ("enhanced_lstm",),
+        "both": ("lstm", "enhanced_lstm"),
+    }
+    if model_choice not in model_choices:
+        return jsonify({"error": "model must be primary, enhanced, or both"}), 400
 
     if not isinstance(history, list) or len(history) == 0:
         return jsonify({"error": "history must be a non-empty list of turns"}), 400
@@ -162,20 +165,25 @@ def api_score():
     started = perf_counter()
 
     def report(message: str) -> None:
+        if app.config.get("BENCHMARK_QUIET", False):
+            return
         stamp = datetime.now().strftime("%H:%M:%S")
         print(f"[{stamp} | request {request_number}] {message}", flush=True)
 
     latest = sanitized_history[-1]
-    print("\n" + "-" * 90, flush=True)
+    if not app.config.get("BENCHMARK_QUIET", False):
+        print("\n" + "-" * 90, flush=True)
     report(f"NEW MESSAGE | turn {len(sanitized_history)} | {latest['author']}")
     report("Text: " + json.dumps(latest["text"], ensure_ascii=True))
     report("Recomputing the conversation history with the frozen models on CPU.")
     try:
-        result = engine.score_turn(sanitized_history, progress=report)
+        result = engine.score_turn(sanitized_history, progress=report, models=model_choices[model_choice])
     except Exception as error:
         report(f"FAILED: {type(error).__name__}: {error}")
         raise
-    for key, label in (("lstm", "Primary LSTM"), ("weighted", "Weighted scorer"), ("raw_layer1", "Maximum Layer 1")):
+    for key, label in (("lstm", "Primary LSTM"), ("enhanced_lstm", "Enhanced LSTM"), ("weighted", "Weighted scorer"), ("raw_layer1", "Maximum Layer 1")):
+        if key not in result["decision"]:
+            continue
         decision = result["decision"][key]
         status = "FLAGGED" if decision["flagged"] else "below threshold"
         report(f"{label}: {decision['score']:.4f} / {decision['threshold']:.4f} -> {status}")
@@ -190,10 +198,10 @@ def api_score():
 def api_health():
     return jsonify({
         "status": "healthy",
-        "model": "Primary Trajectory LSTM (7-d)",
+        "model": "Primary (7-d) and enhanced (775-d) trajectory LSTMs",
         "l1_backbone": "DistilBERT (Author-Proxy Fine-Tuned)",
         "endpoint": get_engine().endpoint,
-        "version": "2026.09.03-chapter4-demo"
+        "version": "2026.09.27-f2-dual-lstm-demo"
     })
 
 

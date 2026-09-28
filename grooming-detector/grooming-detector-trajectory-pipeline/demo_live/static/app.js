@@ -57,7 +57,7 @@ function appendMessage(author, text) {
 function updateMessage(item, turn, sanitizedText) {
   item.querySelector(".message-text").textContent = sanitizedText;
   item.querySelector(".message-score").textContent =
-    `Turn ${turn.turn} · L1 ${Number(turn.layer1_score).toFixed(4)} · LSTM ${Number(turn.lstm_score).toFixed(4)}`;
+    `Turn ${turn.turn} · L1 ${Number(turn.layer1_score).toFixed(4)} · Primary ${Number(turn.lstm_score).toFixed(4)} · Enhanced ${Number(turn.enhanced_lstm_score).toFixed(4)}`;
   item.classList.toggle("is-flagged", Boolean(turn.lstm_flagged));
 }
 
@@ -118,10 +118,11 @@ function updateResults(data) {
   statusChip.textContent = decision.lstm.flagged ? "Flagged for review" : "Below threshold";
   statusChip.className = `status-chip ${decision.lstm.flagged ? "status-flagged" : "status-below"}`;
   document.getElementById("lstm-score").textContent = score.toFixed(4);
+  document.getElementById("enhanced-lstm-score").textContent = Number(decision.enhanced_lstm.score).toFixed(4);
   document.getElementById("score-fill").style.width = `${Math.max(0, Math.min(100, score * 100))}%`;
   document.getElementById("decision-text").textContent = decision.lstm.flagged
-    ? `The score crossed the frozen threshold of ${Number(decision.lstm.threshold).toFixed(4)}${firstFlaggedTurn ? ` at turn ${firstFlaggedTurn}` : ""}. Send this conversation for human review.`
-    : `The score is below the frozen threshold of ${Number(decision.lstm.threshold).toFixed(4)}. This is not a declaration that the chat is safe.`;
+    ? `The primary score crossed its F2 cutoff of ${Number(decision.lstm.threshold).toFixed(4)}${firstFlaggedTurn ? ` at turn ${firstFlaggedTurn}` : ""}. Send this conversation for human review.`
+    : `The primary score is below its F2 cutoff of ${Number(decision.lstm.threshold).toFixed(4)}. Check the enhanced model's decision below; neither result declares the chat safe.`;
 
   document.getElementById("latest-turn-label").textContent = `turn ${latest.turn} · ${latest.author === "user_A" ? "Speaker A" : "Speaker B"}`;
   const features = latest.features;
@@ -144,6 +145,7 @@ function setValue(id, value, digits = 4) {
 
 const comparisonMethods = [
   ["lstm", "Primary LSTM"],
+  ["enhanced_lstm", "Enhanced LSTM"],
   ["weighted", "Weighted scorer"],
   ["raw_layer1", "Maximum Layer 1"],
   ["keyword", "Keyword rule"],
@@ -210,10 +212,13 @@ function updateComparison(data) {
 
 function drawTrajectory(curve) {
   const scores = curve.lstm_scores.map(Number);
+  const enhancedScores = curve.enhanced_lstm_scores.map(Number);
   const xAt = (index) => scores.length === 1 ? 260 : 16 + (488 * index) / (scores.length - 1);
   const yAt = (score) => 126 - 110 * Math.max(0, Math.min(1, score));
   const path = scores.map((score, index) => `${index ? "L" : "M"} ${xAt(index).toFixed(1)} ${yAt(score).toFixed(1)}`).join(" ");
   document.getElementById("path-lstm").setAttribute("d", path);
+  const enhancedPath = enhancedScores.map((score, index) => `${index ? "L" : "M"} ${xAt(index).toFixed(1)} ${yAt(score).toFixed(1)}`).join(" ");
+  document.getElementById("path-enhanced-lstm").setAttribute("d", enhancedPath);
 
   const points = document.getElementById("chart-points");
   points.replaceChildren();
@@ -245,6 +250,7 @@ function resetResults() {
   statusChip.textContent = "Waiting";
   statusChip.className = "status-chip status-waiting";
   document.getElementById("lstm-score").textContent = "--";
+  document.getElementById("enhanced-lstm-score").textContent = "--";
   document.getElementById("score-fill").style.width = "0%";
   document.getElementById("decision-text").textContent = "Add a message to run DistilBERT and the LSTM.";
   document.getElementById("latest-turn-label").textContent = "no turn yet";
@@ -253,6 +259,7 @@ function resetResults() {
   });
   document.getElementById("context-box").textContent = "No context yet.";
   document.getElementById("path-lstm").setAttribute("d", "");
+  document.getElementById("path-enhanced-lstm").setAttribute("d", "");
   document.getElementById("chart-points").replaceChildren();
   updateComparison(null);
 }

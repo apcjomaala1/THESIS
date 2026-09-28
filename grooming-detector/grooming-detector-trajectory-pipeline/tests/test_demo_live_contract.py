@@ -30,8 +30,8 @@ def test_interface_is_simple_and_explanatory():
     assert "Conversation Model Demo" in TEMPLATE
     assert "Chapter IV results" in TEMPLATE
     assert "What the held-out test showed" in TEMPLATE
-    assert "Held-out point estimates reported in Chapter IV" in TEMPLATE
-    assert "opening this demo does not rerun the final test" in TEMPLATE
+    assert "Revised F2-policy point estimates reported in Chapter IV" in TEMPLATE
+    assert "Opening this demo does not rerun the test" in TEMPLATE
     assert "Run full chat" in TEMPLATE
     assert "Add next message" in TEMPLATE
     assert "Below threshold does not mean safe" in TEMPLATE
@@ -79,19 +79,20 @@ def test_demo_scenarios_document_verified_expected_behavior():
 def test_comparison_examples_have_explicit_reference_intent_and_baseline_contracts():
     for scenario in SCENARIOS:
         assert isinstance(scenario["intended_review"], bool)
-        assert set(scenario["expected_flags"]) == {"lstm", "weighted", "raw_layer1", "keyword"}
+        assert set(scenario["expected_flags"]) == {"lstm", "enhanced_lstm", "weighted", "raw_layer1", "keyword"}
         for baseline in scenario["comparison_methods"]:
             assert scenario["expected_flags"]["lstm"] == scenario["intended_review"]
             assert scenario["expected_flags"][baseline] != scenario["intended_review"]
     school = next(s for s in SCENARIOS if s["id"] == "school_project_false_alarm")
-    assert school["expected_first_flag_turn"] == 3
-    assert "briefly flag turn 3" in school["short_note"]
+    assert school["expected_first_flag_turn"] == 1
+    assert "Under F2" in school["short_note"]
 
 
-def test_long_example_covers_all_three_baselines():
+def test_long_example_documents_current_f2_contrast():
     scenario = next(s for s in SCENARIOS if s["id"] == "long_private_pressure")
     assert len(scenario["turns"]) == 40
-    assert set(scenario["comparison_methods"]) == {"weighted", "raw_layer1", "keyword"}
+    assert set(scenario["comparison_methods"]) == {"keyword"}
     assert scenario["expected_flags"] == {
-        "lstm": True, "weighted": False, "raw_layer1": False, "keyword": False
+        "lstm": True, "enhanced_lstm": True,
+        "weighted": True, "raw_layer1": True, "keyword": False
     }

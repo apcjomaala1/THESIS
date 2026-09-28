@@ -1,13 +1,14 @@
-"""Frozen-artifact inference engine for the interactive thesis demonstration.
+"""Frozen-model inference engine with recorded validation-selected F2 cutoffs.
 
-The accepted Layer 1 DistilBERT and selected seven-feature trajectory LSTM run
-unchanged. All thresholds, features, comparator weights, architecture settings,
-base-encoder settings, and keyword terms come from frozen experiment artifacts.
+Both selected LSTM checkpoints, Layer 1, features, comparator weights, and
+keyword resources remain unchanged. Only final conversation decision cutoffs
+come from the separate F2 reanalysis receipt.
 """
 
 from __future__ import annotations
 
 import json
+import math
 import os
 from pathlib import Path
 from typing import Any, Callable
@@ -21,13 +22,15 @@ from transformers import AutoModel, AutoModelForSequenceClassification, AutoToke
 
 from revised_pipeline.features import FEATURE_NAMES, compute_sequence_features
 from revised_pipeline.keyword import candidate_terms
-from revised_pipeline.lstm import ConversationOnlyLSTM, LSTMConfig
+from revised_pipeline.lstm import load_lstm_checkpoint
 
 
 PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 REVISED_RUNS = PIPELINE_ROOT / "revised_runs"
 FROZEN_PROTOCOL_PATH = REVISED_RUNS / "frozen_protocol.json"
 FINAL_EVALUATION_PATH = REVISED_RUNS / "final_results" / "final_evaluation.json"
+F2_RESULTS_PATH = PIPELINE_ROOT.parents[1] / "thesis_docs" / ".threshold_analysis" / "f2_test_reanalysis.json"
+F2_VALIDATION_PATH = PIPELINE_ROOT.parents[1] / "thesis_docs" / ".threshold_analysis" / "validation_f1_comparison.json"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -70,14 +73,33 @@ class LiveDemoEngine:
         comparator_dir = _resolve_recorded_path(roles["comparators"]["path"])
         keyword_dir = _resolve_recorded_path(roles["keyword"]["path"])
         lstm_run = _resolve_recorded_path(roles["lstm_trajectory7"]["path"])
+        enhanced_run = _resolve_recorded_path(roles["lstm_enhanced775"]["path"])
 
         cache_config = _read_json(development_cache / "train" / "manifest.json")
         feature_config = _read_json(comparator_dir / "feature_config.json")
         weighted_config = _read_json(comparator_dir / "weighted_scorer_config.json")
         raw_config = _read_json(comparator_dir / "raw_layer1_config.json")
         keyword_config = _read_json(keyword_dir / "keyword_config.json")
-        lstm_config = _read_json(lstm_run / "run_configuration.json")
-        lstm_threshold_config = _read_json(lstm_run / "selected_threshold.json")
+        self.f2_report = _read_json(F2_RESULTS_PATH)
+        if self.f2_report.get("status") != "REVISED_F2_POLICY_ON_PREVIOUSLY_EVALUATED_TEST_SCORES":
+            raise ValueError("F2 result receipt has an unexpected status")
+        if not self.f2_report.get("validation_selection_verified_before_test_read") or self.f2_report.get("test_threshold_search"):
+            raise ValueError("F2 receipt does not document validation-only cutoff selection")
+        validation_selection = _read_json(F2_VALIDATION_PATH)
+        selected_cutoffs = {
+            row["method"]: float(row["f2_selected_threshold"])
+            for row in validation_selection["results"]
+        }
+        for key, label in (
+            ("lstm_trajectory7", "Primary LSTM"),
+            ("lstm_enhanced775", "Enhanced LSTM"),
+            ("raw_layer1", "Maximum Layer 1"),
+            ("weighted", "Weighted scorer"),
+            ("keyword", "Keyword rule"),
+        ):
+            recorded_cutoff = float(self.f2_report["results"][key]["validation"]["threshold"])
+            if not math.isclose(recorded_cutoff, selected_cutoffs[label], rel_tol=0, abs_tol=1e-12):
+                raise ValueError(f"F2 cutoff differs from saved validation selection: {label}")
 
         if feature_config.get("spike_comparison") != "score > spike_threshold":
             raise ValueError("Unsupported frozen spike-comparison rule")
@@ -119,8 +141,9 @@ class LiveDemoEngine:
             weighted_config["weights"], dtype=np.float64
         )
         self.weighted_weights /= self.weighted_weights.sum()
-        self.weighted_threshold = float(weighted_config["threshold"])
-        self.raw_l1_threshold = float(raw_config["threshold"])
+        f2_results = self.f2_report["results"]
+        self.weighted_threshold = float(f2_results["weighted"]["validation"]["threshold"])
+        self.raw_l1_threshold = float(f2_results["raw_layer1"]["validation"]["threshold"])
 
         expected_keyword_rule = (
             "positive when any turn contains at least one frozen term"
@@ -131,16 +154,10 @@ class LiveDemoEngine:
             str(row["term"]) for row in keyword_config["lexicon"]
         )
 
-        model_config = LSTMConfig(**lstm_config["config"])
-        if model_config.input_mode != "trajectory7":
-            raise ValueError("The live demo requires the selected trajectory7 model")
-        self.lstm = ConversationOnlyLSTM.build(model_config).to(self.device)
-        checkpoint = torch.load(
-            lstm_run / "best_model.pt", map_location=self.device, weights_only=False
-        )
-        self.lstm.load_state_dict(checkpoint["model_state"])
-        self.lstm.eval()
-        self.lstm_threshold = float(lstm_threshold_config["threshold"])
+        self.lstm, _, _ = load_lstm_checkpoint(lstm_run, "trajectory7", "cpu")
+        self.enhanced_lstm, _, _ = load_lstm_checkpoint(enhanced_run, "enhanced775", "cpu")
+        self.lstm_threshold = float(f2_results["lstm_trajectory7"]["validation"]["threshold"])
+        self.enhanced_lstm_threshold = float(f2_results["lstm_enhanced775"]["validation"]["threshold"])
 
         self.eval_report = (
             _read_json(FINAL_EVALUATION_PATH) if FINAL_EVALUATION_PATH.exists() else {}
@@ -154,12 +171,15 @@ class LiveDemoEngine:
     def score_turn(
         self, conversation_history: list[dict[str, Any]],
         progress: Callable[[str], None] | None = None,
+        models: tuple[str, ...] = ("lstm", "enhanced_lstm"),
     ) -> dict[str, Any]:
         """Score the current conversation prefix with the frozen pipeline."""
         turn_count = len(conversation_history)
         report = progress if progress is not None else lambda message: None
         if turn_count == 0:
             return {"error": "Empty conversation"}
+        if not models or set(models) - {"lstm", "enhanced_lstm"}:
+            raise ValueError("models must contain primary and/or enhanced LSTM")
 
         texts = [turn["text"].strip() for turn in conversation_history]
         authors = [turn["author"] for turn in conversation_history]
@@ -234,12 +254,20 @@ class LiveDemoEngine:
         report("  Latest features: " + ", ".join(
             f"{name}={float(value):.4f}" for name, value in zip(FEATURE_NAMES, features[-1])
         ))
-        report(f"[3/3] Running the LSTM over the {turn_count}-turn feature sequence...")
-        values = torch.from_numpy(features).unsqueeze(0).to(self.device)
+        report(f"[3/3] Running selected LSTM(s) over the {turn_count}-turn sequence...")
         lengths = torch.tensor([turn_count], dtype=torch.long, device=self.device)
+        lstm_scores = None
+        enhanced_scores = None
         with torch.inference_mode():
-            turn_logits, _final_logits = self.lstm(values, lengths)
-            lstm_scores = torch.sigmoid(turn_logits.float()).squeeze(0).cpu().numpy()
+            if "lstm" in models:
+                values = torch.from_numpy(features).unsqueeze(0).to(self.device)
+                turn_logits, _ = self.lstm(values, lengths)
+                lstm_scores = torch.sigmoid(turn_logits.float()).squeeze(0).cpu().numpy()
+            if "enhanced_lstm" in models:
+                enhanced_values = np.concatenate([embedding_array, features], axis=1)
+                values = torch.from_numpy(enhanced_values).unsqueeze(0).to(self.device)
+                turn_logits, _ = self.enhanced_lstm(values, lengths)
+                enhanced_scores = torch.sigmoid(turn_logits.float()).squeeze(0).cpu().numpy()
 
         weighted_raw = np.asarray(features, dtype=np.float64) @ self.weighted_weights
         weighted_turn_scores = 1.0 / (
@@ -255,7 +283,6 @@ class LiveDemoEngine:
             matched_terms_so_far.append(sorted(accumulated_terms))
 
         latest_index = turn_count - 1
-        latest_lstm = float(lstm_scores[latest_index])
         latest_weighted = float(weighted_max_so_far[latest_index])
         latest_raw_l1 = float(raw_l1_max_so_far[latest_index])
         latest_keyword_terms = matched_terms_so_far[latest_index]
@@ -270,7 +297,8 @@ class LiveDemoEngine:
                     "text": texts[index],
                     "context": contexts[index],
                     "layer1_score": round(float(score_array[index]), 4),
-                    "lstm_score": round(float(lstm_scores[index]), 4),
+                    "lstm_score": round(float(lstm_scores[index]), 4) if lstm_scores is not None else None,
+                    "enhanced_lstm_score": round(float(enhanced_scores[index]), 4) if enhanced_scores is not None else None,
                     "weighted_score": round(
                         float(weighted_turn_scores[index]), 4
                     ),
@@ -287,23 +315,17 @@ class LiveDemoEngine:
                         )
                         for position, name in enumerate(FEATURE_NAMES)
                     },
-                    "lstm_flagged": bool(
-                        lstm_scores[index] >= self.lstm_threshold
-                    ),
+                    "lstm_flagged": bool(lstm_scores[index] >= self.lstm_threshold) if lstm_scores is not None else None,
+                    "enhanced_lstm_flagged": bool(enhanced_scores[index] >= self.enhanced_lstm_threshold) if enhanced_scores is not None else None,
                 }
             )
 
-        return {
+        result = {
             "turns_count": turn_count,
             "latest_turn": turn_history[-1],
             "history": turn_history,
             "endpoint": self.endpoint,
             "decision": {
-                "lstm": {
-                    "score": round(latest_lstm, 4),
-                    "threshold": self.lstm_threshold,
-                    "flagged": latest_lstm >= self.lstm_threshold,
-                },
                 "weighted": {
                     "score": round(latest_weighted, 4),
                     "threshold": self.weighted_threshold,
@@ -321,15 +343,31 @@ class LiveDemoEngine:
             },
             "trajectory_curve": {
                 "turns": list(range(1, turn_count + 1)),
-                "lstm_scores": [round(float(score), 4) for score in lstm_scores],
-                "lstm_flags": [
-                    bool(score >= self.lstm_threshold) for score in lstm_scores
-                ],
+                "lstm_scores": [round(float(score), 4) for score in lstm_scores] if lstm_scores is not None else [],
+                "lstm_flags": [bool(score >= self.lstm_threshold) for score in lstm_scores] if lstm_scores is not None else [],
+                "enhanced_lstm_scores": [round(float(score), 4) for score in enhanced_scores] if enhanced_scores is not None else [],
+                "enhanced_lstm_flags": [bool(score >= self.enhanced_lstm_threshold) for score in enhanced_scores] if enhanced_scores is not None else [],
                 "layer1_scores": [round(float(score), 4) for score in score_array],
                 "topic_distances": [
                     round(float(score), 4) for score in features[:, 5]
                 ],
                 "lstm_threshold": self.lstm_threshold,
+                "enhanced_lstm_threshold": self.enhanced_lstm_threshold,
                 "spike_threshold": self.spike_threshold,
             },
         }
+        if lstm_scores is not None:
+            score = float(lstm_scores[latest_index])
+            result["decision"]["lstm"] = {
+                "score": round(score, 4),
+                "threshold": self.lstm_threshold,
+                "flagged": score >= self.lstm_threshold,
+            }
+        if enhanced_scores is not None:
+            score = float(enhanced_scores[latest_index])
+            result["decision"]["enhanced_lstm"] = {
+                "score": round(score, 4),
+                "threshold": self.enhanced_lstm_threshold,
+                "flagged": score >= self.enhanced_lstm_threshold,
+            }
+        return result

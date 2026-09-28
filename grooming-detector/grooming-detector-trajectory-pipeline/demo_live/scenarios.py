@@ -1,18 +1,16 @@
-"""Selected synthetic illustrations for comparing the frozen demo methods.
+"""Synthetic illustrations for comparing the F2-policy demo methods.
 
 Intended review labels are authored for these examples, not PAN12 ground truth.
-Examples were selected after observing frozen-model outputs on 2026-09-16.
-They illustrate disagreements; only the accepted held-out report measures
-FP/FN reduction. Models, features, thresholds, and evaluation data are unchanged.
+Examples were originally selected under F0.5 and rechecked under F2 on
+2026-09-27. They illustrate behavior, not empirical detection rates.
 """
 
 
 SCENARIOS = [{'id': 'private_meeting_pressure',
-  'title': 'Miss caught: LSTM vs weighted and Layer 1',
-  'short_note': 'A synthetic pressure-to-meet chat. The LSTM finishes flagged; the weighted scorer '
-                'and Maximum Layer 1 remain below threshold. The keyword rule also flags it.',
+  'title': 'Pressure-to-meet example',
+  'short_note': 'A synthetic chat involving secrecy and pressure to meet. Under F2, both LSTMs and Maximum Layer 1 flag it; the weighted scorer does not.',
   'expected_lstm_flagged': True,
-  'expected_first_flag_turn': 2,
+  'expected_first_flag_turn': 1,
   'turns': [{'author': 'user_A', 'text': 'Are you still coming to the motel tomorrow?'},
             {'author': 'user_B', 'text': 'My parents said I should stay with the team.'},
             {'author': 'user_A', 'text': 'Do not tell them. I missed you and want to meet alone.'},
@@ -21,20 +19,17 @@ SCENARIOS = [{'id': 'private_meeting_pressure',
             {'author': 'user_B', 'text': 'No, I am telling my parents.'}],
   'intended_review': True,
   'comparison_type': 'fn_rescue',
-  'comparison_methods': ['weighted', 'raw_layer1'],
-  'expected_flags': {'lstm': True, 'weighted': False, 'raw_layer1': False, 'keyword': True}},
+  'comparison_methods': ['weighted'],
+  'expected_flags': {'lstm': True, 'enhanced_lstm': True, 'weighted': False, 'raw_layer1': True, 'keyword': True}},
  {'id': 'long_private_pressure',
-  'title': '40-turn chat: only the LSTM flags',
-  'short_note': 'A 40-turn synthetic conversation about private contact, secrecy, and repeated '
-                'boundary pressure. The LSTM first flags turn 2 and remains flagged through turn '
-                '40; all three baselines remain below their decision rules. The early alert is an '
-                'observed model output, not a validated onset annotation.',
+  'title': '40-turn chat: sustained boundary pressure',
+  'short_note': 'A synthetic conversation about private contact, secrecy, and repeated boundary pressure. Both LSTMs and two score-based baselines flag the completed chat under F2. Prefix flags are not validated onset annotations.',
   'intended_review': True,
   'comparison_type': 'fn_rescue',
-  'comparison_methods': ['weighted', 'raw_layer1', 'keyword'],
+  'comparison_methods': ['keyword'],
   'expected_lstm_flagged': True,
-  'expected_first_flag_turn': 2,
-  'expected_flags': {'keyword': False, 'lstm': True, 'raw_layer1': False, 'weighted': False},
+  'expected_first_flag_turn': 1,
+  'expected_flags': {'keyword': False, 'lstm': True, 'enhanced_lstm': True, 'raw_layer1': True, 'weighted': True},
   'turns': [{'author': 'user_A',
              'text': 'Are you coming to practice tomorrow? I want to meet you alone.'},
             {'author': 'user_B', 'text': 'Yes, my parents are dropping me off with the team.'},
@@ -87,17 +82,14 @@ SCENARIOS = [{'id': 'private_meeting_pressure',
             {'author': 'user_B',
              'text': 'No. I am ending this chat and asking an adult for help.'}]},
  {'id': 'school_project_false_alarm',
-  'title': 'False alarm avoided: LSTM vs weighted',
-  'short_note': 'A benign school-project chat. Both methods briefly flag turn 3. By the end, the '
-                'LSTM returns below threshold while the weighted scorer retains its earlier '
-                'maximum. This illustrates a final-conversation decision, not an absence of '
-                'earlier alerts.',
+  'title': 'School-project false alert',
+  'short_note': 'A benign school-project chat. Under F2, both LSTMs and the two score-based baselines flag the completed chat; this illustrates the cost of recall-oriented cutoffs.',
   'intended_review': False,
-  'comparison_type': 'fp_avoidance',
-  'comparison_methods': ['weighted'],
-  'expected_lstm_flagged': False,
-  'expected_first_flag_turn': 3,
-  'expected_flags': {'keyword': False, 'lstm': False, 'raw_layer1': False, 'weighted': True},
+  'comparison_type': 'false_alert',
+  'comparison_methods': [],
+  'expected_lstm_flagged': True,
+  'expected_first_flag_turn': 1,
+  'expected_flags': {'keyword': False, 'lstm': True, 'enhanced_lstm': True, 'raw_layer1': True, 'weighted': True},
   'turns': [{'author': 'user_A', 'text': 'Did you finish the chemistry slides for tomorrow?'},
             {'author': 'user_A', 'text': 'Please check slide six because the labels overlap.'},
             {'author': 'user_A', 'text': 'Did you finish the chemistry lab report?'},
@@ -106,14 +98,14 @@ SCENARIOS = [{'id': 'private_meeting_pressure',
  {'id': 'safety_lesson_false_alarm',
   'title': 'False alarm avoided: LSTM vs keyword',
   'short_note': 'Students discuss an online-safety lesson. The keyword rule matches "motel" in a '
-                'warning about strangers; the LSTM stays below threshold. The weighted scorer and '
-                'Maximum Layer 1 also stay below threshold.',
+                'warning about strangers; both LSTMs finish below their F2 cutoffs. The weighted scorer and '
+                'Maximum Layer 1 also finish below threshold.',
   'intended_review': False,
   'comparison_type': 'fp_avoidance',
   'comparison_methods': ['keyword'],
   'expected_lstm_flagged': False,
-  'expected_first_flag_turn': None,
-  'expected_flags': {'keyword': True, 'lstm': False, 'raw_layer1': False, 'weighted': False},
+  'expected_first_flag_turn': 1,
+  'expected_flags': {'keyword': True, 'lstm': False, 'enhanced_lstm': False, 'raw_layer1': False, 'weighted': False},
   'turns': [{'author': 'user_A',
              'text': 'Our online safety lesson says never meet a stranger at a motel.'},
             {'author': 'user_B', 'text': 'What if they ask for a private picture?'},
@@ -128,10 +120,9 @@ SCENARIOS = [{'id': 'private_meeting_pressure',
              'text': 'I will put those reporting steps in our school presentation.'}]},
  {'id': 'routine_project_chat',
   'title': 'Control: routine project chat',
-  'short_note': 'Verified demo behavior: this synthetic conversation remains below the LSTM '
-                'threshold.',
+  'short_note': 'A routine synthetic project chat. Both LSTMs finish below their F2 cutoffs, while the weighted and maximum Layer 1 baselines flag it.',
   'expected_lstm_flagged': False,
-  'expected_first_flag_turn': None,
+  'expected_first_flag_turn': 1,
   'turns': [{'author': 'user_A', 'text': 'Did you finish the chemistry slides for tomorrow?'},
             {'author': 'user_B', 'text': 'Yes, I updated the chart and added the source notes.'},
             {'author': 'user_A', 'text': 'I will proofread the conclusion after dinner.'},
@@ -141,14 +132,13 @@ SCENARIOS = [{'id': 'private_meeting_pressure',
              'text': 'Perfect. I will ask our teacher about the citation format.'}],
   'intended_review': False,
   'comparison_type': 'control',
-  'comparison_methods': [],
-  'expected_flags': {'lstm': False, 'weighted': False, 'raw_layer1': False, 'keyword': False}},
+  'comparison_methods': ['weighted', 'raw_layer1'],
+  'expected_flags': {'lstm': False, 'enhanced_lstm': False, 'weighted': True, 'raw_layer1': True, 'keyword': False}},
  {'id': 'concerning_but_below',
   'title': 'Limitation: concerning chat missed by all',
-  'short_note': 'Verified demo behavior: this concerning synthetic chat remains below threshold, '
-                'showing why human review still matters.',
+  'short_note': 'A concerning synthetic chat that all five methods leave below their final-conversation cutoffs. This illustrates why human review still matters.',
   'expected_lstm_flagged': False,
-  'expected_first_flag_turn': None,
+  'expected_first_flag_turn': 1,
   'turns': [{'author': 'user_A', 'text': 'You seem easier to talk to than everyone else here.'},
             {'author': 'user_B', 'text': 'Thanks, I am just waiting for our team practice.'},
             {'author': 'user_A', 'text': 'We should keep our chats only between us.'},
@@ -160,4 +150,4 @@ SCENARIOS = [{'id': 'private_meeting_pressure',
   'intended_review': True,
   'comparison_type': 'limitation',
   'comparison_methods': [],
-  'expected_flags': {'lstm': False, 'weighted': False, 'raw_layer1': False, 'keyword': False}}]
+  'expected_flags': {'lstm': False, 'enhanced_lstm': False, 'weighted': False, 'raw_layer1': False, 'keyword': False}}]

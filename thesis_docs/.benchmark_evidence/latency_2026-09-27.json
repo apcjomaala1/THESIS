@@ -1,0 +1,149 @@
+{
+  "created_utc": "2026-09-27T13:01:12.879111+00:00",
+  "status": "measured_local_http_synthetic_replay",
+  "method": "Warmed sequential localhost HTTP POST /api/score; full conversation prefix recomputed on each request; one LSTM selected per request; shared DistilBERT classifiers and feature computation included; JSON serialization and local transport included.",
+  "scope": "Synthetic unlabelled chat, not PAN12 held-out test or production traffic; no threshold tuning or model training.",
+  "hardware": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "cpu_name": "11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+    "logical_cpus": 12,
+    "device": "cpu",
+    "torch_version": "2.11.0+cu128",
+    "torch_intraop_threads": 6,
+    "torch_interop_threads": 6
+  },
+  "workload": {
+    "prefix_lengths": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "repetitions_per_length_per_model": 40,
+    "warmups_per_length_per_model": 3,
+    "randomization_seed": 42,
+    "synthetic_messages_sha256": "0bca3a354e0b315b7876db4530fd557ad5e4ebc2e7f54f5743a469a9f5dedc73",
+    "concurrency": 1
+  },
+  "model_artifacts": {
+    "primary_checkpoint_sha256": "16e9018dda2f33bd37f5832b7b18fd0e7ec5437d705ecba4106bf68c6603887c",
+    "enhanced_checkpoint_sha256": "13155db92111b2f6369a72ead0ddbebea454a36d9c3f3537ca1fc434452d2035",
+    "f2_cutoffs": {
+      "primary": 0.2755352854728699,
+      "enhanced": 0.0009711023303680122
+    }
+  },
+  "engine_initialization_seconds_after_import": 0.5200532999999723,
+  "results": {
+    "primary": {
+      "pooled_equal_prefix_mix": {
+        "requests": 160,
+        "median_ms": 266.64979999998195,
+        "p95_ms": 708.7788150001529,
+        "p99_ms": 829.8277140000865,
+        "mean_ms": 294.8547250000004,
+        "min_ms": 31.176899999991292,
+        "max_ms": 1036.779000000024,
+        "sequential_throughput_requests_per_second": 3.3915006788512496
+      },
+      "by_prefix_length": {
+        "1": {
+          "requests": 40,
+          "median_ms": 41.02629999988494,
+          "p95_ms": 77.34674999982182,
+          "p99_ms": 123.11257099993097,
+          "mean_ms": 47.11904249999748,
+          "min_ms": 31.176899999991292,
+          "max_ms": 138.31129999994118,
+          "sequential_throughput_requests_per_second": 21.22284212375609
+        },
+        "4": {
+          "requests": 40,
+          "median_ms": 159.13594999994984,
+          "p95_ms": 283.1290499999454,
+          "p99_ms": 304.02479100001756,
+          "mean_ms": 170.208944999996,
+          "min_ms": 130.62569999988227,
+          "max_ms": 306.124200000113,
+          "sequential_throughput_requests_per_second": 5.8751318856951
+        },
+        "8": {
+          "requests": 40,
+          "median_ms": 308.56280000000424,
+          "p95_ms": 418.25125499998416,
+          "p99_ms": 457.5914949999583,
+          "mean_ms": 323.6121750000166,
+          "min_ms": 262.04970000003414,
+          "max_ms": 465.1495000000523,
+          "sequential_throughput_requests_per_second": 3.090118596433984
+        },
+        "16": {
+          "requests": 40,
+          "median_ms": 597.3068499998817,
+          "p95_ms": 795.6653700001536,
+          "p99_ms": 977.9034300000056,
+          "mean_ms": 638.4787374999917,
+          "min_ms": 524.9276999998074,
+          "max_ms": 1036.779000000024,
+          "sequential_throughput_requests_per_second": 1.566222868933068
+        }
+      }
+    },
+    "enhanced": {
+      "pooled_equal_prefix_mix": {
+        "requests": 160,
+        "median_ms": 245.64599999985148,
+        "p95_ms": 717.7387300000305,
+        "p99_ms": 1058.481344000081,
+        "mean_ms": 301.6489281250017,
+        "min_ms": 31.232700000145996,
+        "max_ms": 1110.3012999999464,
+        "sequential_throughput_requests_per_second": 3.3151120616135765
+      },
+      "by_prefix_length": {
+        "1": {
+          "requests": 40,
+          "median_ms": 43.70180000000801,
+          "p95_ms": 63.70921500006258,
+          "p99_ms": 80.29859800006307,
+          "mean_ms": 46.42257000002701,
+          "min_ms": 31.232700000145996,
+          "max_ms": 82.71730000001298,
+          "sequential_throughput_requests_per_second": 21.54124599304645
+        },
+        "4": {
+          "requests": 40,
+          "median_ms": 159.8319500000116,
+          "p95_ms": 218.84710499995205,
+          "p99_ms": 228.90553399990722,
+          "mean_ms": 167.3220274999835,
+          "min_ms": 128.40060000007725,
+          "max_ms": 232.18519999977616,
+          "sequential_throughput_requests_per_second": 5.976499418165959
+        },
+        "8": {
+          "requests": 40,
+          "median_ms": 316.95609999985663,
+          "p95_ms": 432.5007850001724,
+          "p99_ms": 577.8578830001469,
+          "mean_ms": 335.5137650000074,
+          "min_ms": 259.1067999999268,
+          "max_ms": 649.5088000001488,
+          "sequential_throughput_requests_per_second": 2.980503646400254
+        },
+        "16": {
+          "requests": 40,
+          "median_ms": 594.0884499999584,
+          "p95_ms": 1041.5367200001012,
+          "p99_ms": 1100.921955999986,
+          "mean_ms": 657.3373499999889,
+          "min_ms": 536.785000000009,
+          "max_ms": 1110.3012999999464,
+          "sequential_throughput_requests_per_second": 1.5212888785340084
+        }
+      }
+    }
+  },
+  "interpretation_note": "Throughput is completed sequential requests divided by cumulative timed request duration. p99 is an empirical estimate from the recorded samples, not a production service guarantee."
+}
