@@ -1,0 +1,11 @@
+# Current complete thesis Word synchronization
+
+Reference: `C:\Projects\THESIS\Finalized Complete Paper WASD - reconciled.docx`, SHA-256 `C204E31B375F9F833BA6252BF334C9121CB50BFD69E69CCD104F13E27CA89661` before this build. One Letter portrait section, one-inch margins, 6.5-inch text width. Page count is not measured because the user requested no visual rendering.
+
+Preserve the reference cover's author table and all non-title cover paragraphs, reference paragraphs and hyperlinks, section properties, existing styles, relationships, theme, custom XML, footnotes/endnotes, and other opaque package parts. The cover title is editable and adopts the approved GroomShield title. Its source typography is centered Arial 16-point italic; add the Word Title role without a rule or underline. Existing Heading 1/2 roles are retained (16/13 points); other inherited paragraph roles remain reference-derived.
+
+Replace all five chapter bodies using the three authoritative Markdown sources. Insert the approved abstract and keywords between cover and Chapter I. Retain exact objectives, research questions, prose, data, references, and equation meanings; this is conversion, not editorial revision. Use Pandoc's native editable OMML for LaTeX mathematics. Explicit list markers prevent automatic numbering drift.
+
+Preserve the portrait page system. Wide comparative tables use named metric/operating-point/confusion-count parts under their original table numbers, avoiding collision between Table 4.1 and the newly added policy Table 4.1a. All models receive equal row styling. Use repeating headers, visible light-gray borders, expandable rows, centered numeric cells, left-aligned descriptive fields, and 9-10-point table text. Preserve normal body typography rather than shrink prose.
+
+Build and structurally verify in a temporary directory before replacing the established complete Word file. Gates: cover-author and reference fingerprints preserved, unchanged section geometry and unrelated package parts, complete generated prose/math/table coverage, all 15 policy rows reproduced in the two policy-table parts, no obsolete model labels, no raw Markdown/LaTeX, valid OOXML archive. No visual QA, no PDF, no Word COM, no automatic commit/push. The prior tracked document remains recoverable through Git.

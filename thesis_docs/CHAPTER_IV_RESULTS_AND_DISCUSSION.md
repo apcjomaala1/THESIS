@@ -33,6 +33,38 @@ The Trajectory-Feature LSTM identified 41 of 44 positive conversations, achievin
 
 The Embedding-and-Feature LSTM detected all 44 positives, giving 1.0000 recall, with 41 false positives and 0.5176 precision. Its F2 of 0.8429 was below the trajectory-feature model's 0.8613 because F2 still accounts for precision. This distinguishes maximum observed coverage from the strongest recall-oriented precision-recall balance. The observed zero false negatives applies to this test partition, not to every future conversation.
 
+### 4.2.1 Comparison of F0.5, F1, and F2 Operating Policies
+
+The original evaluation used F0.5-selected conversation cutoffs, except for the fixed keyword rule. Table 4.1a retains those results alongside the subsequent F1- and F2-selected alternatives. Each alternative cutoff was selected on the same validation partition and then applied unchanged to the same 1,862 saved test scores, containing 44 positive and 1,818 negative conversations. Models, input representations, and learned parameters are identical across each method's three rows. The policy names indicate the criterion used to select a cutoff, not different trained models or different test populations. F2 remains the main reported policy; this comparison explains the operating tradeoff rather than selecting a new cutoff from test outcomes.
+
+### Table 4.1a. Test Confusion Counts and Performance Across Validation-Selected Policies
+
+| Method | Policy | Cutoff | TP | FP | FN | TN | Precision | Recall |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Trajectory-Feature LSTM | F0.5 | 0.968829811 | 40 | 7 | 4 | 1,811 | 0.8511 | 0.9091 |
+| Trajectory-Feature LSTM | F1 | 0.957859278 | 40 | 9 | 4 | 1,809 | 0.8163 | 0.9091 |
+| Trajectory-Feature LSTM | F2 | 0.275535285 | 41 | 21 | 3 | 1,797 | 0.6613 | 0.9318 |
+| Embedding-and-Feature LSTM | F0.5 | 0.955889165 | 41 | 6 | 3 | 1,812 | 0.8723 | 0.9318 |
+| Embedding-and-Feature LSTM | F1 | 0.249406472 | 43 | 14 | 1 | 1,804 | 0.7544 | 0.9773 |
+| Embedding-and-Feature LSTM | F2 | 0.000971102 | 44 | 41 | 0 | 1,777 | 0.5176 | 1.0000 |
+| Maximum Layer 1 proxy | F0.5 | 0.981987655 | 23 | 18 | 21 | 1,800 | 0.5610 | 0.5227 |
+| Maximum Layer 1 proxy | F1 | 0.979530394 | 26 | 21 | 18 | 1,797 | 0.5532 | 0.5909 |
+| Maximum Layer 1 proxy | F2 | 0.961438656 | 39 | 78 | 5 | 1,740 | 0.3333 | 0.8864 |
+| Weighted scorer | F0.5 | 0.714994149 | 36 | 13 | 8 | 1,805 | 0.7347 | 0.8182 |
+| Weighted scorer | F1 | 0.714994149 | 36 | 13 | 8 | 1,805 | 0.7347 | 0.8182 |
+| Weighted scorer | F2 | 0.696637128 | 38 | 24 | 6 | 1,794 | 0.6129 | 0.8636 |
+| Keyword rule | F0.5 | 0.500000000 | 27 | 11 | 17 | 1,807 | 0.7105 | 0.6136 |
+| Keyword rule | F1 | 1.000000000 | 27 | 11 | 17 | 1,807 | 0.7105 | 0.6136 |
+| Keyword rule | F2 | 1.000000000 | 27 | 11 | 17 | 1,807 | 0.7105 | 0.6136 |
+
+Cutoffs are displayed to nine decimal places; computations retain full precision. The keyword rule's 0.5 and 1.0 cutoffs produce identical binary decisions. These are descriptive policy comparisons; they do not introduce alternative-policy confidence intervals or change the F2 paired analysis in Section 4.3. PR-AUC and ROC-AUC are unchanged within each method because the underlying scores are unchanged.
+
+For the Embedding-and-Feature LSTM, moving from F0.5 to F1 recovered two additional positives with eight additional false alerts. Its F1 setting detected 43 of 44 positives, achieving 97.73% recall and 75.44% precision with 14 false alerts. Moving from F1 to F2 recovered the remaining positive but added 27 false alerts, raising the total to 41 and reducing precision to 51.76%. F2 therefore achieves maximum observed coverage, while F1 provides a substantial measured reduction in false alerts at the cost of one missed positive. This makes the F1 setting a concrete alternative for subsequent workflow evaluation, not a replacement for the study's recall-oriented reporting policy.
+
+The tradeoff differs for the Trajectory-Feature LSTM. Its F1 cutoff detected the same 40 positives as F0.5 while increasing false alerts from seven to nine. Its F2 cutoff recovered one additional positive, reducing misses from four to three while increasing false alerts to 21. Thus, a validation-selected F1 policy is not automatically a better test-set compromise for every model.
+
+Maximum Layer 1 aggregation recovered 16 additional positives when moving from F0.5 to F2, but false alerts increased by 60. The weighted scorer recovered two additional positives with 11 additional false alerts; its F0.5 and F1 cutoffs were identical. The keyword rule was unchanged. Together, these results show why the policy comparison must report both detection gains and added false alerts. F2 expresses the study's priority of reducing missed positives; it does not establish a universally optimal operational workload.
+
 ## 4.3 Paired Bootstrap Difference Analysis
 
 Table 4.2 reports Trajectory-Feature LSTM minus comparator differences using 2,000 paired connected-author bootstrap resamples. F2, precision, and recall intervals were recalculated for the revised cutoffs. Ranking-metric intervals remain unchanged because the scores and labels are unchanged. An interval entirely above zero supports a positive difference; one containing zero does not establish a difference or equivalence.
@@ -127,4 +159,4 @@ The Embedding-and-Feature LSTM is the stronger observed coverage option: it dete
 
 ## 4.8 Chapter Summary
 
-The revised F2 analysis aligns GroomShield's operating policy with recall and false-negative reduction. The Trajectory-Feature LSTM achieved 0.9153 PR-AUC, 0.8613 F2, 0.6613 precision, and 0.9318 recall, missing three of 44 positives. Against the matched weighted scorer, the paired improvements were +0.1103 PR-AUC and +0.0630 F2, with both 95% intervals above zero. The Embedding-and-Feature LSTM detected all 44 positives with 0.8429 F2 and 0.5176 precision. These results demonstrate the contribution of contextual and behavioral sequence modeling to broader conversation-level detection, with the coverage-precision tradeoff explicitly measured.
+The revised F2 analysis aligns GroomShield's operating policy with recall and false-negative reduction. The Trajectory-Feature LSTM achieved 0.9153 PR-AUC, 0.8613 F2, 0.6613 precision, and 0.9318 recall, missing three of 44 positives. Against the matched weighted scorer, the paired improvements were +0.1103 PR-AUC and +0.0630 F2, with both 95% intervals above zero. The Embedding-and-Feature LSTM detected all 44 positives with 0.8429 F2 and 0.5176 precision. Its alternative F1 setting detected 43 positives with 14 false alerts, compared with 41 false alerts under F2, identifying a concrete operating option for subsequent review-workflow evaluation. These results demonstrate the contribution of contextual and behavioral sequence modeling to broader conversation-level detection, with the coverage-precision tradeoff explicitly measured.

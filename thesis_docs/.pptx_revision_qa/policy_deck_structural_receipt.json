@@ -1,0 +1,22 @@
+{
+  "status": "STRUCTURAL_CHECKS_PASSED",
+  "slides": 43,
+  "visible": 37,
+  "hidden": 6,
+  "policy_rows_verified_against_receipt": 15,
+  "speaker_notes_verified": 43,
+  "existing_native_charts_unchanged": 4,
+  "f2_result_table_unchanged": true,
+  "error_chart_axis_maximum": 90,
+  "policy_header_contrast_checked": true,
+  "divider_numbers_checked": true,
+  "staged_sha256": "d4dbe197dbd817e36c4617cbd9a62349bec0576b85a1625e4b9b592b508a5a55",
+  "source_sha256": "97380908623dd41a9dc787aea40b4af29f179dfee3265638b62ada4915c69b95",
+  "fonts": {
+    "Calibri": "reference",
+    "Calibri Light": "reference"
+  },
+  "visual_qa_passes_allowed": 1,
+  "rendered_slides_in_single_batch": 43,
+  "post_pass_corrections_visual_recheck": false
+}

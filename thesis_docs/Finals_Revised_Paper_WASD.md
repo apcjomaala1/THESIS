@@ -408,7 +408,7 @@ GroomShield separates learning a conversation score from choosing the cutoff tha
 \widehat{Y}_{m,c}=\mathbf{1}[s_m(c)\geq\theta_m].
 \]
 
-A positive decision flags the conversation for human review. F2 is the selection criterion because GroomShield is a screening module intended to detect conversations that might otherwise receive no attention, rather than an autonomous enforcement system. The operating policy therefore gives greater emphasis to recall while retaining precision in the objective. F1 remains a supplementary reporting measure rather than the criterion used to choose the final cutoff.
+A positive decision flags the conversation for human review. F2 is the selection criterion for the main reported policy because GroomShield is a screening module intended to detect conversations that might otherwise receive no attention, rather than an autonomous enforcement system. The operating policy therefore gives greater emphasis to recall while retaining precision in the objective. F1 is also used to select alternative cutoffs for the supplementary operating-point comparison; it does not replace F2 as the main reported policy.
 
 The threshold-selection procedure is:
 
@@ -436,9 +436,9 @@ F2 is selected because the research aims to identify positive conversations miss
 
 ### 3.5.2 Test-Score Analysis and Verification
 
-The F2 policy was adopted after the original F0.5 test evaluation. Its cutoffs are selected exclusively from the 1,827 validation conversations and applied unchanged to the saved scores for the 1,862-conversation test partition. These F2 results are a revised-policy analysis of the previously evaluated, author-disjoint test partition, not a new untouched holdout. No test-score threshold search, retraining, checkpoint reselection, or new model inference is performed.
+The original evaluation used validation-selected F0.5 thresholds, except for the fixed binary keyword rule. A subsequent analysis compared validation-selected F1 and F2 thresholds using the same trained models and saved test scores. F2 was adopted to prioritize detection coverage, while F0.5 and F1 quantify alternative coverage and false-alert tradeoffs. All alternative cutoffs are selected exclusively from the 1,827 validation conversations and applied unchanged to the saved scores for the 1,862-conversation test partition. These results are a revised-policy analysis of the previously evaluated, author-disjoint test partition, not a new untouched holdout. No test-score threshold search, retraining, checkpoint reselection, or new model inference is performed.
 
-The analysis verifies identical validation populations across methods, reproduces the original test predictions and metrics, and preserves the original evaluation artifacts. Every method is evaluated on the same test conversation IDs, and all outcomes are retained regardless of which method performs best. F2 applies to the final conversation decision; existing Layer 1 diagnostic and feature-construction thresholds remain unchanged.
+The analysis verifies identical validation populations across methods, reproduces the original test predictions and metrics, and preserves the original evaluation artifacts. The supplementary comparison uses the same candidate-cutoff rule and deterministic tie-breaks in Section 3.5.1, maximizing validation F1 instead of F2 for the F1 alternative. The original F0.5 cutoffs remain those recorded in the frozen protocol. Every method and policy is evaluated on the same test conversation IDs, and all outcomes are retained regardless of which method performs best. Chapter IV reports each policy's cutoff, complete confusion counts, precision, and recall. Alternative-policy results are descriptive point estimates; the paired uncertainty analysis continues to assess the main F2 policy. F2 applies to the final conversation decision; existing Layer 1 diagnostic and feature-construction thresholds remain unchanged.
 
 ### 3.5.3 Metrics and Comparative Analysis
 

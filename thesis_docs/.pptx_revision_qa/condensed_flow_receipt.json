@@ -1,0 +1,14 @@
+{
+  "status": "PASSED",
+  "main_slides": 24,
+  "hidden_evidence": 2,
+  "hidden_template_resources": 5,
+  "notes_synced": 31,
+  "approved_research_question_and_objective_slides_preserved": true,
+  "early_alignment_tables_preserved": 2,
+  "f2_result_table_preserved": true,
+  "combined_policy_rows_verified": 6,
+  "native_charts_retained_with_values_unchanged": 3,
+  "source_sha256": "2314620376d65967d736ed7e4e3e293ca70e01d062e3e138d8a2b6122377045b",
+  "staged_sha256": "51853c6308e42e2642efa5cc7b8d3f9917e85e3aae19fa284def188fd949a88b"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASSED",
+  "spoken_notes_rewritten": 38,
+  "embedded_notes_matching_script": 43,
+  "non_notes_package_entries_identical": 192,
+  "changed_members_only_notes_xml": 43,
+  "visible_slide_content_charts_and_workbooks_unchanged": true,
+  "visual_render_performed": false,
+  "source_sha256": "d4dbe197dbd817e36c4617cbd9a62349bec0576b85a1625e4b9b592b508a5a55",
+  "staged_sha256": "2314620376d65967d736ed7e4e3e293ca70e01d062e3e138d8a2b6122377045b"
+}

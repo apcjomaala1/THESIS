@@ -1,0 +1,324 @@
+{
+  "slides": [
+    {
+      "title": "GroomShield",
+      "notes": "Good day. GroomShield combines language context with patterns across a conversation. We tested whether this design could reduce positive conversations missed by keyword rules and static scoring. I will connect our objectives to the model and results, then show how quickly the local prototype processes a turn.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, title and Sections 1.2-1.3"
+    },
+    {
+      "title": "Meet Our Team",
+      "notes": "Our team is Andrei Torres, Don Idos, Justin Arroco, and Michael Maala, with Manuel Calimlim Jr. as our project adviser.\n\nSource: Original presentation team slide."
+    },
+    {
+      "title": "Introduction",
+      "notes": "The problem begins with how conversations develop. A single turn may provide very little information. Our study examines whether recent context and the longer sequence together improve the evidence available to a moderator.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 1.1"
+    },
+    {
+      "title": "Template asset",
+      "notes": "Keyword filters remain useful for explicit language. The difficulty is that a conversation can develop through ordinary wording, indirect requests, or changing interaction patterns. Reports also depend on someone recognizing a problem. This motivated us to develop an additional module that examines context and the conversation sequence.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 1.1"
+    },
+    {
+      "title": "Statement of the Problem",
+      "notes": "Our research asks whether a system that follows the development of a conversation can identify more positive cases than static methods. We built the architecture to address that problem, then selected a dataset with ordered conversations and persistent speaker identifiers to evaluate it.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 1.2"
+    },
+    {
+      "title": "Research Questions",
+      "notes": "These slide questions summarize the unchanged research questions in the paper. The first two examine existing moderation and its limits. The third concerns the architecture we developed. The fourth asks whether the completed system improves recall and reduces missed cases. Recall means the fraction of positive conversations that the model identifies.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 1.2"
+    },
+    {
+      "title": "Objectives of the Study",
+      "notes": "The objectives remain the ones approved for the study. We evaluate conventional approaches, develop a module using context and behavioral patterns, and assess the improvement in detection. The next two slides show the alignment between these objectives, our methods, and the resulting evidence. The slide wording is abbreviated for presentation.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 1.3\n\n\n\nExact approved wording:\n\n## 1.3 Objectives of the Study\n\n__General Objective:__ Develop an AI-powered moderation module that enhances existing chat moderation systems by incorporating behavioral pattern analysis and contextual understanding to detect grooming-related interactions in chat environments.\n\n- __Specific Objective:__\n\t1. Evaluate the limitations and effectiveness of existing keyword-based and rule-based chat moderation systems in handling context-dependent communication.\n\t2. Design and develop an AI-based chat moderation module that applies machine learning and NLP techniques to analyze behavioral patterns and conversational context across multiple chat interactions.\n\t3. Assess the improvement in detection performance of the proposed AI-driven module, specifically focusing on the reduction of false negatives compared to traditional keyword-based and report-driven approaches."
+    },
+    {
+      "title": "Research Alignment: Existing Methods",
+      "notes": "This is the first half of the alignment table, shortened to keep one clear entry in each cell. Research Questions 1 and 2 both support Objective 1. We assessed the keyword rule on the same test conversations as the other methods. It identified 27 of 44 positives and missed 17. We also tested maximum Layer 1 aggregation, which uses the highest contextual score in a conversation. Comparing these methods with the LSTM establishes where the sequence model improves over static aggregation. We did not run a separate experiment against an operational user-report system.\n\n\n\nSources: Alignment Table.docx, rows 1-2; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2"
+    },
+    {
+      "title": "Research Alignment: Module and Improvement",
+      "notes": "The second half connects development and evaluation. For Objective 2, we built the complete two-layer pipeline and review interface. For Objective 3, the Trajectory-Feature LSTM identified 41 of 44 positive conversations under the F2 policy, giving 93.18 percent recall. Its three misses were half the weighted scorer's six and 82.4 percent fewer than the keyword rule's seventeen. The F2 cutoffs came from validation and were applied to preserved test scores after the original evaluation. These are measured comparisons against implemented methods, not an operational comparison with user reports.\n\n\n\nSources: Alignment Table.docx, rows 3-4; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2; thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md, Section 5.2"
+    },
+    {
+      "title": "What the Study Built",
+      "notes": "The system has two learned layers. DistilBERT processes the current turn with up to two preceding turns. We then track seven features across the conversation. The Trajectory-Feature LSTM combines that sequence into a conversation score; an Embedding-and-Feature LSTM also receives text embeddings. The practical output is a priority for human review. The moderator interprets the content and decides what action is appropriate.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 3.1 and 3.4"
+    },
+    {
+      "title": "Dataset and Evaluation Scope",
+      "notes": "PAN-2012 met the study's need for a large collection of ordered conversations and stable speaker identifiers. For the evaluated outcome, a positive conversation contains at least one author on the official predator list. Layer 1 learns from author-derived supervision, and Layer 2 learns the conversation label. A turn-level score is an intermediate signal, so we do not interpret it as an independently verified grooming label for that message. This gives every comparison the same measurable conversation outcome.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 1.4 and 3.3.1; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.1"
+    },
+    {
+      "title": "Why the Study Matters",
+      "notes": "The contribution is a complete contextual and behavioral architecture with a controlled comparison. It delivers a working review interface and evidence that learned aggregation improves detection over static use of the same inputs. For a moderation workflow, both kinds of errors matter: missed positive conversations and false alerts that consume review time.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 1.5; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.7"
+    },
+    {
+      "title": "Review of Related Literature",
+      "notes": "The literature supports two parts of our design: understanding language in context and following how interaction develops over time. The theory section explains why a sequence representation is appropriate.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Chapter II"
+    },
+    {
+      "title": "Why Context and Sequence Matter",
+      "notes": "Transformers help represent the current wording together with recent context. The LSTM addresses a different scale: how the evidence changes across the conversation. We evaluate their combination through the completed two-layer module.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 2.1-2.3"
+    },
+    {
+      "title": "Theory and Dataset Selection",
+      "notes": "Our theoretical basis is the Online Grooming Discourse Model, or OGDM. It describes interrelated conversational processes that can recur or overlap rather than always following one fixed order. That motivates tracking how evidence persists and changes across turns. We then selected PAN-2012 as the evaluation dataset because it provides the chronology and participant identifiers needed for this design.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 2.3 and references [11], [13]"
+    },
+    {
+      "title": "How OGDM Informs the Features",
+      "notes": "This table connects theory to computation. Peak and current scores, together with spike count, represent persistence and accumulation of contextual evidence. Rate of change and spike-then-drop represent increases and retreats. Topic distance measures movement away from a reference built from negative training conversations. Turn-taking imbalance summarizes participation within the pair. These are indicators motivated by the theory. We have not independently annotated them as OGDM stages, and the experiment does not establish the individual causal contribution of each feature.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 2.3 and 3.3.4; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.5"
+    },
+    {
+      "title": "Methodology",
+      "notes": "I will now explain the architecture, how we separated the data, and how validation selects the conversation cutoff. The trained models stay fixed when we compare different cutoff policies.\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Chapter III"
+    },
+    {
+      "title": "AI Model Architecture",
+      "notes": "Read the diagram from left to right. Both variants start with contextual DistilBERT scoring and a fixed encoder for the current turn. The Trajectory-Feature LSTM directly receives seven behavioral features. The Embedding-and-Feature LSTM receives those features plus the 768 text-embedding values. Each learns a chronological sequence and uses its own validation-selected F2 cutoff to flag conversations for review.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 3.3.2-3.4.2; thesis_docs/assets/AI_Model_Architecture_Diagram.svg"
+    },
+    {
+      "title": "Data Preparation and Controls",
+      "notes": "We preserve conversation and turn identifiers, maintain chronological context, and keep connected authors in one partition. Training supplies the learned models and derived resources. Validation selects checkpoints and operating cutoffs. The original evaluation used F0.5; the later F1 and F2 comparison applies validation-selected cutoffs to the same saved test scores. We did not retrain or rerun model inference.\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 3.3 and 3.5"
+    },
+    {
+      "title": "Why Authors Stay in One Partition",
+      "notes": "Suppose one conversation contains authors A and B, and another contains B and C. The shared author B connects the conversations, so both stay in the same partition. The same rule applies to every connected group, including indirect connections. Otherwise the model could benefit from recognizing recurring participants or their language during testing. We verified zero overlap of conversations, authors, and connected components. The bootstrap analysis resamples these whole groups for the same reason: conversations linked by an author should not be treated as independent observations.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 3.3.3 and 3.5.2; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.1"
+    },
+    {
+      "title": "Models Compared Fairly",
+      "notes": "The central comparison uses the same seven trajectory features. The weighted scorer combines them statically, while the LSTM learns a recurrent sequence model. This evaluates the selected aggregation methods with matched inputs. Keyword matching and maximum Layer 1 aggregation provide additional baselines. We report the Embedding-and-Feature LSTM separately because it also receives 768 embedding values. Feature-removal and ordering ablations would be needed to isolate individual design contributions.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 3.4.3; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Sections 4.2-4.5"
+    },
+    {
+      "title": "Evaluation Measures",
+      "notes": "Because the test contains 44 positive conversations among 1,862, we report both rates and actual error counts. PR-AUC summarizes ranking across cutoffs. Recall is the share of positives found; precision is the share of alerts that are positive. F2 combines both with extra weight on recall. We also report uncertainty using 2,000 bootstrap resamples of connected-author groups.\n\n\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Section 3.5.2; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Sections 4.1-4.3"
+    },
+    {
+      "title": "Why We Use F2",
+      "notes": "F0.5 emphasizes precision, F1 balances precision and recall, and F2 gives recall more weight. Our main reporting policy is F2 because the study focuses on reducing missed positive conversations. We maximize each method's F2 on validation to select its cutoff; this does not mean training the model with F2. We still report precision and false alerts so the screening cost is clear. The original test evaluation used F0.5. The later F1/F2 comparison reuses saved test scores with cutoffs selected on validation, not on test. The results section shows what each policy changes.\n\nSources: thesis_docs/Finals_Revised_Paper_WASD.md, Sections 3.5.1-3.5.3; thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.2.1"
+    },
+    {
+      "title": "Results and Conclusions",
+      "notes": "The next table and graphs show the Chapter IV F2 results. We then compare F0.5, F1, and F2 to explain the detection and false-alert tradeoff. The local benchmark addresses the panel's latency question.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1, 4.1a, and 4.4"
+    },
+    {
+      "title": "Frozen Experimental Setup",
+      "notes": "Training contains 13,031 conversations with 319 positives; validation has 1,827 with 49 positives; test has 1,862 with 44 positives. Every connected-author group stays in one partition, with zero author overlap. The original evaluation used F0.5. The later F1/F2 comparison used cutoffs selected only on validation and the same saved test scores, without new training or inference. All confusion counts in this presentation count conversations.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Sections 4.1 and 4.2.1"
+    },
+    {
+      "title": "Conversation Results: F2 Policy",
+      "notes": "This table shows all five methods under their validation-selected F2 cutoffs. The Trajectory-Feature LSTM reached PR-AUC 0.9153, F2 0.8613, precision 0.6613, and recall 0.9318. It found 41 of 44 positives with 21 false alerts. The Embedding-and-Feature LSTM found all 44 with 41 false alerts and F2 0.8429. The matched architecture comparison is with the weighted scorer, which uses the same seven inputs. Paired intervals do not establish an F2 or PR-AUC difference between the two LSTMs.\n\n\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2"
+    },
+    {
+      "title": "Detection Performance Across Methods",
+      "notes": "The blue bars show PR-AUC and the green bars show F2. The Trajectory-Feature LSTM has the highest F2 point estimate, while the Embedding-and-Feature LSTM has the highest PR-AUC point estimate. Comparing the trajectory-feature model with weighted scoring isolates aggregation with the same seven inputs. The embedding-and-feature model also receives embeddings. These bars show point estimates; the manuscript reports paired intervals for the comparisons.\n\n\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2"
+    },
+    {
+      "title": "Detection Coverage: 41 and 44 of 44",
+      "notes": "Recall asks how many positive conversations we found. The Trajectory-Feature LSTM found 41 of 44, compared with 27 for the keyword rule, 39 for maximum Layer 1, and 38 for the weighted scorer. The Embedding-and-Feature LSTM found all 44. That additional coverage came with 41 false alerts versus 21 for the trajectory-feature model. These are final-conversation decisions, not onset-detection measurements.\n\n\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2"
+    },
+    {
+      "title": "Missed Positives and False Alerts",
+      "notes": "Lower bars are better in both groups, but the recall-oriented cutoff changes the tradeoff. The Trajectory-Feature LSTM reduced weighted scoring's six misses to three and its 24 false alerts to 21. Keyword matching missed 17. Maximum Layer 1 missed five but created 78 false alerts. The embedding-and-feature model missed none of the 44 positives and created 41 false alerts. Every count represents conversations, not messages.\n\n\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1 and Section 4.7"
+    },
+    {
+      "title": "Embedding Model: Three Cutoff Policies",
+      "notes": "This is the Embedding-and-Feature LSTM with the same trained weights under three validation-selected cutoff policies. TP means correctly detected positives; FN means missed positives; FP means false alerts; TN means correctly rejected negatives. There are 44 positives and 1,818 negatives in every row. F0.5 finds 41 positives with six false alerts. F1 finds 43 with 14 false alerts. F2 finds all 44 with 41 false alerts. From F1 to F2, we catch one additional positive and add 27 false alerts. F2 remains our recall-first reporting policy. F1 is the option we recommend evaluating when review capacity is limited, not a universally proven operating choice. These are the same saved test scores; only the cutoff changes.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.2.1 and Table 4.1a; thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md, Recommendation 7"
+    },
+    {
+      "title": "Trajectory Model: Three Cutoff Policies",
+      "notes": "This is the Trajectory-Feature LSTM, again with fixed trained weights. F0.5 finds 40 of 44 positives with seven false alerts. F1 also finds 40, but produces nine false alerts. F2 finds 41 with 21 false alerts. F1 is not automatically a better middle option: here it adds false alerts without catching an additional positive. F2 reduces the misses from four to three. We chose each cutoff using validation, not by searching these test results. Full baseline policy counts are in the backup slide.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.2.1 and Table 4.1a"
+    },
+    {
+      "title": "Sequence Modeling Added Value",
+      "notes": "We compared the Trajectory-Feature LSTM with the weighted scorer in the same 2,000 bootstrap resamples of author-connected groups. The PR-AUC difference was +0.1103 and the F2 difference +0.0630. Both paired 95 percent intervals were above zero. This supports the selected recurrent aggregator over the static combination of the same seven inputs. The separate recall-difference interval includes zero, so we do not claim an independently established recall advantage over weighted scoring.\n\n\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Table 4.2 and Section 4.5"
+    },
+    {
+      "title": "The Three Missed Conversations Were Short",
+      "notes": "The three positives missed by the Trajectory-Feature LSTM were 2, 11, and 26 turns long. Each was shorter than the 36-turn first quartile of correctly detected positives, whose median length was 61 turns. This directs attention to short-history testing. Conversation length alone does not prove why a case was missed, and no grooming-onset annotations were used. A later study can test fixed prefixes and, with independent annotations, time from onset.\n\n\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Section 4.6"
+    },
+    {
+      "title": "Local Turn-by-Turn Latency",
+      "notes": "We tested both selected LSTMs through the local HTTP demo, not just the recurrent layers. Each request included redaction, DistilBERT scoring, feature computation, the chosen LSTM, and the JSON response. We used the same synthetic chat at 1, 4, 8, and 16 turns, with 40 timed requests at each length for each model after warm-up. Across the equal-length mix, the Trajectory-Feature LSTM had a 267 ms median, 709 ms p95, 830 ms p99, and 3.39 sequential requests per second. The Embedding-and-Feature LSTM had 246 ms, 718 ms, 1,058 ms, and 3.32 requests per second. Longer chats took longer because the current demo recomputes all previous turns. This establishes local CPU behavior, not a production real-time guarantee.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Table 4.4; thesis_docs/.benchmark_evidence/latency_2026-09-27.json"
+    },
+    {
+      "title": "Conclusions by Research Objective",
+      "notes": "These conclusions answer the unchanged research objectives. First, the comparison quantifies the missed positives and false alerts of the tested static methods. Second, we developed a complete contextual and behavioral module with a review interface. Third, under F2 the Trajectory-Feature LSTM reduced weighted scoring's six misses to three, while the Embedding-and-Feature LSTM found all 44 positives. The paired comparison supports the trajectory model's F2 and ranking gains over weighted scoring. The policy comparison then makes the review workload explicit: the embedding model at F1 finds 43 positives with 14 false alerts. Together, these findings show how sequence modeling can broaden conversation coverage and how cutoff selection changes the review tradeoff.\n\nSources: thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md, Sections 5.1-5.2"
+    },
+    {
+      "title": "Next Evaluation Steps",
+      "notes": "Our next step is an independent evaluation on contemporary chats with the models and cutoffs fixed in advance. For a workflow with limited review capacity, compare the Embedding-and-Feature LSTM's F1 option against F2: in this test, F1 found 43 of 44 positives with 14 false alerts, while F2 found all 44 with 41 false alerts. That is 27 additional false alerts to catch one more positive. The workflow study should measure missed-case costs, moderator capacity, and review outcomes rather than assume either option is best everywhere. We also recommend longer-history and concurrent-load latency tests, caching or incremental processing, and independently reviewed onset annotations for a separate early-detection study.\n\nSources: thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md, Section 5.3, especially Recommendation 7; thesis_docs/PANEL_COMMENTS_MATRIX.md"
+    },
+    {
+      "title": "GroomShield Reduced Missed Positives",
+      "notes": "GroomShield provides two tested sequence models. Under the F2 policy, the Trajectory-Feature LSTM found 41 of 44 positives with 21 false alerts and improved F2 over static scoring of the same seven features. The Embedding-and-Feature LSTM found all 44 with 41 false alerts. Its F1 option found 43 with 14 false alerts, making it a clear candidate for a capacity-limited review study. The contribution is the architecture, the measured sequence-model advantage, and an explicit view of the operating-policy tradeoff. Thank you. We welcome your questions.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Tables 4.1-4.2; thesis_docs/CHAPTER_V_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md, Sections 5.2-5.3"
+    },
+    {
+      "title": "Baseline Policy Comparison [hidden]",
+      "notes": "Backup evidence for the three static baselines. All rows use the same test partition: 1,862 conversations, including 44 positives and 1,818 negatives. Cutoff policies appear in F0.5, F1, F2 order. Maximum Layer 1 increases detections from 23 to 26 to 39, but false alerts increase from 18 to 21 to 78. Weighted scoring makes the same F0.5 and F1 decisions, then catches two additional positives under F2 with 11 additional false alerts. The keyword rule is binary, so all three selected policies make the same decisions. TP/FN/FP/TN mean detected positives, missed positives, false alerts, and correctly rejected negatives. Policy labels describe the validation selection objective, not the metric value on these test rows.\n\nSources: thesis_docs/CHAPTER_IV_RESULTS_AND_DISCUSSION.md, Table 4.1a; thesis_docs/.threshold_analysis/test_threshold_policy_comparison.json"
+    },
+    {
+      "title": "Template asset [hidden]",
+      "notes": "Reference asset retained from the original presentation. This slide is hidden during the main defense.\n\n\n\nSources: Original presentation template"
+    },
+    {
+      "title": "PACIFIC COLLEGE [hidden]",
+      "notes": "Reference asset retained from the original presentation. This slide is hidden during the main defense.\n\n\n\nSources: Original presentation template"
+    },
+    {
+      "title": "Sustainable Development Goals  [hidden]",
+      "notes": "Reference asset retained from the original presentation. This slide is hidden during the main defense.\n\n\n\nSources: Original presentation template"
+    },
+    {
+      "title": "Template asset [hidden]",
+      "notes": "Reference asset retained from the original presentation. This slide is hidden during the main defense.\n\n\n\nSources: Original presentation template"
+    },
+    {
+      "title": "Template asset [hidden]",
+      "notes": "Reference asset retained from the original presentation. This slide is hidden during the main defense.\n\n\n\nSources: Original presentation template"
+    }
+  ],
+  "tables": {
+    "lstm_trajectory7": [
+      [
+        "F0.5",
+        "40",
+        "4",
+        "7",
+        "1811",
+        "85.11%",
+        "90.91%"
+      ],
+      [
+        "F1",
+        "40",
+        "4",
+        "9",
+        "1809",
+        "81.63%",
+        "90.91%"
+      ],
+      [
+        "F2",
+        "41",
+        "3",
+        "21",
+        "1797",
+        "66.13%",
+        "93.18%"
+      ]
+    ],
+    "lstm_enhanced775": [
+      [
+        "F0.5",
+        "41",
+        "3",
+        "6",
+        "1812",
+        "87.23%",
+        "93.18%"
+      ],
+      [
+        "F1",
+        "43",
+        "1",
+        "14",
+        "1804",
+        "75.44%",
+        "97.73%"
+      ],
+      [
+        "F2",
+        "44",
+        "0",
+        "41",
+        "1777",
+        "51.76%",
+        "100.00%"
+      ]
+    ],
+    "raw_layer1": [
+      [
+        "F0.5",
+        "23",
+        "21",
+        "18",
+        "1800",
+        "56.10%",
+        "52.27%"
+      ],
+      [
+        "F1",
+        "26",
+        "18",
+        "21",
+        "1797",
+        "55.32%",
+        "59.09%"
+      ],
+      [
+        "F2",
+        "39",
+        "5",
+        "78",
+        "1740",
+        "33.33%",
+        "88.64%"
+      ]
+    ],
+    "weighted": [
+      [
+        "F0.5",
+        "36",
+        "8",
+        "13",
+        "1805",
+        "73.47%",
+        "81.82%"
+      ],
+      [
+        "F1",
+        "36",
+        "8",
+        "13",
+        "1805",
+        "73.47%",
+        "81.82%"
+      ],
+      [
+        "F2",
+        "38",
+        "6",
+        "24",
+        "1794",
+        "61.29%",
+        "86.36%"
+      ]
+    ],
+    "keyword": [
+      [
+        "F0.5",
+        "27",
+        "17",
+        "11",
+        "1807",
+        "71.05%",
+        "61.36%"
+      ],
+      [
+        "F1",
+        "27",
+        "17",
+        "11",
+        "1807",
+        "71.05%",
+        "61.36%"
+      ],
+      [
+        "F2",
+        "27",
+        "17",
+        "11",
+        "1807",
+        "71.05%",
+        "61.36%"
+      ]
+    ]
+  },
+  "source_receipt": "C:\\Projects\\THESIS\\thesis_docs\\.threshold_analysis\\test_threshold_policy_comparison.json"
+}

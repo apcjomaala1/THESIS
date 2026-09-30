@@ -53,6 +53,11 @@ thesis_docs/.docx_conversion_qa/*.docx
 thesis_docs/.docx_conversion_qa/final_sync_qa/
 thesis_docs/.docx_conversion_qa/reference_render/
 
+# Presentation build intermediates; scripts, receipts, and QA evidence remain trackable
+thesis_docs/.pptx_revision_qa/*_staged.pptx
+thesis_docs/.pptx_revision_qa/narrative_notes_only.pptx
+thesis_docs/.pptx_revision_qa/condensed_speaker_script_staged.md
+
 # Microsoft Office lock files
 ~$*.docx
 ~$*.pptx
