@@ -37,10 +37,10 @@ def verify() -> dict:
         )
         if prefix_flags and prefix_flags != result["trajectory_curve"]["lstm_flags"]:
             failures.append(f"{scenario['id']}: independently scored prefixes differ from trajectory")
+        for key, expected in scenario["expected_flags"].items():
+            if decisions.get(key) != expected:
+                failures.append(f"{scenario['id']}: {key} expected {expected}, got {decisions.get(key)}")
         if scenario in SYNTHETIC_SCENARIOS:
-            for key, expected in scenario["expected_flags"].items():
-                if decisions.get(key) != expected:
-                    failures.append(f"{scenario['id']}: {key} expected {expected}, got {decisions.get(key)}")
             if first != scenario["expected_first_flag_turn"]:
                 failures.append(f"{scenario['id']}: expected first flag {scenario['expected_first_flag_turn']}, got {first}")
         rows.append({"id": scenario["id"], "turns": len(history), "decisions": decisions, "primary_first_flagged_turn": first})

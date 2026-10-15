@@ -22,29 +22,31 @@ def test_live_demo_serializes_scoring_requests():
 
 def test_autoplay_waits_for_each_scored_turn():
     assert "await stepScenarioTurn();" in SCRIPT
-    assert "setTimeout(runAutoplayTurn, 600)" in SCRIPT
+    assert "setTimeout(runAutoplayTurn, 450)" in SCRIPT
     assert "setInterval(" not in SCRIPT
 
 
 def test_interface_is_simple_and_explanatory():
-    assert "Conversation Model Demo" in TEMPLATE
-    assert "Chapter IV results" in TEMPLATE
-    assert "What the held-out test showed" in TEMPLATE
-    assert "Revised F2-policy point estimates reported in Chapter IV" in TEMPLATE
-    assert "Opening this demo does not rerun the test" in TEMPLATE
-    assert "Run full chat" in TEMPLATE
-    assert "Add next message" in TEMPLATE
-    assert "Below threshold does not mean safe" in TEMPLATE
-    assert "Model Inspection Workbench" not in TEMPLATE
-    assert "Multi-Model Prefix Evaluation Matrix" not in TEMPLATE
-    assert "workbench-grid" not in TEMPLATE
-    assert "diagnostic-card" not in TEMPLATE
+    assert "GroomShield Live Demo" in TEMPLATE
+    assert "Chapter 4 result:" in TEMPLATE
+    assert "Run conversation" in TEMPLATE
+    assert "Next message" in TEMPLATE
+    assert "What this demonstrates" in TEMPLATE
+    assert "A below-cutoff result does not establish" in TEMPLATE
+    for removed_section in (
+        "What the held-out test showed",
+        "Where the methods disagree",
+        "Watch the score change",
+        "Inspect the latest turn",
+        "Revised F2-policy point estimates reported in Chapter IV",
+    ):
+        assert removed_section not in TEMPLATE
 
 
 def test_endpoint_score_is_not_presented_as_a_calibrated_percentage():
     assert 'id="lstm-score">--<' in TEMPLATE
-    assert "textContent = score.toFixed(4);" in SCRIPT
-    assert "score * 100" in SCRIPT  # visual bar only
+    assert "Number(trajectory.score).toFixed(4)" in SCRIPT
+    assert "Number(trajectory.score) * 100" in SCRIPT  # visual bar only
     assert "% risk" not in TEMPLATE.lower()
 
 
@@ -57,7 +59,8 @@ def test_every_bound_id_exists_in_template():
 def test_model_labels_describe_inputs_without_a_preferred_variant():
     for label in ("Trajectory-Feature LSTM", "Embedding-and-Feature LSTM"):
         assert label in TEMPLATE
-        assert label in SCRIPT
+    assert "Trajectory-Feature is" in SCRIPT
+    assert "Embedding-and-Feature is" in SCRIPT
     for old_label in ("Primary LSTM", "Enhanced LSTM", "primary-method"):
         assert old_label not in TEMPLATE
         assert old_label not in SCRIPT
@@ -73,13 +76,12 @@ def test_files_have_clean_text_encoding():
 
 
 def test_demo_scenarios_document_verified_expected_behavior():
-    assert len(SCENARIOS) == 6
+    assert len(SCENARIOS) == 5
     assert {scenario["id"] for scenario in SCENARIOS} == {
         "private_meeting_pressure",
-        "long_private_pressure",
+        "private_platform_migration",
         "school_project_false_alarm",
         "safety_lesson_false_alarm",
-        "routine_project_chat",
         "concerning_but_below",
     }
     for scenario in SCENARIOS:
@@ -97,14 +99,11 @@ def test_comparison_examples_have_explicit_reference_intent_and_baseline_contrac
             assert scenario["expected_flags"][baseline] != scenario["intended_review"]
     school = next(s for s in SCENARIOS if s["id"] == "school_project_false_alarm")
     assert school["expected_first_flag_turn"] == 1
-    assert "Under F2" in school["short_note"]
+    assert "under F2" in school["short_note"]
 
 
-def test_long_example_documents_current_f2_contrast():
-    scenario = next(s for s in SCENARIOS if s["id"] == "long_private_pressure")
-    assert len(scenario["turns"]) == 40
-    assert set(scenario["comparison_methods"]) == {"keyword"}
-    assert scenario["expected_flags"] == {
-        "lstm": True, "enhanced_lstm": True,
-        "weighted": True, "raw_layer1": True, "keyword": False
-    }
+def test_each_example_caption_states_both_active_f2_outcomes():
+    for scenario in SCENARIOS:
+        assert "both lstms" in scenario["short_note"].lower()
+        assert "f2" in scenario["short_note"].lower()
+        assert scenario["expected_flags"]["lstm"] == scenario["expected_lstm_flagged"]

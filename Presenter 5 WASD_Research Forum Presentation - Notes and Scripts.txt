@@ -1,0 +1,50 @@
+[Slide 1]
+Introduce GroomShield and the research topic.
+
+[Slide 2]
+Introduce Team WASD and the project adviser.
+
+[Slide 3]
+SDG 9: AI innovation for digital safety.
+SDG 16: Support safer online interactions and human review.
+
+[Slide 4]
+Harmful interactions can develop across several messages.
+Keyword matching can miss meaning that depends on context.
+Our study tests whether analyzing the conversation improves detection.
+
+[Slide 5]
+Evaluate the keyword and static-scoring baselines.
+Develop a two-layer module using DistilBERT and LSTM.
+Focus on improving recall and reducing false negatives.
+
+[Slide 6]
+The keyword rule missed 17 of the 44 positive conversations.
+We implemented the contextual and sequence-based module.
+The Trajectory-Feature LSTM missed three, half the weighted scorer's six.
+
+[Slide 7]
+The input combines the current message with up to two previous messages.
+DistilBERT produces a contextual proxy score learned from PAN12 author labels.
+The fixed encoder represents the current message as 768 values and supplies comparison with a negative-training reference.
+The LSTM processes seven behavioral features in sequence, with the embedding variant also receiving the 768 text values.
+The conversation score updates after each message, and its F2-selected cutoff determines the current flag for human review.
+
+[Slide 8]
+Both LSTM models outperformed the three baselines on our main evaluation measures. On the test set of 1,862 conversations, the Trajectory-Feature LSTM detected 41 of the 44 positives, while the Embedding-and-Feature LSTM detected all 44, missing none. Compared with the weighted scorer's six misses, the trajectory model reduced that count to three. The embedding model achieved complete detection in this test, but produced more false alerts. These results show stronger detection from both LSTMs, with different review workloads.
+
+[Slide 9]
+We selected F2 because our research specifically focuses on improving recall and reducing false negatives. Under this policy, the Trajectory-Feature LSTM missed three positive conversations, while the Embedding-and-Feature LSTM missed none. The tradeoff is more false alerts. For example, the embedding model's F0.5 cutoff produced six false alerts but missed three positives. Its F2 cutoff caught all 44, with 41 false alerts. We kept F2 as our main reporting policy because reducing missed cases is one of our research objectives.
+
+[Slide 10]
+Our findings support the value of combining contextual language analysis with sequence modeling. Both LSTMs detected more positive conversations than the keyword and static-scoring baselines. The comparison with the weighted scorer is especially useful because it receives the same seven behavioral features as the Trajectory-Feature LSTM. The LSTM's stronger results support the contribution of learning how those features develop across the conversation. We achieved our goal of reducing observed missed cases on the benchmark, while recognizing the false-alert tradeoff and the need for human review.
+
+[Slide 11]
+The next step is to test the fixed models on contemporary conversations and measure the workload they create for moderators. We also recommend comparing the F1 and F2 cutoffs in that workflow, so the detection gains can be assessed alongside the additional alerts. Finally, early detection needs its own evaluation using independently annotated grooming-onset data. Our current results establish conversation-level performance on the benchmark. Further testing is needed to show how reliably the system can warn while a real conversation is still developing.
+
+[Slide 12]
+We'll now play a short demonstration of the implemented prototype, showing how the conversation scores and decisions update as messages arrive.
+
+[Play video]
+
+That demonstrates the prototype's turn-by-turn workflow. The prepared examples illustrate its behavior, while our detection-performance claims come from the held-out benchmark results. Thank you. We're ready for your questions.

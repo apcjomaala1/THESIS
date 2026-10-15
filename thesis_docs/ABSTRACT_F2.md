@@ -1,7 +1,23 @@
-# GroomShield: Detecting Grooming-Related Interactions in Chat Conversations Using DistilBERT and LSTM-Based Behavioral Sequence Modeling
+**Research Title:** GroomShield: Detecting Grooming-Related Interactions in Chat Conversations Using DistilBERT and LSTM-Based Behavioral Sequence Modeling
 
-## Abstract
+**SDG Alignment:** SDG 9 (Industry, Innovation and Infrastructure); SDG 16 (Peace, Justice and Strong Institutions)
 
-Keyword-based chat moderation can miss grooming-related interactions whose meaning emerges through conversational context and behavioral progression. This study develops GroomShield, a two-layer artificial intelligence module designed to improve detection coverage and reduce false negatives. A context-conditioned DistilBERT classifier produces turn-level author-derived proxy scores, while a Long Short-Term Memory (LSTM) network processes seven chronological features describing score patterns, semantic movement, and speaker participation. The PAN-2012 Sexual Predator Identification corpus was selected for evaluation, with positive conversations defined by the presence of an officially identified predator author. Connected-author partitioning separates participants across training, validation, and test sets. The Trajectory-Feature LSTM is compared with a keyword rule, maximum classifier-score aggregation, and a weighted scorer using the same features; an Embedding-and-Feature LSTM additionally incorporates text embeddings. The revised operating policy selects thresholds using validation F2 and applies them to previously evaluated test scores. Across 1,862 test conversations containing 44 positives, the Trajectory-Feature LSTM achieved 93.18% recall, 66.13% precision, and 0.8613 F2, missing three positives compared with six for the weighted scorer, five for maximum classifier-score aggregation, and 17 for the keyword rule. Paired component-bootstrap intervals supported its F2 and PR-AUC advantages over the weighted scorer. The Embedding-and-Feature LSTM detected all 44 positives at 51.76% precision and 0.8429 F2. These findings demonstrate the contribution of contextual and behavioral sequence modeling to recall-oriented conversation detection, providing a foundation for AI-assisted moderation that complements existing safeguards and human review.
+**Team WASD**
 
-**Keywords:** online grooming detection; chat moderation; conversational context; behavioral pattern analysis; natural language processing; long short-term memory networks.
+**Authors:**
+
+Justin Bryden G. Arroco<br>
+Don Victor L. Idos<br>
+John Michael O. Maala<br>
+Andrei Luis M. Torres
+
+**Co-Authors:**
+
+Manuel L. Calimlim Jr.<br>
+Lorena Rabago
+
+**Research Abstract:**
+
+Online grooming may develop gradually across a chat conversation, making interactions difficult to identify through isolated keywords or messages. This study developed GroomShield, a two-layer AI moderation module that combines contextual DistilBERT scoring with LSTM-based behavioral sequence modeling to identify conversations for human review. The PAN-2012 Sexual Predator Identification corpus was selected for evaluation, with positive conversations defined by official predator-author membership. Connected-author partitioning kept participants separate across training, validation, and test sets. Layer 1 generated context-conditioned turn scores; Layer 2 modeled chronological features describing score patterns, topic movement, and speaker participation. The Trajectory-Feature LSTM was compared with a keyword rule, maximum Layer 1 scoring, and a weighted scorer using the same seven features. An Embedding-and-Feature LSTM additionally received text embeddings. On 1,862 held-out conversations containing 44 positives, the Trajectory-Feature LSTM identified 41 positives, achieving 93.18% recall and 0.8613 F2, with three misses and 21 false alerts. The Embedding-and-Feature LSTM identified all 44 positives, with 41 false alerts. The matched-input LSTM achieved higher F2 and PR-AUC than the weighted scorer, supporting the contribution of learned sequence modeling. GroomShield demonstrates how contextual and behavioral analysis can strengthen conversation-level detection and support human moderation.
+
+**Keywords:** Online Grooming Detection, Chat Moderation, DistilBERT, Long Short-Term Memory, Behavioral Sequence Modeling

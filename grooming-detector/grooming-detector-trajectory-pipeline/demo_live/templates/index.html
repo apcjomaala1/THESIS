@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Conversation Model Demo</title>
+  <title>GroomShield Live Demo</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body data-lstm-threshold="{{ lstm_threshold }}" data-enhanced-threshold="{{ enhanced_lstm_threshold }}">
@@ -11,109 +11,50 @@
     <header class="page-header">
       <div>
         <p class="eyebrow">WASD thesis prototype</p>
-        <h1>GroomShield Model Demo</h1>
-        <p class="subtitle">Compare two DistilBERT-based LSTM variants: seven trajectory features, or text embeddings plus those features.</p>
+        <h1>GroomShield</h1>
+        <p class="subtitle">Enter a conversation and watch both DistilBERT–LSTM models update after every turn.</p>
       </div>
-      <div class="pipeline" aria-label="Model pipeline">
-        <span>DistilBERT</span><b aria-hidden="true">&#8594;</b>
-        <span>Features / features + embeddings</span><b aria-hidden="true">&#8594;</b>
-        <span>Two LSTM scores</span>
-      </div>
+      <span class="policy-chip">F2 thresholds active</span>
     </header>
 
-    <section class="panel chapter-results" id="chapter4-results" aria-labelledby="chapter4-heading">
-      <div class="chapter-results-heading">
-        <div>
-          <p class="eyebrow">Chapter IV results</p>
-          <h2 id="chapter4-heading">What the held-out test showed</h2>
-          <p>F2-selected cutoffs on saved scores from {{ '{:,}'.format(chapter4.conversations) }} unseen-author conversations. Cutoffs came from validation; the original test was evaluated earlier under F0.5. Opening this demo does not rerun the test.</p>
-        </div>
-        <div class="sample-count">
-          <strong>{{ '{:,}'.format(chapter4.conversations) }}</strong>
-          <span>held-out conversations</span>
-        </div>
-      </div>
-
-      <h3>Trajectory-Feature LSTM <small>(7 inputs)</small></h3>
-      <div class="result-facts" aria-label="Trajectory-Feature LSTM results">
-        <div><span>PR-AUC</span><strong>{{ '%.4f' % chapter4.primary.pr_auc }}</strong></div>
-        <div><span>F2</span><strong>{{ '%.4f' % chapter4.primary.f2 }}</strong></div>
-        <div><span>Positive conversations found</span><strong>{{ chapter4.primary.tp }} of {{ chapter4.positive_conversations }}</strong></div>
-        <div><span>Final-test errors</span><strong>{{ chapter4.primary.fp }} FP · {{ chapter4.primary.fn }} FN</strong></div>
-      </div>
-      <h3>Embedding-and-Feature LSTM <small>(775 inputs)</small></h3>
-      <div class="result-facts" aria-label="Embedding-and-Feature LSTM results">
-        <div><span>PR-AUC</span><strong>{{ '%.4f' % chapter4.embedding_model.pr_auc }}</strong></div>
-        <div><span>F2</span><strong>{{ '%.4f' % chapter4.embedding_model.f2 }}</strong></div>
-        <div><span>Positive conversations found</span><strong>{{ chapter4.embedding_model.tp }} of {{ chapter4.positive_conversations }}</strong></div>
-        <div><span>Final-test errors</span><strong>{{ chapter4.embedding_model.fp }} FP · {{ chapter4.embedding_model.fn }} FN</strong></div>
-      </div>
-
-      <div class="matched-result">
-        <strong>Key finding:</strong> with the same seven features, the LSTM improved over the weighted scorer by
-        <strong>{{ '%+.4f' % chapter4.matched_pr_auc.point_difference }} PR-AUC</strong>
-        and <strong>{{ '%+.4f' % chapter4.matched_f2.point_difference }} F2</strong>.
-        Both 95% paired intervals are above zero. The Trajectory-Feature LSTM has {{ chapter4.primary.fn }} missed positives and {{ chapter4.primary.fp }} false alerts; the weighted scorer has {{ chapter4.weighted_false_negatives }} and {{ chapter4.weighted_false_positives }}.
-      </div>
-
-      <div class="results-table-wrap">
-        <table class="results-table">
-          <caption>Revised F2-policy point estimates reported in Chapter IV</caption>
-          <thead>
-            <tr><th>Method</th><th>PR-AUC</th><th>F2</th><th>Precision</th><th>Recall</th><th>FP</th><th>FN</th></tr>
-          </thead>
-          <tbody>
-            {% for method in chapter4.methods %}
-            <tr{% if method.is_lstm %} class="lstm-method"{% endif %}>
-              <th scope="row">{{ method.label }}</th>
-              <td>{{ '%.4f' % method.pr_auc }}</td>
-              <td>{{ '%.4f' % method.f2 }}</td>
-              <td>{{ '%.4f' % method.precision }}</td>
-              <td>{{ '%.4f' % method.recall }}</td>
-              <td>{{ method.fp }}</td><td>{{ method.fn }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <p class="results-footnote">The Embedding-and-Feature LSTM detected all 44 positives, with 41 false alerts. The Trajectory-Feature LSTM had fewer false alerts and a higher F2 point estimate. Their paired F2 and PR-AUC differences were inconclusive.</p>
+    <section class="chapter-strip" aria-label="Chapter 4 result context">
+      <strong>Chapter 4 result:</strong>
+      <span>Trajectory-Feature LSTM found {{ chapter4.primary.tp }}/{{ chapter4.positive_conversations }} positive conversations.</span>
+      <span>Embedding-and-Feature LSTM found {{ chapter4.embedding_model.tp }}/{{ chapter4.positive_conversations }}.</span>
     </section>
-
-    <p class="demo-note">
-      PAN12 examples are original validation conversations with conversation-level author labels. Synthetic examples have authored intent labels. Live prefix decisions illustrate model behavior; the Chapter IV report above supplies the measured overall comparison.
-    </p>
 
     <div class="demo-grid">
       <section class="panel chat-panel" aria-labelledby="conversation-heading">
         <div class="panel-heading">
           <div>
-            <p class="step-label">Step 1</p>
-            <h2 id="conversation-heading">Build a conversation</h2>
+            <p class="eyebrow">Conversation</p>
+            <h2 id="conversation-heading">Try the model</h2>
           </div>
           <button type="button" class="button button-quiet" id="btn-reset">Clear</button>
         </div>
 
         <div class="example-picker">
-          <label for="scenario-select">Example chat</label>
+          <label for="scenario-select">Choose an example</label>
           <select id="scenario-select">
             {% for scenario in scenarios %}
             <option value="{{ scenario.id }}">{{ scenario.title }}</option>
             {% endfor %}
-            <option value="custom">Manual conversation</option>
+            <option value="custom">Write your own conversation</option>
           </select>
           <div class="example-buttons">
-            <button type="button" class="button button-primary" id="btn-autoplay">Run full chat</button>
-            <button type="button" class="button" id="btn-step">Add next message</button>
+            <button type="button" class="button button-primary" id="btn-autoplay">Run conversation</button>
+            <button type="button" class="button" id="btn-step">Next message</button>
           </div>
         </div>
 
-        <p class="scenario-note" id="scenario-note">{{ scenarios[0].short_note }}</p>
-        <p class="scenario-target" id="scenario-target"></p>
+        <div class="scenario-card">
+          <strong>What this demonstrates</strong>
+          <p id="scenario-note">{{ scenarios[0].short_note }}</p>
+          <span id="scenario-target"></span>
+        </div>
 
         <div class="chat-window" id="chat-window" aria-live="polite">
-          <div class="empty-state" id="chat-empty">
-            Choose an example above, or switch to Manual conversation and type your own messages.
-          </div>
+          <div class="empty-state" id="chat-empty">Run the selected conversation or choose manual entry.</div>
           <div class="message-list" id="messages-list"></div>
         </div>
 
@@ -127,112 +68,65 @@
           <input id="msg-input" type="text" maxlength="800" autocomplete="off" placeholder="Type a message..." />
           <button class="button button-primary" id="btn-send" type="submit">Send</button>
         </form>
-        <p class="input-note" id="activity-text" aria-live="polite">Ready. Messages are scored locally on this computer.</p>
+        <p class="activity-text" id="activity-text" aria-live="polite">Ready.</p>
       </section>
 
-      <aside class="results-column" aria-labelledby="result-heading">
-        <section class="panel result-panel" id="result-panel">
-          <div class="panel-heading compact-heading">
-            <div>
-              <p class="step-label">Step 2</p>
-              <h2 id="result-heading">See the model result</h2>
-            </div>
-            <span class="status-chip status-waiting" id="status-chip">Waiting</span>
+      <aside class="panel result-panel" aria-labelledby="result-heading">
+        <div class="panel-heading result-heading">
+          <div>
+            <p class="eyebrow">Live output</p>
+            <h2 id="result-heading">Model decision</h2>
           </div>
+          <span class="status-chip status-waiting" id="status-chip">Waiting</span>
+        </div>
 
-          <div class="score-row">
+        <article class="model-card">
+          <div class="model-card-heading">
             <div>
-              <span class="score-label">Trajectory-Feature LSTM score</span>
-              <strong class="score-value" id="lstm-score">--</strong>
+              <h3>Trajectory-Feature LSTM</h3>
+              <span>7 behavioral inputs</span>
             </div>
-            <div class="threshold-copy">
-              <span>F2 cutoff</span>
-              <strong>{{ '%.4f' % lstm_threshold }}</strong>
-            </div>
+            <strong class="model-decision waiting" id="trajectory-decision">Waiting</strong>
+          </div>
+          <div class="score-line">
+            <strong id="lstm-score">--</strong>
+            <span>F2 cutoff {{ '%.4f' % lstm_threshold }}</span>
           </div>
           <div class="score-track" aria-hidden="true">
             <div class="score-fill" id="score-fill"></div>
             <div class="threshold-line" style="left: {{ '%.2f' % (lstm_threshold * 100) }}%;"></div>
           </div>
-          <div class="score-row enhanced-score-row">
-            <div><span class="score-label">Embedding-and-Feature LSTM score</span><strong class="score-value" id="enhanced-lstm-score">--</strong></div>
-            <div class="threshold-copy"><span>F2 cutoff</span><strong>{{ '%.4f' % enhanced_lstm_threshold }}</strong></div>
+        </article>
+
+        <article class="model-card embedding-card">
+          <div class="model-card-heading">
+            <div>
+              <h3>Embedding-and-Feature LSTM</h3>
+              <span>768 embedding values + 7 behavioral inputs</span>
+            </div>
+            <strong class="model-decision waiting" id="embedding-decision">Waiting</strong>
+          </div>
+          <div class="score-line">
+            <strong id="enhanced-lstm-score">--</strong>
+            <span>F2 cutoff {{ '%.4f' % enhanced_lstm_threshold }}</span>
           </div>
           <div class="score-track" aria-hidden="true">
             <div class="score-fill embedding-score-fill" id="embedding-score-fill"></div>
             <div class="threshold-line" style="left: {{ '%.2f' % (enhanced_lstm_threshold * 100) }}%;"></div>
           </div>
+        </article>
 
-          <p class="decision-text" id="decision-text">Add a message to run DistilBERT and the LSTM.</p>
-          <p class="safety-note">Below threshold does not mean safe. A reviewer keeps decision authority.</p>
-        </section>
+        <p class="decision-text" id="decision-text">Add a message to score the conversation.</p>
 
-        <section class="panel comparison-panel" aria-labelledby="comparison-heading">
-          <p class="step-label">Live comparison</p>
-          <h2 id="comparison-heading">Where the methods disagree</h2>
-          <p id="comparison-summary" aria-live="polite">Run the full chat to compare the final decisions.</p>
-          <div class="comparison-table-wrap">
-            <table class="live-comparison-table">
-              <caption>Each method uses its validation-selected F2 cutoff</caption>
-              <thead><tr><th>Method</th><th>Score / cutoff</th><th>Decision</th><th>Outcome vs reference</th></tr></thead>
-              <tbody id="comparison-body"></tbody>
-            </table>
-          </div>
-          <p class="comparison-footnote">TP = positive detected; FN = positive missed; FP = negative flagged; TN = negative below threshold. PAN12 examples use the recorded author-derived conversation label; synthetic examples use authored intent. Outcomes appear after the full chat. Manual input has no reference label.</p>
-        </section>
-
-        <section class="panel trajectory-panel">
-          <div class="panel-heading compact-heading">
-            <div>
-              <p class="step-label">Step 3</p>
-              <h2>Watch the score change</h2>
-            </div>
-            <span class="tiny-label">one point per turn</span>
-          </div>
-          <div class="chart-wrap">
-            <svg id="trajectory-svg" viewBox="0 0 520 150" role="img" aria-label="Trajectory-Feature and Embedding-and-Feature LSTM scores by turn">
-              <line x1="16" y1="126" x2="504" y2="126" class="chart-axis" />
-              <line x1="16" y1="16" x2="504" y2="16" class="chart-guide" />
-              <line x1="16" y1="71" x2="504" y2="71" class="chart-guide" />
-              <line id="chart-threshold" x1="16" x2="504" class="chart-threshold" />
-              <path id="path-lstm" class="chart-line" d="" />
-              <path id="path-enhanced-lstm" class="chart-line chart-line-enhanced" d="" />
-              <g id="chart-points"></g>
-            </svg>
-          </div>
-          <p class="chart-legend">Blue: Trajectory-Feature LSTM &nbsp; Purple: Embedding-and-Feature LSTM. Each uses its own F2 cutoff.</p>
-        </section>
-
-        <section class="panel latest-panel">
-          <div class="panel-heading compact-heading">
-            <div>
-              <p class="step-label">Step 4</p>
-              <h2>Inspect the latest turn</h2>
-            </div>
-            <span class="tiny-label" id="latest-turn-label">no turn yet</span>
-          </div>
-
-          <dl class="feature-list">
-            <div><dt>Peak proxy</dt><dd id="val-peak">--</dd></div>
-            <div><dt>Current proxy</dt><dd id="val-current">--</dd></div>
-            <div><dt>Spike count</dt><dd id="val-spikes">--</dd></div>
-            <div><dt>Spike then drop</dt><dd id="val-drop">--</dd></div>
-            <div><dt>Rate of change</dt><dd id="val-rate">--</dd></div>
-            <div><dt>Topic distance</dt><dd id="val-topic">--</dd></div>
-            <div><dt>Turn imbalance</dt><dd id="val-imbalance">--</dd></div>
-          </dl>
-
-          <div class="context-block">
-            <span>DistilBERT context (current + up to 2 prior turns)</span>
-            <p id="context-box">No context yet.</p>
-          </div>
-        </section>
+        <div class="outcome-card" id="outcome-card">
+          <strong>Example result</strong>
+          <p id="outcome-text">Run the complete example to compare the final decisions with its authored intent.</p>
+          <p id="other-methods" hidden></p>
+        </div>
       </aside>
     </div>
 
-    <footer>
-      Endpoint: {{ endpoint }}. PAN12 validation examples and synthetic illustrations are identified in the scenario notes. Prefix scores are exploratory; the reported evaluation uses final-conversation scores.
-    </footer>
+    <footer>Scores are conversation screening outputs for human review. A below-cutoff result does not establish that a conversation is safe.</footer>
   </main>
 
   <script id="scenario-data" type="application/json">{{ scenarios | tojson | safe }}</script>

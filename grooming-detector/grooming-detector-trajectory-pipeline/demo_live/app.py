@@ -19,7 +19,7 @@ from scoring_engine import LiveDemoEngine
 from scenarios import SCENARIOS as SYNTHETIC_SCENARIOS
 from dataset_examples import load_dataset_examples
 
-SCENARIOS = load_dataset_examples() + SYNTHETIC_SCENARIOS
+SCENARIOS = SYNTHETIC_SCENARIOS + load_dataset_examples()
 from privacy import redact_text
 
 
@@ -202,7 +202,7 @@ def api_health():
         "model": "Trajectory-Feature LSTM (7 inputs) and Embedding-and-Feature LSTM (775 inputs)",
         "l1_backbone": "DistilBERT (Author-Proxy Fine-Tuned)",
         "endpoint": get_engine().endpoint,
-        "version": "2026.09.28-descriptive-lstm-variants"
+        "version": "2026.10.01-simplified-f2-demo"
     })
 
 

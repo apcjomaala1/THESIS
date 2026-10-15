@@ -2,10 +2,10 @@
 
 const scenarios = JSON.parse(document.getElementById("scenario-data").textContent);
 const scenarioMap = new Map(scenarios.map((scenario) => [scenario.id, scenario]));
-const lstmThreshold = Number(document.body.dataset.lstmThreshold);
 
 const scenarioSelect = document.getElementById("scenario-select");
 const scenarioNote = document.getElementById("scenario-note");
+const scenarioTarget = document.getElementById("scenario-target");
 const runButton = document.getElementById("btn-autoplay");
 const stepButton = document.getElementById("btn-step");
 const resetButton = document.getElementById("btn-reset");
@@ -23,7 +23,6 @@ let conversationEpoch = 0;
 let requestQueue = Promise.resolve();
 let autoplayActive = false;
 let autoplayTimer = null;
-let firstFlaggedTurn = null;
 
 function escapeHtml(value) {
   return String(value)
@@ -46,19 +45,19 @@ function appendMessage(author, text) {
   item.innerHTML = `
     <div class="message-meta">
       <span>${author === "user_A" ? "Speaker A" : "Speaker B"}</span>
-      <span class="message-score">Scoring...</span>
+      <span class="message-score">Scoring…</span>
     </div>
-    <p class="message-text">${escapeHtml(text)}</p>`;
+    <p>${escapeHtml(text)}</p>`;
   messagesList.appendChild(item);
   item.scrollIntoView({ block: "nearest" });
   return item;
 }
 
 function updateMessage(item, turn, sanitizedText) {
-  item.querySelector(".message-text").textContent = sanitizedText;
+  item.querySelector("p").textContent = sanitizedText;
   item.querySelector(".message-score").textContent =
-    `Turn ${turn.turn} · L1 ${Number(turn.layer1_score).toFixed(4)} · Trajectory-Feature ${Number(turn.lstm_score).toFixed(4)} · Embedding-and-Feature ${Number(turn.enhanced_lstm_score).toFixed(4)}`;
-  item.classList.toggle("is-flagged", Boolean(turn.lstm_flagged));
+    `Turn ${turn.turn} · T ${Number(turn.lstm_score).toFixed(4)} · E ${Number(turn.enhanced_lstm_score).toFixed(4)}`;
+  item.classList.toggle("is-flagged", Boolean(turn.lstm_flagged || turn.enhanced_lstm_flagged));
 }
 
 function submitTurn(text, author) {
@@ -74,23 +73,22 @@ async function submitTurnNow(text, author, epoch) {
 
   const visibleMessage = appendMessage(author, cleanText);
   conversationHistory.push({ author, text: cleanText });
-  setActivity("Running the frozen model...");
+  setActivity("Running both models…");
 
   try {
     const response = await fetch("/api/score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ history: conversationHistory }),
+      body: JSON.stringify({ history: conversationHistory, model: "both" }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
     if (epoch !== conversationEpoch) return false;
 
     conversationHistory = data.sanitized_history;
-    const latest = data.latest_turn;
-    updateMessage(visibleMessage, latest, conversationHistory.at(-1).text);
+    updateMessage(visibleMessage, data.latest_turn, conversationHistory.at(-1).text);
     updateResults(data);
-    setActivity(`Scored ${data.turns_count} turn${data.turns_count === 1 ? "" : "s"}.`);
+    setActivity(`Scored turn ${data.turns_count}.`);
     return true;
   } catch (error) {
     if (epoch === conversationEpoch) {
@@ -103,132 +101,88 @@ async function submitTurnNow(text, author, epoch) {
   }
 }
 
-function firstTrueIndex(values) {
-  const index = values.findIndex(Boolean);
-  return index < 0 ? null : index + 1;
+function setModelDecision(id, flagged) {
+  const element = document.getElementById(id);
+  element.textContent = flagged ? "Flagged" : "Below cutoff";
+  element.className = `model-decision ${flagged ? "flagged" : "below"}`;
 }
 
 function updateResults(data) {
-  const decision = data.decision;
-  const latest = data.latest_turn;
-  const score = Number(decision.lstm.score);
-  firstFlaggedTurn = firstTrueIndex(data.trajectory_curve.lstm_flags);
-
+  const trajectory = data.decision.lstm;
+  const embedding = data.decision.enhanced_lstm;
+  const flaggedCount = Number(trajectory.flagged) + Number(embedding.flagged);
   const statusChip = document.getElementById("status-chip");
-  const flaggedCount = Number(decision.lstm.flagged) + Number(decision.enhanced_lstm.flagged);
-  statusChip.textContent = flaggedCount ? `${flaggedCount} of 2 models flagged` : "Both below cutoff";
+
+  statusChip.textContent = flaggedCount === 0 ? "Both below cutoff" : `${flaggedCount} of 2 flagged`;
   statusChip.className = `status-chip ${flaggedCount ? "status-flagged" : "status-below"}`;
-  document.getElementById("lstm-score").textContent = score.toFixed(4);
-  document.getElementById("enhanced-lstm-score").textContent = Number(decision.enhanced_lstm.score).toFixed(4);
-  document.getElementById("score-fill").style.width = `${Math.max(0, Math.min(100, score * 100))}%`;
-  document.getElementById("embedding-score-fill").style.width = `${Math.max(0, Math.min(100, Number(decision.enhanced_lstm.score) * 100))}%`;
+
+  document.getElementById("lstm-score").textContent = Number(trajectory.score).toFixed(4);
+  document.getElementById("enhanced-lstm-score").textContent = Number(embedding.score).toFixed(4);
+  document.getElementById("score-fill").style.width = `${Math.max(0, Math.min(100, Number(trajectory.score) * 100))}%`;
+  document.getElementById("embedding-score-fill").style.width = `${Math.max(0, Math.min(100, Number(embedding.score) * 100))}%`;
+  setModelDecision("trajectory-decision", trajectory.flagged);
+  setModelDecision("embedding-decision", embedding.flagged);
+
   document.getElementById("decision-text").textContent =
-    `Trajectory-Feature LSTM: ${decision.lstm.flagged ? "flagged" : "below cutoff"}. Embedding-and-Feature LSTM: ${decision.enhanced_lstm.flagged ? "flagged" : "below cutoff"}. Prefix decisions are exploratory, not grooming-onset labels.`;
-
-  document.getElementById("latest-turn-label").textContent = `turn ${latest.turn} · ${latest.author === "user_A" ? "Speaker A" : "Speaker B"}`;
-  const features = latest.features;
-  setValue("val-peak", features.peak_proxy_score);
-  setValue("val-current", features.current_proxy_score);
-  setValue("val-spikes", features.spike_count, 0);
-  setValue("val-drop", features.spike_then_drop ? "yes" : "no", null);
-  setValue("val-rate", features.rate_of_change);
-  setValue("val-topic", features.topic_distance);
-  setValue("val-imbalance", features.turn_taking_imbalance);
-  document.getElementById("context-box").textContent = latest.context;
-
-  updateComparison(data);
-  drawTrajectory(data.trajectory_curve);
+    `Turn ${data.turns_count}: Trajectory-Feature is ${trajectory.flagged ? "flagged" : "below cutoff"}; ` +
+    `Embedding-and-Feature is ${embedding.flagged ? "flagged" : "below cutoff"}.`;
+  updateOutcome(data);
 }
 
-function setValue(id, value, digits = 4) {
-  document.getElementById(id).textContent = digits === null ? String(value) : Number(value).toFixed(digits);
-}
+function updateOutcome(data) {
+  const outcomeCard = document.getElementById("outcome-card");
+  const outcomeText = document.getElementById("outcome-text");
+  const otherMethods = document.getElementById("other-methods");
+  outcomeCard.className = "outcome-card";
+  otherMethods.hidden = true;
+  otherMethods.textContent = "";
 
-const comparisonMethods = [
-  ["lstm", "Trajectory-Feature LSTM"],
-  ["enhanced_lstm", "Embedding-and-Feature LSTM"],
-  ["weighted", "Weighted scorer"],
-  ["raw_layer1", "Maximum Layer 1"],
-  ["keyword", "Keyword rule"],
-];
-
-function updateComparison(data) {
-  const complete = Boolean(data && activeScenario &&
-    data.sanitized_history.length === activeScenario.turns.length &&
-    data.sanitized_history.every((turn, i) =>
-      turn.author === activeScenario.turns[i].author && turn.text === activeScenario.turns[i].text));
-  const datasetExample = activeScenario?.source?.kind === "pan12_validation";
-  const referenceLabel = datasetExample ? Boolean(activeScenario.source.reference_label) : activeScenario?.intended_review;
-  const target = complete ? referenceLabel : null;
-  const body = document.getElementById("comparison-body");
-  body.replaceChildren();
-  for (const [key, label] of comparisonMethods) {
-    const item = data?.decision[key];
-    const row = document.createElement("tr");
-    const correct = target !== null && item && item.flagged === target;
-    if (target !== null && item) row.className = correct ? "outcome-correct" : "outcome-error";
-    const title = document.createElement("th");
-    title.scope = "row";
-    title.textContent = label;
-    row.appendChild(title);
-    const score = !item ? "--" : key === "keyword"
-      ? (item.matched_terms.length ? `Match: ${item.matched_terms.join(", ")}` : "No term matched")
-      : `${Number(item.score).toFixed(4)} / ${Number(item.threshold).toFixed(4)}`;
-    const outcome = target === null ? (data ? "No reference label" : "--")
-      : target ? (item.flagged ? "TP: caught" : "FN: missed")
-      : (item.flagged ? "FP: false alarm" : "TN: below threshold");
-    for (const text of [score, !item ? "Waiting" : item.flagged ? "Flagged" : "Below threshold", outcome]) {
-      const cell = document.createElement("td");
-      cell.textContent = text;
-      row.appendChild(cell);
-    }
-    body.appendChild(row);
+  if (!activeScenario) {
+    outcomeText.textContent = "Manual conversation: the models can score it, but no reference result is assigned.";
+    return;
   }
-  let summary = "Run the full chat to compare the final decisions.";
-  if (data && !activeScenario) {
-    summary = "Manual input: decisions can be compared, but FP/FN cannot be assigned without a reference label.";
-  } else if (data && !complete) {
-    summary = `Prefix ${data.turns_count} of ${activeScenario.turns.length}: decisions may change. FP/FN labels appear after the full chat.`;
-  } else if (complete) {
-    const matching = comparisonMethods.filter(([key]) => data.decision[key].flagged === target).map(([, label]) => label);
-    const disagreeing = comparisonMethods.filter(([key]) => data.decision[key].flagged !== target).map(([, label]) => label);
-    summary = `Matches the ${datasetExample ? "dataset reference" : "authored intent"}: ${matching.join(", ") || "none"}. Disagrees: ${disagreeing.join(", ") || "none"}.`;
-    if (!target && (data.trajectory_curve.lstm_flags.some(Boolean) || data.trajectory_curve.enhanced_lstm_flags.some(Boolean))) {
-      summary += " At least one LSTM flagged an earlier prefix; the table shows final-conversation decisions.";
-    }
+
+  if (data.sanitized_history.length < activeScenario.turns.length) {
+    outcomeText.textContent = `Turn ${data.turns_count} of ${activeScenario.turns.length}. Final decisions may still change.`;
+    return;
   }
-  document.getElementById("comparison-summary").textContent = summary;
+
+  const trajectoryFlagged = Boolean(data.decision.lstm.flagged);
+  const embeddingFlagged = Boolean(data.decision.enhanced_lstm.flagged);
+  const datasetExample = activeScenario.source?.kind === "pan12_validation";
+  if (datasetExample) {
+    const decisions = data.decision;
+    const matchesRecord = Object.entries(activeScenario.expected_flags).every(
+      ([method, expected]) => Boolean(decisions[method].flagged) === expected
+    );
+    outcomeCard.classList.add(matchesRecord ? "outcome-match" : "outcome-miss");
+    outcomeText.textContent =
+      `PAN12 validation reference: positive by listed predator-author membership. ` +
+      `Final decisions: Trajectory-Feature ${trajectoryFlagged ? "flagged" : "below cutoff"}; ` +
+      `Embedding-and-Feature ${embeddingFlagged ? "flagged" : "below cutoff"}.`;
+    otherMethods.textContent =
+      `Other methods: Weighted scorer ${decisions.weighted.flagged ? "flagged" : "below cutoff"}; ` +
+      `Maximum Layer 1 ${decisions.raw_layer1.flagged ? "flagged" : "below cutoff"}; ` +
+      `Keyword rule ${decisions.keyword.flagged ? "matched" : "no match"}.`;
+    otherMethods.hidden = false;
+    return;
+  }
+
+  const expected = Boolean(activeScenario.intended_review);
+  const bothMatch = trajectoryFlagged === expected && embeddingFlagged === expected;
+  outcomeCard.classList.add(bothMatch ? "outcome-match" : "outcome-miss");
+  outcomeText.textContent =
+    `Authored intent: ${expected ? "review" : "benign"}. ` +
+    `Final decisions: Trajectory-Feature ${trajectoryFlagged ? "flagged" : "below cutoff"}; ` +
+    `Embedding-and-Feature ${embeddingFlagged ? "flagged" : "below cutoff"}.`;
 }
 
-function drawTrajectory(curve) {
-  const scores = curve.lstm_scores.map(Number);
-  const enhancedScores = curve.enhanced_lstm_scores.map(Number);
-  const xAt = (index) => scores.length === 1 ? 260 : 16 + (488 * index) / (scores.length - 1);
-  const yAt = (score) => 126 - 110 * Math.max(0, Math.min(1, score));
-  const path = scores.map((score, index) => `${index ? "L" : "M"} ${xAt(index).toFixed(1)} ${yAt(score).toFixed(1)}`).join(" ");
-  document.getElementById("path-lstm").setAttribute("d", path);
-  const enhancedPath = enhancedScores.map((score, index) => `${index ? "L" : "M"} ${xAt(index).toFixed(1)} ${yAt(score).toFixed(1)}`).join(" ");
-  document.getElementById("path-enhanced-lstm").setAttribute("d", enhancedPath);
-
-  const points = document.getElementById("chart-points");
-  points.replaceChildren();
-  scores.forEach((score, index) => {
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", xAt(index));
-    circle.setAttribute("cy", yAt(score));
-    circle.setAttribute("r", "4");
-    circle.setAttribute("class", curve.lstm_flags[index] ? "chart-point flagged" : "chart-point");
-    points.appendChild(circle);
-  });
-}
-
-function resetConversation(message = "Ready. Messages are scored locally on this computer.") {
+function resetConversation(message = "Ready.") {
   stopAutoplay();
   conversationEpoch += 1;
   requestQueue = Promise.resolve();
   scenarioStepIndex = 0;
   conversationHistory = [];
-  firstFlaggedTurn = null;
   messagesList.replaceChildren();
   emptyState.hidden = false;
   resetResults();
@@ -243,36 +197,38 @@ function resetResults() {
   document.getElementById("enhanced-lstm-score").textContent = "--";
   document.getElementById("score-fill").style.width = "0%";
   document.getElementById("embedding-score-fill").style.width = "0%";
-  document.getElementById("decision-text").textContent = "Add a message to run DistilBERT and the LSTM.";
-  document.getElementById("latest-turn-label").textContent = "no turn yet";
-  ["val-peak", "val-current", "val-spikes", "val-drop", "val-rate", "val-topic", "val-imbalance"].forEach((id) => {
-    document.getElementById(id).textContent = "--";
-  });
-  document.getElementById("context-box").textContent = "No context yet.";
-  document.getElementById("path-lstm").setAttribute("d", "");
-  document.getElementById("path-enhanced-lstm").setAttribute("d", "");
-  document.getElementById("chart-points").replaceChildren();
-  updateComparison(null);
+  document.getElementById("decision-text").textContent = "Add a message to score the conversation.";
+  for (const id of ["trajectory-decision", "embedding-decision"]) {
+    const element = document.getElementById(id);
+    element.textContent = "Waiting";
+    element.className = "model-decision waiting";
+  }
+  const outcomeCard = document.getElementById("outcome-card");
+  outcomeCard.className = "outcome-card";
+  document.getElementById("outcome-text").textContent = activeScenario
+    ? "Run the complete example to compare the final decisions with its reference."
+    : "Manual conversation: the models can score it, but no reference result is assigned.";
+  document.getElementById("other-methods").hidden = true;
+  document.getElementById("other-methods").textContent = "";
 }
 
 function selectScenario(id) {
   activeScenario = scenarioMap.get(id) || null;
   const manual = !activeScenario;
   scenarioNote.textContent = manual
-    ? "Enter alternating messages below. Each submission recomputes the full conversation history."
+    ? "Enter alternating messages and watch both model decisions update after each turn."
     : activeScenario.short_note;
+  scenarioTarget.textContent = manual
+    ? "No reference result is assigned to manual input."
+    : activeScenario.source?.kind === "pan12_validation"
+      ? "PAN12 validation reference: a listed predator author participated. This is a conversation label, not a label for each message."
+      : `Authored intent: ${activeScenario.intended_review ? "send for review" : "benign context"}.`;
   runButton.disabled = manual;
   stepButton.disabled = manual;
   speakerSelect.disabled = !manual;
   messageInput.disabled = !manual;
   document.getElementById("btn-send").disabled = !manual;
-  const datasetExample = activeScenario?.source?.kind === "pan12_validation";
-  document.getElementById("scenario-target").textContent = manual
-    ? "Manual conversation: no reference label; correctness cannot be assigned."
-    : datasetExample
-      ? `Source: PAN12 validation | ${activeScenario.source.conversation_id} | Reference label ${activeScenario.source.reference_label}: ${activeScenario.source.reference_label ? "contains a listed predator author" : "contains no listed predator author"}. This is a conversation-level label, not a label for each message.`
-      : `Authored intent: ${activeScenario.intended_review ? "requires review" : "benign context"}. Synthetic illustration, not an evaluation record.`;
-  resetConversation(manual ? "Manual entry is ready." : "Example loaded. Run it all at once or add one message at a time.");
+  resetConversation(manual ? "Manual entry is ready." : "Example loaded.");
   if (manual) messageInput.focus();
 }
 
@@ -292,7 +248,7 @@ async function runAutoplayTurn() {
   if (!autoplayActive) return;
   const succeeded = await stepScenarioTurn();
   if (autoplayActive && succeeded && activeScenario && scenarioStepIndex < activeScenario.turns.length) {
-    autoplayTimer = window.setTimeout(runAutoplayTurn, 600);
+    autoplayTimer = window.setTimeout(runAutoplayTurn, 450);
   } else {
     stopAutoplay();
   }
@@ -302,7 +258,7 @@ function stopAutoplay() {
   autoplayActive = false;
   if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
   autoplayTimer = null;
-  runButton.textContent = "Run full chat";
+  runButton.textContent = "Run conversation";
 }
 
 function toggleAutoplay() {
@@ -312,7 +268,7 @@ function toggleAutoplay() {
     setActivity("Example paused.");
     return;
   }
-  if (scenarioStepIndex >= activeScenario.turns.length) resetConversation("Restarting example...");
+  if (scenarioStepIndex >= activeScenario.turns.length) resetConversation("Restarting example…");
   autoplayActive = true;
   runButton.textContent = "Pause";
   runAutoplayTurn();
@@ -334,7 +290,4 @@ runButton.addEventListener("click", toggleAutoplay);
 stepButton.addEventListener("click", stepScenarioTurn);
 resetButton.addEventListener("click", () => resetConversation());
 
-const thresholdY = 126 - 110 * Math.max(0, Math.min(1, lstmThreshold));
-document.getElementById("chart-threshold").setAttribute("y1", thresholdY);
-document.getElementById("chart-threshold").setAttribute("y2", thresholdY);
 selectScenario(scenarioSelect.value);
